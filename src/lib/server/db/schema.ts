@@ -48,6 +48,12 @@ export const user = pgTable(
 	},
 	(t) => [uniqueIndex('idx_user_email').on(t.email)]
 );
+export const userQuery = {
+	columns: { passwordHash: false },
+	with: {
+		address: true
+	}
+} as const;
 
 export const agent = pgTable('agent', {
 	id: integer()
@@ -55,12 +61,48 @@ export const agent = pgTable('agent', {
 		.references(() => user.id),
 	description: text()
 });
+export const agentQuery = {
+	columns: { id: false },
+	with: {
+		user: userQuery
+	}
+} as const;
 
 export const buyer = pgTable('buyer', {
 	id: integer()
 		.primaryKey()
 		.references(() => user.id)
 });
+export const buyerQuery = {
+	columns: { id: false },
+	with: {
+		user: userQuery
+	}
+} as const;
+
+export const propertyFeature = pgTable(
+	'property_feature',
+	{
+		propertyId: integer()
+			.notNull()
+			.references(() => property.id),
+		name: varchar().notNull()
+	},
+	(t) => [primaryKey({ columns: [t.propertyId, t.name] })]
+);
+export const propertyFeatureQuery = { columns: { name: true } } as const;
+
+export const propertyTag = pgTable(
+	'property_tag',
+	{
+		propertyId: integer()
+			.notNull()
+			.references(() => property.id),
+		name: varchar().notNull()
+	},
+	(t) => [primaryKey({ columns: [t.propertyId, t.name] })]
+);
+export const propertyTagQuery = { columns: { name: true } } as const;
 
 export const property = pgTable('property', {
 	id: serial().primaryKey(),
@@ -84,28 +126,16 @@ export const property = pgTable('property', {
 	carSpace: integer(),
 	price: integer().notNull()
 });
-
-export const propertyFeature = pgTable(
-	'property_feature',
-	{
-		propertyId: integer()
-			.notNull()
-			.references(() => property.id),
-		name: varchar().notNull()
+export const propertyQuery = {
+	columns: {
+		addressId: false
 	},
-	(t) => [primaryKey({ columns: [t.propertyId, t.name] })]
-);
-
-export const propertyTag = pgTable(
-	'property_tag',
-	{
-		propertyId: integer()
-			.notNull()
-			.references(() => property.id),
-		name: varchar().notNull()
-	},
-	(t) => [primaryKey({ columns: [t.propertyId, t.name] })]
-);
+	with: {
+		features: propertyFeatureQuery,
+		tags: propertyTagQuery,
+		address: true
+	}
+} as const;
 
 export const listing = pgTable('listing', {
 	id: serial().primaryKey(),
@@ -119,6 +149,16 @@ export const listing = pgTable('listing', {
 	dateCreated: timestamp({ withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 	dateModified: timestamp({ withTimezone: true, mode: 'date' }).notNull().defaultNow()
 });
+export const listingQuery = {
+	columns: {
+		propertyId: false,
+		agentId: false
+	},
+	with: {
+		property: propertyQuery,
+		agent: agentQuery
+	}
+} as const;
 
 export const offer = pgTable('offer', {
 	id: serial().primaryKey(),
@@ -130,6 +170,16 @@ export const offer = pgTable('offer', {
 		.references(() => listing.id),
 	dateCreated: timestamp({ withTimezone: true, mode: 'date' }).notNull().defaultNow()
 });
+export const offerQuery = {
+	columns: {
+		buyerId: false,
+		listingId: false
+	},
+	with: {
+		buyer: buyerQuery,
+		listing: listingQuery
+	}
+} as const;
 
 export const transaction = pgTable('transaction', {
 	id: serial().primaryKey(),
@@ -138,6 +188,14 @@ export const transaction = pgTable('transaction', {
 		.references(() => offer.id),
 	dateCreated: timestamp({ withTimezone: true, mode: 'date' }).notNull().defaultNow()
 });
+export const transactionQuery = {
+	columns: {
+		offerId: false
+	},
+	with: {
+		offer: offerQuery
+	}
+} as const;
 
 export const rentTransaction = pgTable('rent_transaction', {
 	id: integer()
