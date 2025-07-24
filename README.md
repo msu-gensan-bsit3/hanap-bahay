@@ -1,11 +1,13 @@
-# 🏠 Hanap Bahay - AI-Powered Real Estate Platform
+# 🏠 JuanHome - AI-Powered Real Estate Platform
 
 [![Svelte](https://img.shields.io/badge/svelte-%23f1413d.svg?style=for-the-badge&logo=svelte&logoColor=white)](https://svelte.dev/)
 [![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![PostgreSQL](https://img.shields.io/badge/postgresql-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-**Hanap Bahay** (Filipino for "House Hunting") is a comprehensive AI-powered real estate platform that addresses three critical aspects of the real estate industry: property discovery, transaction automation, and intelligent market insights.
+**JuanHome: The Juan place to find your space.**
+
+A comprehensive AI-powered real estate platform that addresses three critical aspects of the real estate industry: property discovery, transaction automation, and intelligent market insights.
 
 ## 🚀 Hackathon Challenge Solutions
 
@@ -104,8 +106,8 @@ This project tackles all three problem sets:
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/msu-gensan-bsit3/hanap-bahay.git
-   cd hanap-bahay
+   git clone https://github.com/msu-gensan-bsit3/juanhome.git
+   cd juanhome
    ```
 
 2. **Install dependencies**
@@ -228,7 +230,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🏆 Team
 
 - **Team Name**: MSU GenSan BSIT3
-- **Project**: Hanap Bahay - AI-Powered Real Estate Platform
+- **Project**: JuanHome - AI-Powered Real Estate Platform
 - **Hackathon**: [Hackathon Name] 2025
 
 ## 📞 Support
