@@ -31,9 +31,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🏆 Team
 
-- **Team Name**: MSU GenSan BSIT3
+- **Team Name**: xX_MSUBSIT3_Xx
 - **Project**: JuanHome - AI-Powered Real Estate Platform
-- **Hackathon**: [Hackathon Name] 2025
+- **Hackathon**: Hackestate 2025 - DAVAO LEAGUE
 
 ## 📞 Support
 
