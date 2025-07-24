@@ -3,5 +3,9 @@
 		"source.organizeImports": "never",
 		"source.sortImports": "never",
 		"source.fixAll.ts": "never"
-	}
+	},
+	"files.associations": {
+		"*.css": "tailwindcss"
+	},
+	"editor.formatOnSave": false
 }
