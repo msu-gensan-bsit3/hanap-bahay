@@ -1,5 +1,5 @@
 import { error, redirect, type Handle } from '@sveltejs/kit';
-import * as auth from '$lib/server/auth';
+import * as auth from '$lib/server/services/auth';
 
 const protectedRoutes = ['admin'];
 
