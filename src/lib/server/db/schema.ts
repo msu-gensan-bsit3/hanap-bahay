@@ -75,9 +75,7 @@ export const property = pgTable('property', {
 			...propertyCategory.land
 		]
 	}).notNull(),
-	agentId: integer()
-		.notNull()
-		.references(() => agent.id),
+	agentId: integer().references(() => agent.id),
 	addressId: integer()
 		.notNull()
 		.references(() => address.id),

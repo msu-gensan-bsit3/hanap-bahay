@@ -1,7 +1,7 @@
 import { error, redirect, type Handle } from '@sveltejs/kit';
 import * as auth from '$lib/server/auth';
 
-const protectedRoutes = [''];
+const protectedRoutes = ['admin'];
 
 function validateRoute(currentRoute: string) {
 	for (const route of protectedRoutes) {
