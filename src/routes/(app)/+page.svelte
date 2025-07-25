@@ -9,7 +9,7 @@
 
 	import { ChevronLast, Search } from "@lucide/svelte"
 
-	const sampleListing: Listing = {
+	const sampleListing = {
 		tagType: "For Rent",
 		tagColor: "yellow",
 

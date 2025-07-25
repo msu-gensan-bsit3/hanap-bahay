@@ -21,7 +21,7 @@
 		agent: string
 	}
 
-	let { tagType, tagColor, thumbnailLink, bedrooms, bathrooms, size, address, agent }: ListingProps = $props()
+	let { tagType, thumbnailLink, bedrooms, bathrooms, size, address, agent }: ListingProps = $props()
 </script>
 
 <Card.Root class="w-sm relative overflow-hidden gap-0 py-0">
@@ -33,11 +33,11 @@
 
 		<h2 class="text-xl font-bold tracking-tight">₱1,000</h2>
 		<div class="h-5 flex items-center space-x-2 text-sm tracking-tight">
-			<span class="font-semibold">{ bedrooms }<span class="font-normal">{" bds"}</span></span>
+			<span class="font-semibold">{ bedrooms } <span class="font-normal">bds</span></span>
 			<Separator orientation="vertical" />
-			<span class="font-semibold">{ bathrooms }<span class="font-normal">{" ba"}</span></span>
+			<span class="font-semibold">{ bathrooms } <span class="font-normal">ba</span></span>
 			<Separator orientation="vertical" />
-			<span class="font-semibold">{ size }<span class="font-normal">{" sqft"}</span></span>
+			<span class="font-semibold">{ size } <span class="font-normal">sqft</span></span>
 			<Separator orientation="vertical" />
 			<span>Active</span>
 		</div>
