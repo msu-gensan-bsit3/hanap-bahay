@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AskAi from "$lib/components/ask-ai.svelte";
 	import ListingCard from "$lib/components/listing-card.svelte";
 
 	import { Button } from "$lib/components/ui/button/index";
@@ -10,22 +11,7 @@
 	import { ChevronLast, Search } from "@lucide/svelte";
 
 	let { data } = $props();
-
 	let { listings } = $derived(data);
-
-	const sampleListing = {
-		tagType: "For Rent",
-		tagColor: "yellow",
-
-		thumbnailLink:
-			"https://cdn.prod.website-files.com/620ec747459e13c7cf12a39e/625b10a58137b364b18df2ea_iStock-94179607.jpg",
-		bedrooms: 2,
-		bathrooms: 2,
-		size: 1012,
-
-		address: "Fatima, Uhaw",
-		agent: "Clifford Gwapo",
-	};
 </script>
 
 <div
@@ -126,3 +112,5 @@
 		</Carousel.Content>
 	</Carousel.Root>
 </div>
+
+<AskAi />
