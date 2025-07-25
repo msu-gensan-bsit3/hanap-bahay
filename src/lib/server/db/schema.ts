@@ -1,32 +1,34 @@
-import { relations } from 'drizzle-orm';
+import { relations } from "drizzle-orm";
 import {
 	date,
 	index,
 	integer,
+	json,
+	numeric,
 	pgTable,
 	primaryKey,
 	serial,
 	text,
 	timestamp,
 	uniqueIndex,
-	varchar
-} from 'drizzle-orm/pg-core';
-import { propertyCategory } from '../services/property/type';
+	varchar,
+} from "drizzle-orm/pg-core";
+import { propertyCategory } from "../services/property/type";
 
 export const session = pgTable(
-	'user_session',
+	"user_session",
 	{
 		id: text().primaryKey(),
 		userId: integer()
 			.notNull()
 			.references(() => user.id),
-		expiresAt: timestamp({ withTimezone: true, mode: 'date' }).notNull()
+		expiresAt: timestamp({ withTimezone: true, mode: "date" }).notNull(),
 	},
-	(t) => [index('idx_usersession_user_id').on(t.userId)]
+	(t) => [index("idx_usersession_user_id").on(t.userId)],
 );
 
 export const user = pgTable(
-	'user',
+	"user",
 	{
 		id: serial().primaryKey(),
 		addressId: integer()
@@ -38,106 +40,122 @@ export const user = pgTable(
 		profilePicture: varchar(),
 		username: text().notNull().unique(),
 		passwordHash: text().notNull(),
-		birthDate: date().notNull(),
+		birthDate: date({ mode: "date" }).notNull(),
 		mobileNumber: varchar({ length: 14 }).notNull(),
 		dateCreated: date().notNull().defaultNow(),
 
-		status: text({ enum: ['ACTIVE', 'DELETED', 'DEACTIVATED'] })
+		status: text({ enum: ["ACTIVE", "DELETED", "DEACTIVATED"] })
 			.notNull()
-			.default('ACTIVE')
+			.default("ACTIVE"),
 	},
-	(t) => [uniqueIndex('idx_user_email').on(t.email)]
+	(t) => [uniqueIndex("idx_user_email").on(t.email)],
 );
 export const userQuery = {
 	columns: { passwordHash: false },
 	with: {
-		address: true
-	}
+		address: true,
+	},
 } as const;
 
-export const agent = pgTable('agent', {
+export const agent = pgTable("agent", {
 	id: integer()
 		.primaryKey()
 		.references(() => user.id),
-	description: text()
+	about: text(),
+	credentials: text(),
+	// TODO:
 });
 export const agentQuery = {
 	columns: { id: false },
 	with: {
-		user: userQuery
-	}
+		user: userQuery,
+	},
 } as const;
 
-export const buyer = pgTable('buyer', {
+export const buyer = pgTable("buyer", {
 	id: integer()
 		.primaryKey()
-		.references(() => user.id)
+		.references(() => user.id),
 });
 export const buyerQuery = {
 	columns: { id: false },
 	with: {
-		user: userQuery
-	}
+		user: userQuery,
+	},
 } as const;
 
 export const propertyFeature = pgTable(
-	'property_feature',
+	"property_feature",
 	{
 		propertyId: integer()
 			.notNull()
 			.references(() => property.id),
-		name: varchar().notNull()
+		name: varchar().notNull(),
 	},
-	(t) => [primaryKey({ columns: [t.propertyId, t.name] })]
+	(t) => [primaryKey({ columns: [t.propertyId, t.name] })],
 );
 export const propertyFeatureQuery = { columns: { name: true } } as const;
 
 export const propertyTag = pgTable(
-	'property_tag',
+	"property_tag",
 	{
 		propertyId: integer()
 			.notNull()
 			.references(() => property.id),
-		name: varchar().notNull()
+		name: varchar().notNull(),
 	},
-	(t) => [primaryKey({ columns: [t.propertyId, t.name] })]
+	(t) => [primaryKey({ columns: [t.propertyId, t.name] })],
 );
 export const propertyTagQuery = { columns: { name: true } } as const;
 
-export const property = pgTable('property', {
+export const property = pgTable("property", {
 	id: serial().primaryKey(),
 	name: text().notNull(),
-	description: text().notNull(),
-	type: varchar({ enum: ['rent', 'sale', 'lease'] }).notNull(),
+	description: text(),
+	type: varchar({ enum: ["rent", "sale", "lease"] }).notNull(),
+	createdAt: date({mode: 'date'}),
 	category: text({
 		enum: [
 			...propertyCategory.commercial,
 			...propertyCategory.residential,
-			...propertyCategory.land
-		]
+			...propertyCategory.land,
+		],
 	}).notNull(),
 	addressId: integer()
 		.notNull()
 		.references(() => address.id),
-	landArea: integer().notNull(), // In sq.meters
-	floorArea: integer(), // In sq.meters
-	bedroom: integer(),
-	bathroom: integer(),
+	landArea: numeric().notNull(), // In sq.meters
+	floorArea: numeric(), // In sq.meters
+	location: json(),
+	bedrooms: integer(),
+	bathrooms: integer(),
 	carSpace: integer(),
-	price: integer().notNull()
+	price: integer().notNull(),
 });
 export const propertyQuery = {
 	columns: {
-		addressId: false
+		addressId: false,
 	},
 	with: {
 		features: propertyFeatureQuery,
 		tags: propertyTagQuery,
-		address: true
-	}
+		address: true,
+	},
 } as const;
 
-export const listing = pgTable('listing', {
+export const photosUrl = pgTable(
+	"photos_url",
+	{
+		propertyId: integer()
+			.notNull()
+			.references(() => property.id),
+		url: text().notNull(),
+	},
+	(t) => [primaryKey({ columns: [t.propertyId, t.url] })],
+);
+export const photosUrlQuery = { columns: { url: true } } as const;
+
+export const listing = pgTable("listing", {
 	id: serial().primaryKey(),
 	agentId: integer()
 		.notNull()
@@ -145,22 +163,22 @@ export const listing = pgTable('listing', {
 	propertyId: integer()
 		.notNull()
 		.references(() => property.id),
-	status: varchar({ enum: ['up', 'pending', 'sold'] }).notNull(),
-	dateCreated: timestamp({ withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-	dateModified: timestamp({ withTimezone: true, mode: 'date' }).notNull().defaultNow()
+	status: varchar({ enum: ["up", "pending", "sold"] }).notNull(),
+	dateCreated: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
+	dateModified: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 export const listingQuery = {
 	columns: {
 		propertyId: false,
-		agentId: false
+		agentId: false,
 	},
 	with: {
 		property: propertyQuery,
-		agent: agentQuery
-	}
+		agent: agentQuery,
+	},
 } as const;
 
-export const offer = pgTable('offer', {
+export const offer = pgTable("offer", {
 	id: serial().primaryKey(),
 	buyerId: integer()
 		.notNull()
@@ -168,126 +186,131 @@ export const offer = pgTable('offer', {
 	listingId: integer()
 		.notNull()
 		.references(() => listing.id),
-	dateCreated: timestamp({ withTimezone: true, mode: 'date' }).notNull().defaultNow()
+	dateCreated: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 export const offerQuery = {
 	columns: {
 		buyerId: false,
-		listingId: false
+		listingId: false,
 	},
 	with: {
 		buyer: buyerQuery,
-		listing: listingQuery
-	}
+		listing: listingQuery,
+	},
 } as const;
 
-export const transaction = pgTable('transaction', {
+export const transaction = pgTable("transaction", {
 	id: serial().primaryKey(),
 	offerId: integer()
 		.notNull()
 		.references(() => offer.id),
-	dateCreated: timestamp({ withTimezone: true, mode: 'date' }).notNull().defaultNow()
+	dateCreated: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 export const transactionQuery = {
 	columns: {
-		offerId: false
+		offerId: false,
 	},
 	with: {
-		offer: offerQuery
-	}
+		offer: offerQuery,
+	},
 } as const;
 
-export const rentTransaction = pgTable('rent_transaction', {
+export const rentTransaction = pgTable("rent_transaction", {
 	id: integer()
 		.primaryKey()
-		.references(() => transaction.id)
+		.references(() => transaction.id),
 });
 
-export const saleTransaction = pgTable('sale_transaction', {
+export const saleTransaction = pgTable("sale_transaction", {
 	id: integer()
 		.primaryKey()
-		.references(() => transaction.id)
+		.references(() => transaction.id),
 });
 
-export const leaseTransaction = pgTable('lease_transaction', {
+export const leaseTransaction = pgTable("lease_transaction", {
 	id: integer()
 		.primaryKey()
-		.references(() => transaction.id)
+		.references(() => transaction.id),
 });
 
 // TODO: Improve address
-export const address = pgTable('address', {
+export const address = pgTable("address", {
 	id: serial().primaryKey(),
-	street: varchar().notNull().default(''),
+	street: varchar().notNull().default(""),
 	barangay: varchar().notNull(),
 	city: varchar().notNull(),
-	province: varchar().notNull()
+	province: varchar().notNull(),
 });
 
 export const UserRelation = relations(user, ({ one, many }) => ({
 	address: one(address, { fields: [user.addressId], references: [address.id] }),
 	agent: one(agent),
-	buyer: one(buyer)
+	buyer: one(buyer),
 }));
 
 export const AgentRelation = relations(agent, ({ one, many }) => ({
 	user: one(user, { fields: [agent.id], references: [user.id] }),
-	listing: many(listing)
+	listing: many(listing),
 }));
 
 export const BuyerRelation = relations(buyer, ({ one, many }) => ({
 	user: one(user, { fields: [buyer.id], references: [user.id] }),
-	offers: many(offer)
+	offers: many(offer),
 }));
 
 export const PropertyRelation = relations(property, ({ one, many }) => ({
 	address: one(address, { fields: [property.addressId], references: [address.id] }),
 	features: many(propertyFeature),
 	tags: many(propertyTag),
-	listing: one(listing)
+	listing: one(listing),
+	photosUrl: many(photosUrl),
+}));
+
+export const PhotosUrlRelation = relations(photosUrl, ({ one }) => ({
+	property: one(property, { fields: [photosUrl.propertyId], references: [property.id] }),
 }));
 
 export const PropertyFeatureRelation = relations(propertyFeature, ({ one }) => ({
-	property: one(property, { fields: [propertyFeature.propertyId], references: [property.id] })
+	property: one(property, { fields: [propertyFeature.propertyId], references: [property.id] }),
 }));
 
 export const PropertyTagRelation = relations(propertyTag, ({ one }) => ({
-	property: one(property, { fields: [propertyTag.propertyId], references: [property.id] })
+	property: one(property, { fields: [propertyTag.propertyId], references: [property.id] }),
 }));
 
 export const ListingRelation = relations(listing, ({ one, many }) => ({
 	agent: one(agent, { fields: [listing.agentId], references: [agent.id] }),
 	property: one(property, { fields: [listing.propertyId], references: [property.id] }),
-	offers: many(offer)
+	offers: many(offer),
 }));
 
 export const OfferRelation = relations(offer, ({ one }) => ({
 	listing: one(listing, { fields: [offer.listingId], references: [listing.id] }),
-	buyer: one(buyer, { fields: [offer.buyerId], references: [buyer.id] })
+	buyer: one(buyer, { fields: [offer.buyerId], references: [buyer.id] }),
 }));
 
 export const TransactionRelation = relations(transaction, ({ one }) => ({
 	offer: one(offer, { fields: [transaction.id], references: [offer.id] }),
 	rentTransaction: one(rentTransaction),
 	saleTransaction: one(saleTransaction),
-	leaseTransaction: one(leaseTransaction)
+	leaseTransaction: one(leaseTransaction),
 }));
 
 export const RentTransactionRelation = relations(rentTransaction, ({ one }) => ({
-	transaction: one(transaction, { fields: [rentTransaction.id], references: [transaction.id] })
+	transaction: one(transaction, { fields: [rentTransaction.id], references: [transaction.id] }),
 }));
 
 export const SaleTransactionRelation = relations(saleTransaction, ({ one }) => ({
-	transaction: one(transaction, { fields: [saleTransaction.id], references: [transaction.id] })
+	transaction: one(transaction, { fields: [saleTransaction.id], references: [transaction.id] }),
 }));
 
 export const LeaseTransactionRelation = relations(leaseTransaction, ({ one }) => ({
-	transaction: one(transaction, { fields: [leaseTransaction.id], references: [transaction.id] })
+	transaction: one(transaction, { fields: [leaseTransaction.id], references: [transaction.id] }),
 }));
 
 export const AddressRelation = relations(address, ({ many }) => ({
 	users: many(user),
-	properties: many(property)
+	properties: many(property),
 }));
 
 export type User = typeof user.$inferSelect;
