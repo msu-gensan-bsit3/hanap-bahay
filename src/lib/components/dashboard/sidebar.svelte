@@ -1,6 +1,14 @@
 <script lang="ts">
+	import { page } from "$app/state";
 	import { Badge } from "$lib/components/ui/badge";
-	import { Building, LayoutDashboard, MessageSquare, Settings, Users, type IconProps } from "@lucide/svelte";
+	import {
+		Building,
+		LayoutDashboard,
+		MessageSquare,
+		Settings,
+		Users,
+		type IconProps,
+	} from "@lucide/svelte";
 	import type { Component } from "svelte";
 
 	interface NavigationItem {
@@ -8,7 +16,6 @@
 		href: string;
 		icon: Component<IconProps>;
 		badge?: number;
-		active?: boolean;
 		fillRule?: boolean;
 	}
 
@@ -17,7 +24,6 @@
 			label: "Dashboard",
 			href: "/agent/dashboard",
 			icon: LayoutDashboard,
-			active: true,
 		},
 		{
 			label: "Listings",
@@ -46,11 +52,11 @@
 		// 	icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
 		// },
 		{
-			label: 'Settings',
-			href: '/agent/settings',
+			label: "Settings",
+			href: "/agent/settings",
 			icon: Settings,
-			fillRule: true
-		}
+			fillRule: true,
+		},
 	];
 
 	const agentInfo = {
@@ -80,7 +86,7 @@
 			<div class="px-6 py-2">
 				<a
 					href={item.href}
-					class="flex items-center rounded-lg px-4 py-2 {item.active
+					class="flex items-center rounded-lg px-4 py-2 {page.url.pathname === item.href
 						? 'bg-blue-50 text-blue-600'
 						: 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}"
 				>
@@ -101,7 +107,9 @@
 		<div class="flex items-center">
 			<div class="relative">
 				<img class="h-10 w-10 rounded-full" src={agentInfo.avatar} alt={agentInfo.name} />
-				<div class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-400 border-2 border-white"></div>
+				<div
+					class="absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-400"
+				></div>
 			</div>
 			<div class="ml-3">
 				<p class="text-sm font-medium text-gray-900">{agentInfo.name}</p>
