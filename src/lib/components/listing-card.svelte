@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Badge } from "$lib/components/ui/badge/index"
 	import { Separator } from "$lib/components/ui/separator/index"
-	import noImage from '../../assets/no-image.jpg'
 
 	import * as Card from "$lib/components/ui/card/index"
 	import type { ClientListing, Listing } from "$lib/types";
@@ -18,7 +17,7 @@
 		const url = property.photosUrl.at(0)?.url
 
 		if (!url) {
-			return noImage
+			return '/no-image.jpg'
 		}
 		
 		return url
