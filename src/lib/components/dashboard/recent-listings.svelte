@@ -39,7 +39,7 @@
 			: listings.filter((listing) => listing.status.toLowerCase() === activeFilter);
 </script>
 
-<Card>
+<Card class="h-min">
 	<CardHeader class="flex flex-row items-center justify-between">
 		<CardTitle>Recent Listings</CardTitle>
 		<div class="flex gap-8 text-sm">
@@ -55,22 +55,24 @@
 			{/each}
 		</div>
 	</CardHeader>
-	<CardContent class="px-0">
-		{#each filteredListings as listing}
-			<div class="h-[1px] w-full bg-black/10"></div>
-			<div class="flex items-center gap-4 p-4">
-				<img src={listing.image} alt={listing.title} class="size-14 rounded-lg object-cover" />
-				<div class="flex-1">
-					<h4 class="text-[14px] font-medium text-gray-900">{listing.title}</h4>
-					<p class="text-[12px] font-medium text-gray-500">{listing.details}</p>
-					<p class="text-[14px] font-semibold text-gray-900">{listing.price}</p>
+	<CardContent class="px-0 flex flex-col justify-between h-full">
+		<div>
+			{#each filteredListings as listing}
+				<div class="h-[2px] w-full bg-black/10"></div>
+				<div class="flex h-23 items-center gap-4 p-4">
+					<img src={listing.image} alt={listing.title} class="size-14 rounded-lg object-cover" />
+					<div class="flex-1">
+						<h4 class="text-[14px] font-medium text-gray-900">{listing.title}</h4>
+						<p class="text-[12px] font-medium text-gray-500">{listing.details}</p>
+						<p class="text-[14px] font-semibold text-gray-900">{listing.price}</p>
+					</div>
+					<Badge class={getStatusColor(listing.status)}>
+						{listing.status}
+					</Badge>
 				</div>
-				<Badge class={getStatusColor(listing.status)}>
-					{listing.status}
-				</Badge>
-			</div>
-		{/each}
-		<div class="h-[1px] w-full bg-black/10"></div>
+			{/each}
+			<div class="h-[1px] w-full bg-black/10"></div>
+		</div>
 		<button
 			class="mt-4 cursor-pointer px-4 text-xs text-blue-600 transition-colors hover:text-blue-800"
 			>View all listings</button

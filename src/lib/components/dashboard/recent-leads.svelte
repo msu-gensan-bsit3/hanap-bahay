@@ -46,7 +46,7 @@
 				});
 </script>
 
-<Card>
+<Card class="h-min">
 	<CardHeader class="flex flex-row items-center justify-between">
 		<CardTitle>Recent Leads</CardTitle>
 		<div class="flex gap-8 text-sm">
@@ -62,24 +62,28 @@
 			{/each}
 		</div>
 	</CardHeader>
-	<CardContent>
-		<div class="space-y-4">
+	<CardContent class="flex h-full flex-col justify-between px-0">
+		<div>
 			{#each filteredLeads as lead}
-				<div class="flex items-center space-x-4 rounded-lg border p-3">
+				<div class="h-[2px] w-full bg-black/10"></div>
+				<div class="flex h-23 items-center space-x-4 p-4">
 					<img src="/no-profile.jpg" alt={lead.name} class="h-10 w-10 rounded-full" />
-					<div class="flex-1">
+					<div class="flex flex-1 flex-col gap-1 @lg:gap-[3px]">
 						<h4 class="text-[14px] font-medium text-gray-900">{lead.name}</h4>
 						<p class="text-xs text-gray-700">Interested in {lead.interest}</p>
-						<p class="text-xs text-gray-700">Last contact: {lead.lastContact}</p>
+						<p class="text-xs text-gray-900">Last contact: {lead.lastContact}</p>
 					</div>
 					<Badge class={getStatusColor(lead.status)}>
 						{lead.status}
 					</Badge>
 				</div>
 			{/each}
+			<div class="h-[2px] w-full bg-black/10"></div>
 		</div>
-		<button class="mt-4 cursor-pointer text-xs text-blue-600 transition-colors hover:text-blue-800"
-			>View all leads</button
+		<button
+			class="mt-4 cursor-pointer px-4 text-xs text-blue-600 transition-colors hover:text-blue-800"
 		>
+			View all leads
+		</button>
 	</CardContent>
 </Card>
