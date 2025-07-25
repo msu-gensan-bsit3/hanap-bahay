@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
 
 	interface MonthlyData {
 		month: string;
@@ -8,14 +8,14 @@
 		conversions: number;
 	}
 
-	export let data: MonthlyData[];
+	let { data }: { data: MonthlyData[] } = $props();
 
-	let activeTab = 'listings';
+	let activeTab = $state("listings");
 
 	const tabs = [
-		{ id: 'listings', label: 'Listings' },
-		{ id: 'leads', label: 'Leads' },
-		{ id: 'conversions', label: 'Conversions' }
+		{ id: "listings", label: "Listings" },
+		{ id: "leads", label: "Leads" },
+		{ id: "conversions", label: "Conversions" },
 	];
 </script>
 
@@ -24,9 +24,11 @@
 		<CardTitle>Monthly Performance</CardTitle>
 		<div class="flex space-x-6 text-sm">
 			{#each tabs as tab}
-				<button 
-					class="{activeTab === tab.id ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'} pb-1"
-					on:click={() => activeTab = tab.id}
+				<button
+					class="{activeTab === tab.id
+						? 'border-b-2 border-blue-600 text-blue-600'
+						: 'text-gray-500 hover:text-gray-700'} pb-1"
+					onclick={() => (activeTab = tab.id)}
 				>
 					{tab.label}
 				</button>
@@ -34,41 +36,41 @@
 		</div>
 	</CardHeader>
 	<CardContent>
-		<div class="h-80 flex items-end justify-between space-x-2">
+		<div class="flex h-80 items-end justify-between space-x-2">
 			{#each data as monthData}
-				<div class="flex flex-col items-center flex-1">
-					<div class="relative w-full h-64 bg-gray-100 rounded-t-lg overflow-hidden">
+				<div class="flex flex-1 flex-col items-center">
+					<div class="relative h-64 w-full overflow-hidden rounded-t-lg bg-gray-100">
 						<!-- Active Listings (Blue) -->
-						<div 
+						<div
 							class="absolute bottom-0 w-full bg-blue-500 opacity-80"
 							style="height: {(monthData.activeListings / 60) * 100}%"
 						></div>
 						<!-- Leads Generated (Purple) -->
-						<div 
+						<div
 							class="absolute bottom-0 w-full bg-purple-500 opacity-60"
 							style="height: {(monthData.leadsGenerated / 60) * 100}%"
 						></div>
 						<!-- Conversions (Green) -->
-						<div 
+						<div
 							class="absolute bottom-0 w-full bg-green-500 opacity-80"
 							style="height: {(monthData.conversions / 60) * 100}%"
 						></div>
 					</div>
-					<span class="text-xs text-gray-500 mt-2">{monthData.month}</span>
+					<span class="mt-2 text-xs text-gray-500">{monthData.month}</span>
 				</div>
 			{/each}
 		</div>
-		<div class="flex justify-center space-x-6 mt-4 text-sm">
+		<div class="mt-4 flex justify-center space-x-6 text-sm">
 			<div class="flex items-center">
-				<div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+				<div class="mr-2 h-3 w-3 rounded-full bg-blue-500"></div>
 				<span>Active Listings</span>
 			</div>
 			<div class="flex items-center">
-				<div class="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+				<div class="mr-2 h-3 w-3 rounded-full bg-purple-500"></div>
 				<span>Leads Generated</span>
 			</div>
 			<div class="flex items-center">
-				<div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+				<div class="mr-2 h-3 w-3 rounded-full bg-green-500"></div>
 				<span>Conversions</span>
 			</div>
 		</div>

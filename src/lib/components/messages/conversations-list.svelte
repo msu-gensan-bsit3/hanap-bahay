@@ -3,30 +3,42 @@
 	import { Input } from "$lib/components/ui/input";
 	import { Badge } from "$lib/components/ui/badge";
 
-	export let conversations: Array<{
-		id: number;
-		name: string;
-		lastMessage: string;
-		timestamp: string;
-		unread: number;
-		avatar: string;
-		online: boolean;
-		property: string;
-	}>;
-	export let selectedConversation: (typeof conversations)[0];
-	export let onSelectConversation: (conversation: (typeof conversations)[0]) => void;
-	export let isMobile: boolean = false;
+	interface props {
+		conversations: Array<{
+			id: number;
+			name: string;
+			lastMessage: string;
+			timestamp: string;
+			unread: number;
+			avatar: string;
+			online: boolean;
+			property: string;
+		}>;
+	}
+	interface props {
+		selectedConversation: props["conversations"][0];
+		onSelectConversation: (conversation: props["conversations"][0]) => void;
+		isMobile: boolean;
+	}
+	let {
+		conversations,
+		selectedConversation,
+		onSelectConversation,
+		isMobile = false,
+	}: props = $props();
 
-	let searchQuery = "";
+	let searchQuery = $state("");
 
-	$: filteredConversations = conversations.filter(
-		(conv) =>
-			conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			conv.property.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()),
+	let filteredConversations = $derived(
+		conversations.filter(
+			(conv) =>
+				conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				conv.property.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()),
+		),
 	);
 
-	$: totalUnread = conversations.reduce((sum, conv) => sum + conv.unread, 0);
+	let totalUnread = $derived(conversations.reduce((sum, conv) => sum + conv.unread, 0));
 </script>
 
 <div class={isMobile ? "w-full" : "flex w-85 flex-col"}>

@@ -9,7 +9,7 @@
 		completed: boolean;
 	}
 
-	export let tasks: Task[];
+	let { tasks }: { tasks: Task[] } = $props();
 
 	function toggleTask(taskId: number) {
 		tasks = tasks.map((task) =>
@@ -38,7 +38,7 @@
 					<input
 						type="checkbox"
 						checked={task.completed}
-						on:change={() => toggleTask(task.id)}
+						onchange={() => toggleTask(task.id)}
 						class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600"
 					/>
 					<div class="flex-1">
@@ -48,9 +48,7 @@
 						>
 							{task.task}
 						</p>
-						<p
-							class="text-xs {task.completed ? 'text-gray-400' : 'text-black'}"
-						>
+						<p class="text-xs {task.completed ? 'text-gray-400' : 'text-black'}">
 							{task.time}
 						</p>
 					</div>

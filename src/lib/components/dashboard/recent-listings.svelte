@@ -11,7 +11,7 @@
 		image: string;
 	}
 
-	export let listings: Listing[];
+	let { listings }: { listings: Listing[] } = $props();
 
 	function getStatusColor(status: string) {
 		switch (status.toLowerCase()) {
@@ -26,17 +26,18 @@
 		}
 	}
 
-	let activeFilter = "all";
+	let activeFilter = $state("all");
 	const filters = [
 		{ id: "all", label: "All" },
 		{ id: "pending", label: "Pending" },
 		{ id: "approved", label: "Approved" },
 	];
 
-	$: filteredListings =
+	let filteredListings = $derived(
 		activeFilter === "all"
 			? listings
-			: listings.filter((listing) => listing.status.toLowerCase() === activeFilter);
+			: listings.filter((listing) => listing.status.toLowerCase() === activeFilter),
+	);
 </script>
 
 <Card class="h-min">
@@ -48,14 +49,14 @@
 					class="transition-colors {activeFilter === filter.id
 						? 'border-b border-blue-600 text-blue-600'
 						: 'text-gray-500 hover:text-gray-700'} cursor-pointer pb-1"
-					on:click={() => (activeFilter = filter.id)}
+					onclick={() => (activeFilter = filter.id)}
 				>
 					{filter.label}
 				</button>
 			{/each}
 		</div>
 	</CardHeader>
-	<CardContent class="px-0 flex flex-col justify-between h-full">
+	<CardContent class="flex h-full flex-col justify-between px-0">
 		<div>
 			{#each filteredListings as listing}
 				<div class="h-[2px] w-full bg-black/10"></div>

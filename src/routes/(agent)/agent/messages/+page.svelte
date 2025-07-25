@@ -5,9 +5,10 @@
 		QuickActions,
 		MobileQuickActions,
 	} from "$lib/components/messages";
+	import { getContext } from "svelte";
 
 	// Sample data for conversations
-	let conversations = [
+	let conversations = $state([
 		{
 			id: 1,
 			name: "Maria Santos",
@@ -98,11 +99,11 @@
 			online: false,
 			property: "2BR Apartment in Pasig",
 		},
-	];
+	]);
 
 	// Sample messages for the selected conversation
-	let selectedConversation = conversations[0];
-	let messages = [
+	let selectedConversation = $derived(conversations[0]);
+	let messages = $state([
 		{
 			id: 1,
 			senderId: selectedConversation.id,
@@ -146,10 +147,12 @@
 			timestamp: "10:45 AM",
 			isAgent: false,
 		},
-	];
+	]);
 
-	let showConversations = true;
-	let showChat = false;
+	let showConversations = $state(true);
+	let showChat = $state(false);
+
+	let container = getContext("container") as () => HTMLElement;
 
 	function selectConversation(conversation: (typeof conversations)[0]) {
 		selectedConversation = conversation;
@@ -157,11 +160,8 @@
 		conversation.unread = 0;
 		// In a real app, you'd fetch messages for this conversation
 
-		// On mobile, switch to chat view when conversation is selected
-		if (window.innerWidth < 1024) {
-			showConversations = false;
-			showChat = true;
-		}
+		showConversations = false;
+		showChat = true;
 	}
 
 	function backToConversations() {
@@ -199,7 +199,7 @@
 	<title>Messages - JuanHome Agent Dashboard</title>
 </svelte:head>
 
-<div class="flex gap-6 max-h-[calc(100dvh-6rem-1px)] lg:max-h-screen">
+<div class="flex max-h-[calc(100dvh-6rem-1px)] gap-6 lg:max-h-screen">
 	<!-- Mobile: Show conversations or chat based on state -->
 	<div class="flex-1 @4xl:hidden">
 		{#if showConversations}

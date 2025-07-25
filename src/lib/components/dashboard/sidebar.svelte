@@ -22,13 +22,13 @@
 		fillRule?: boolean;
 	}
 
-	interface Props {
+	interface props {
 		sidebarOpen?: boolean;
 		mobile?: boolean;
 		onToggle?: () => void;
 	}
 
-	let { sidebarOpen = true, mobile = false, onToggle }: Props = $props();
+	let { sidebarOpen = true, mobile = false, onToggle }: props = $props();
 
 	const navigationItems: NavigationItem[] = [
 		{

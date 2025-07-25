@@ -10,7 +10,7 @@
 		status: string;
 	}
 
-	export let leads: Lead[];
+	let { leads }: { leads: Lead[] } = $props();
 
 	function getStatusColor(status: string) {
 		switch (status.toLowerCase()) {
@@ -25,14 +25,14 @@
 		}
 	}
 
-	let activeFilter = "all";
+	let activeFilter = $state("all");
 	const filters = [
 		{ id: "all", label: "All" },
 		{ id: "new", label: "New" },
 		{ id: "in progress", label: "In Progress" },
 	];
 
-	$: filteredLeads =
+	let filteredLeads = $derived(
 		activeFilter === "all"
 			? leads
 			: leads.filter((lead) => {
@@ -43,7 +43,8 @@
 						);
 					}
 					return lead.status.toLowerCase() === activeFilter;
-				});
+				}),
+	);
 </script>
 
 <Card class="h-min">
@@ -55,7 +56,7 @@
 					class="transition-colors {activeFilter === filter.id
 						? 'border-b border-blue-600 text-blue-600'
 						: 'text-gray-500 hover:text-gray-700'} cursor-pointer pb-1"
-					on:click={() => (activeFilter = filter.id)}
+					onclick={() => (activeFilter = filter.id)}
 				>
 					{filter.label}
 				</button>
