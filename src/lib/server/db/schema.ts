@@ -120,6 +120,16 @@ export const propertyTag = pgTable(
 );
 export const propertyTagQuery = { columns: { name: true } } as const;
 
+export const photosUrl = pgTable(
+	"photos_url",
+	{
+		propertyId: integer()
+			.notNull()
+			.references(() => property.id),
+		url: text().notNull(),
+	},
+	(t) => [primaryKey({ columns: [t.propertyId, t.url] })],
+);
 export const property = pgTable("property", {
 	id: serial().primaryKey(),
 	name: text().notNull(),
@@ -140,25 +150,14 @@ export const property = pgTable("property", {
 	addressId: integer()
 		.notNull()
 		.references(() => address.id),
-	landArea: numeric().notNull(), // In sq.meters
-	floorArea: numeric(), // In sq.meters
+	landArea: numeric({ mode: "number" }).notNull(), // In sq.meters
+	floorArea: numeric({ mode: "number" }), // In sq.meters
 	location: json(),
 	bedrooms: integer(),
 	bathrooms: integer(),
 	carSpace: integer(),
 	price: integer().notNull(),
 });
-
-export const photosUrl = pgTable(
-	"photos_url",
-	{
-		propertyId: integer()
-			.notNull()
-			.references(() => property.id),
-		url: text().notNull(),
-	},
-	(t) => [primaryKey({ columns: [t.propertyId, t.url] })],
-);
 export const photosUrlQuery = { columns: { url: true } } as const;
 
 export const propertyQuery = {
