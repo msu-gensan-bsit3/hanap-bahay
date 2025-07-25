@@ -148,17 +148,6 @@ export const property = pgTable("property", {
 	carSpace: integer(),
 	price: integer().notNull(),
 });
-export const propertyQuery = {
-	columns: {
-		addressId: false,
-		userId: false,
-	},
-	with: {
-		features: propertyFeatureQuery,
-		tags: propertyTagQuery,
-		address: true,
-	},
-} as const;
 
 export const photosUrl = pgTable(
 	"photos_url",
@@ -171,6 +160,19 @@ export const photosUrl = pgTable(
 	(t) => [primaryKey({ columns: [t.propertyId, t.url] })],
 );
 export const photosUrlQuery = { columns: { url: true } } as const;
+
+export const propertyQuery = {
+	columns: {
+		addressId: false,
+		userId: false,
+	},
+	with: {
+		features: propertyFeatureQuery,
+		tags: propertyTagQuery,
+		address: true,
+		photosUrl: photosUrlQuery,
+	},
+} as const;
 
 export const listing = pgTable("listing", {
 	id: serial().primaryKey(),
