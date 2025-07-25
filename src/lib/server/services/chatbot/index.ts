@@ -1,4 +1,4 @@
-export async function sendMessage(msg: string, sessionId: string) {
+export async function chatbotSendMessage(msg: string, sessionId: string) {
 	if (!process.env.N8N_CHATBOT_URL) {
 		console.error('N8N_CHATBOT_URL is not set');
 		return;
