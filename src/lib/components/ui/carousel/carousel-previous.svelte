@@ -22,13 +22,13 @@
 	{size}
 	aria-disabled={!emblaCtx.canScrollPrev}
 	class={cn(
-		"border-1 size-8 rounded-full"
+		"border-1 size-10 rounded-full"
 	)}
 	onclick={emblaCtx.scrollPrev}
 	onkeydown={emblaCtx.handleKeyDown}
 	{...restProps}
 	bind:ref
 >
-	<ArrowLeftIcon class="size-8" />
+	<ArrowLeftIcon class="size-6" />
 	<span class="sr-only">Previous slide</span>
 </Button>
