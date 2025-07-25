@@ -43,6 +43,13 @@
       "when": 1753366126946,
       "tag": "0005_nasty_apocalypse",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1753410079092,
+      "tag": "0006_flat_tarantula",
+      "breakpoints": true
     }
   ]
 }
