@@ -27,7 +27,7 @@
 <Card.Root class="w-sm relative overflow-hidden gap-0 py-0">
 
 	<Badge variant={tagType} class="absolute top-2 left-2">{tagType}</Badge>
-	<img src={thumbnailLink} class="w-full h-48 object-cover">
+	<img src={thumbnailLink} class="w-full h-48 object-cover" alt="listing">
 
 	<Card.Content class="bg-background px-2 pb-2">
 
