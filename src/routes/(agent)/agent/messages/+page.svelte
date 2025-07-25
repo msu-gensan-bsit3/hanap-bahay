@@ -199,7 +199,7 @@
 	<title>Messages - JuanHome Agent Dashboard</title>
 </svelte:head>
 
-<div class="flex max-h-[calc(100dvh-6rem-1px)] gap-6 lg:max-h-screen">
+<div class="flex max-h-[calc(100dvh-6rem-1px)] gap-6 lg:max-h-[calc(100dvh-2rem)]">
 	<!-- Mobile: Show conversations or chat based on state -->
 	<div class="flex-1 @4xl:hidden">
 		{#if showConversations}

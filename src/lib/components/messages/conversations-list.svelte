@@ -4,7 +4,7 @@
 	import { Badge } from "$lib/components/ui/badge";
 
 	interface props {
-		conversations: Array<{
+		conversations: {
 			id: number;
 			name: string;
 			lastMessage: string;
@@ -13,7 +13,7 @@
 			avatar: string;
 			online: boolean;
 			property: string;
-		}>;
+		}[];
 	}
 	interface props {
 		selectedConversation: props["conversations"][0];
@@ -41,7 +41,7 @@
 	let totalUnread = $derived(conversations.reduce((sum, conv) => sum + conv.unread, 0));
 </script>
 
-<div class={isMobile ? "w-full" : "flex w-85 flex-col"}>
+<div class="h-full {isMobile ? "w-full" : "flex w-85 flex-col"}">
 	<Card class="flex h-full flex-col gap-0 py-0 pt-6">
 		<CardHeader class="border-b pb-4">
 			<div class="flex items-center justify-between">
