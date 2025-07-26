@@ -18,7 +18,7 @@ export const days = (n: number) => 1000 * 60 * 60 * 24 * n;
 export function toTitleCase(str: string): string {
 	return str
 		.toLowerCase()
-		.split(' ')
+		.split(/[-\s]+/)
 		.map((word) => {
 			return word.charAt(0).toUpperCase() + word.slice(1);
 		})

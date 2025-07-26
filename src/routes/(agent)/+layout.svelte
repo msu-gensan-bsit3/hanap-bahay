@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { Sidebar } from "$lib/components/dashboard";
 	import { Menu, X } from "@lucide/svelte";
-	import { setContext } from "svelte";
+	import { setAgentContext } from "$lib/contexts/agentContext";
 
-	let { children } = $props();
+	let { children, data } = $props();
 	let sidebarOpen = $state(true);
 	let mobileMenuOpen = $state(false);
 	let container: HTMLElement | undefined = $state();
 
-	setContext("container", () => container);
+	setAgentContext(data);
 
 	function toggleSidebar() {
 		sidebarOpen = !sidebarOpen;

@@ -182,9 +182,9 @@ export const listing = pgTable("listing", {
 	propertyId: integer()
 		.notNull()
 		.references(() => property.id),
-	status: varchar({ enum: ["up", "pending", "sold", "under-review"] })
+	status: varchar({ enum: ["up", "pending", "sold", "under-review", "submitted"] })
 		.notNull()
-		.default("under-review"),
+		.default("submitted"),
 	dateCreated: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
 	dateModified: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
@@ -208,6 +208,9 @@ export const offer = pgTable("offer", {
 		.notNull()
 		.references(() => listing.id),
 	dateCreated: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
+	status: varchar({ enum: ["completed", "rejected", "in negotiation", "new"] })
+		.notNull()
+		.default("new"),
 });
 export const offerQuery = {
 	columns: {
@@ -397,7 +400,7 @@ export const UserRelation = relations(user, ({ one, many }) => ({
 
 export const AgentRelation = relations(agent, ({ one, many }) => ({
 	user: one(user, { fields: [agent.id], references: [user.id] }),
-	listing: many(listing),
+	listings: many(listing),
 }));
 
 export const BuyerRelation = relations(buyer, ({ one, many }) => ({

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { Badge } from "$lib/components/ui/badge";
+	import { getAgentContext } from "$lib/contexts/agentContext";
 	import {
 		Building,
 		LayoutDashboard,
@@ -11,8 +12,7 @@
 		type IconProps,
 	} from "@lucide/svelte";
 	import type { Component } from "svelte";
-	import { Tween } from "svelte/motion";
-	import { fly, slide } from "svelte/transition";
+	import { slide } from "svelte/transition";
 
 	interface NavigationItem {
 		label: string;
@@ -29,6 +29,8 @@
 	}
 
 	let { sidebarOpen = true, mobile = false, onToggle }: props = $props();
+
+	const agentData = getAgentContext();
 
 	const navigationItems: NavigationItem[] = [
 		{
@@ -60,12 +62,12 @@
 		},
 	];
 
-	const agentInfo = {
-		name: "Marco Santos",
-		license: "PRC Lic #12345",
+	const agentInfo = $derived({
+		name: `${agentData.userData.user.firstName} ${agentData.userData.user.lastName}`,
+		license: agentData.userData.agent.credentials,
 		avatar: "/no-profile.jpg",
 		status: "Available",
-	};
+	});
 </script>
 
 <div

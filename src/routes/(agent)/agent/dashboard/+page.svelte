@@ -1,138 +1,72 @@
 <script lang="ts">
 	import {
 		StatsCards,
-		MonthlyPerformance,
-		TodaysTasks,
 		RecentListings,
 		RecentLeads,
 		ActionButtons,
 	} from "$lib/components/dashboard";
+	import { toTitleCase } from "$lib/utils";
 
-	// Sample data
+	let { data } = $props();
+
 	const stats = {
-		totalListings: 42,
-		approvedListings: 28,
-		pendingReview: 7,
-		newMessages: 12,
+		totalListings: data.listings.length,
+		approvedListings: data.listings.filter((v) => v.status === "up").length,
+		pendingReview: data.listings.filter((v) => v.status === "under-review").length,
+		newMessages: data.listings.filter((v) => v.status === "under-review").length,
 	};
 
-	const monthlyData = [
-		{ month: "Jan", activeListings: 35, leadsGenerated: 28, conversions: 12 },
-		{ month: "Feb", activeListings: 38, leadsGenerated: 32, conversions: 15 },
-		{ month: "Mar", activeListings: 42, leadsGenerated: 35, conversions: 18 },
-		{ month: "Apr", activeListings: 45, leadsGenerated: 38, conversions: 20 },
-		{ month: "May", activeListings: 48, leadsGenerated: 42, conversions: 22 },
-		{ month: "Jun", activeListings: 52, leadsGenerated: 45, conversions: 25 },
-	];
+	const recentListings = $derived(
+		data.listings.slice(0, 4).map((v) => {
+			const isLandProperty = ["commercial-lot", "residential-lot", "industrial-lot"].includes(
+				v.property.category,
+			);
+			const area = isLandProperty ? v.property.landArea : v.property.floorArea;
 
-	const recentListings = [
-		{
-			id: 1,
-			title: "Luxury Condo in Makati",
-			details: "3 BR • 2 BA • 140 sqm",
-			price: "₱5,500,000",
-			status: "Approved",
-			image: "/no-image.jpg",
-		},
-		{
-			id: 2,
-			title: "House and Lot in Alabang",
-			details: "4 BR • 3 BA • 250 sqm",
-			price: "₱23,000,000",
-			status: "Pending",
-			image: "/no-image.jpg",
-		},
-		{
-			id: 3,
-			title: "Studio Unit in BGC",
-			details: "1 BR • 1 BA • 35 sqm",
-			price: "₱6,800,000",
-			status: "Approved",
-			image: "/no-image.jpg",
-		},
-		{
-			id: 4,
-			title: "Townhouse in Quezon City",
-			details: "3 BR • 2 BA • 120 sqm",
-			price: "₱12,300,000",
-			status: "Needs Revision",
-			image: "/no-image.jpg",
-		},
-	];
+			const details = [];
+			if (v.property.bedrooms && v.property.bedrooms > 0) {
+				details.push(`${v.property.bedrooms} BR`);
+			}
+			if (v.property.bathrooms && v.property.bathrooms > 0) {
+				details.push(`${v.property.bathrooms} BA`);
+			}
+			if (area && area > 0) {
+				details.push(`${area} sqm`);
+			}
 
-	const recentLeads = [
-		{
-			id: 1,
-			name: "Sophia Reyes",
-			interest: "Luxury Condo in Makati",
-			lastContact: "5:42 AM",
-			status: "New",
-		},
-		{
-			id: 2,
-			name: "Daniel Tan",
-			interest: "Studio Unit in BGC",
-			lastContact: "Yesterday, 4:30 PM",
-			status: "In Negotiation",
-		},
-		{
-			id: 3,
-			name: "Maria Cruz",
-			interest: "House and Lot in Alabang",
-			lastContact: "2 days ago",
-			status: "Meeting Scheduled",
-		},
-		{
-			id: 4,
-			name: "James Lim",
-			interest: "Townhouse in Quezon City",
-			lastContact: "3 days ago",
-			status: "New",
-		},
-	];
+			return {
+				id: v.id,
+				title: v.property.name,
+				details: details.join(" • "),
+				price: `₱${v.property.price.toLocaleString()}`,
+				status: toTitleCase(v.status),
+				image: v.property.photosUrl.at(0)?.url || "/no-image.jpg",
+			};
+		}),
+	);
 
-	const todaysTasks = [
-		{
-			id: 1,
-			task: "Review 3 property submissions",
-			time: "9:00 AM",
-			completed: false,
-		},
-		{
-			id: 2,
-			task: "Call back Maria about Makati condo",
-			time: "11:30 AM",
-			completed: false,
-		},
-		{
-			id: 3,
-			task: "Update listing photos for BGC property",
-			time: "2:30 PM",
-			completed: true,
-		},
-		{
-			id: 4,
-			task: "Property viewing at Alabang Hills",
-			time: "3:00 PM",
-			completed: false,
-		},
-		{
-			id: 5,
-			task: "Follow up with 5 potential buyers",
-			time: "5:00 PM",
-			completed: false,
-		},
-	];
-
-	let mainContentMargin = $state(0);
-
-	$inspect(mainContentMargin);
+	const recentLeads = $derived(
+		data.listings
+			.map((v) => v.offers.map((o) => ({ ...o, property: v.property })))
+			.flat()
+			.sort((a, b) => a.dateCreated.valueOf() - b.dateCreated.valueOf())
+			.slice(0, 4)
+			.map((v) => {
+				return {
+					id: v.id,
+					name: v.buyer.user.firstName + " " + v.buyer.user.lastName,
+					interest: toTitleCase(v.property.category) + " in " + v.property.address.city,
+					lastContact: "Never",
+					status: toTitleCase(v.status),
+				};
+			}),
+	);
 </script>
 
 <!-- Header -->
 <div class="mb-6 lg:mb-8">
 	<h1 class="text-2xl font-bold text-gray-900 lg:text-3xl">Agent Dashboard</h1>
-	<p class="text-sm text-gray-600 @lgtext-base">
+	<p class="@lgtext-base text-sm text-gray-600">
 		Welcome back, Marco! Here's what's happening with your properties today.
 	</p>
 </div>

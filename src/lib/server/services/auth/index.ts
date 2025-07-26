@@ -1,14 +1,14 @@
-import { SessionDuration } from '$lib/opts';
-import { db } from '$lib/server/db';
-import type { Session } from '$lib/server/db/schema';
-import * as table from '$lib/server/db/schema';
-import { days } from '$lib/utils';
-import { sha256 } from '@oslojs/crypto/sha2';
-import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
-import type { RequestEvent } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { SessionDuration } from "$lib/opts";
+import { db } from "$lib/server/db";
+import type { Session } from "$lib/server/db/schema";
+import * as table from "$lib/server/db/schema";
+import { days } from "$lib/utils";
+import { sha256 } from "@oslojs/crypto/sha2";
+import { encodeBase64url, encodeHexLowerCase } from "@oslojs/encoding";
+import type { RequestEvent } from "@sveltejs/kit";
+import { eq } from "drizzle-orm";
 
-export const sessionCookieName = 'auth-session';
+export const sessionCookieName = "auth-session";
 
 export function generateSessionToken() {
 	const bytes = crypto.getRandomValues(new Uint8Array(18));
@@ -21,7 +21,7 @@ export async function createSession(token: string, userId: number) {
 	const session: Session = {
 		id: sessionId,
 		userId,
-		expiresAt: new Date(Date.now() + SessionDuration)
+		expiresAt: new Date(Date.now() + SessionDuration),
 	};
 	await db.insert(table.session).values(session);
 	return session;
@@ -32,7 +32,7 @@ export async function validateSessionToken(token: string) {
 	const [result] = await db
 		.select({
 			user: table.user,
-			session: table.session
+			session: table.session,
 		})
 		.from(table.session)
 		.innerJoin(table.user, eq(table.session.userId, table.user.id))
@@ -75,12 +75,12 @@ export async function invalidateSession(token: string) {
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
 	event.cookies.set(sessionCookieName, token, {
 		expires: expiresAt,
-		path: '/'
+		path: "/",
 	});
 }
 
 export function deleteSessionTokenCookie(event: RequestEvent) {
 	event.cookies.delete(sessionCookieName, {
-		path: '/'
+		path: "/",
 	});
 }

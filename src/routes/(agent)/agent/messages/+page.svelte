@@ -102,8 +102,8 @@
 	]);
 
 	// Sample messages for the selected conversation
-	let selectedConversation = $derived(conversations[0]);
-	let messages = $state([
+	let selectedConversation = $state(conversations[0]);
+	let messages = $derived([
 		{
 			id: 1,
 			senderId: selectedConversation.id,

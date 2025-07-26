@@ -34,11 +34,15 @@
 	}: props = $props();
 
 	let newMessage = $state("");
+	let messagesContainer: HTMLElement | undefined = $state();
 
 	function sendMessage() {
 		if (newMessage.trim()) {
 			onSendMessage(newMessage.trim());
 			newMessage = "";
+
+			// Scroll to bottom after sending
+			setTimeout(scrollToBottom, 100);
 		}
 	}
 
@@ -48,9 +52,15 @@
 			sendMessage();
 		}
 	}
+
+	function scrollToBottom() {
+		if (messagesContainer) {
+			messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: "smooth" });
+		}
+	}
 </script>
 
-<div class="flex flex-1 flex-col">
+<div class="flex h-full flex-1 flex-col">
 	<Card class="flex h-full flex-col">
 		<!-- Chat Header -->
 		<CardHeader class="border-b pb-4">
@@ -127,37 +137,39 @@
 		</CardHeader>
 
 		<!-- Messages Area -->
-		<CardContent class="flex-1 space-y-3 overflow-y-auto p-3 lg:space-y-4 lg:p-4">
-			{#each messages as message (message.id)}
-				<div class="flex {message.isAgent ? 'justify-end' : 'justify-start'}">
-					<div class="max-w-[280px] sm:max-w-xs lg:max-w-md">
-						{#if !message.isAgent}
-							<div class="flex items-end gap-2">
-								<img
-									src={selectedConversation.avatar}
-									alt={selectedConversation.name}
-									class="h-6 w-6 flex-shrink-0 rounded-full object-cover"
-								/>
-								<div class="min-w-0">
-									<div class="rounded-2xl bg-gray-100 px-3 py-2 lg:px-4">
-										<p class="text-sm break-words text-gray-900">{message.content}</p>
+		<CardContent class="flex-1 overflow-y-auto p-3  lg:p-4">
+			<div bind:this={messagesContainer} class="h-full space-y-3 overflow-y-auto lg:space-y-4">
+				{#each messages as message (message.id)}
+					<div class="flex {message.isAgent ? 'justify-end' : 'justify-start'}">
+						<div class="max-w-[280px] sm:max-w-xs lg:max-w-md">
+							{#if !message.isAgent}
+								<div class="flex items-end gap-2">
+									<img
+										src={selectedConversation.avatar}
+										alt={selectedConversation.name}
+										class="h-6 w-6 flex-shrink-0 rounded-full object-cover"
+									/>
+									<div class="min-w-0">
+										<div class="rounded-2xl bg-gray-100 px-3 py-2 lg:px-4">
+											<p class="text-sm break-words text-gray-900">{message.content}</p>
+										</div>
+										<p class="mt-1 text-xs text-gray-500">{message.timestamp}</p>
 									</div>
-									<p class="mt-1 text-xs text-gray-500">{message.timestamp}</p>
 								</div>
-							</div>
-						{:else}
-							<div class="flex items-end justify-end gap-2">
-								<div class="min-w-0">
-									<div class="rounded-2xl bg-blue-600 px-3 py-2 lg:px-4">
-										<p class="text-sm break-words text-white">{message.content}</p>
+							{:else}
+								<div class="flex items-end justify-end gap-2">
+									<div class="min-w-0">
+										<div class="rounded-2xl bg-blue-600 px-3 py-2 lg:px-4">
+											<p class="text-sm break-words text-white">{message.content}</p>
+										</div>
+										<p class="mt-1 text-right text-xs text-gray-500">{message.timestamp}</p>
 									</div>
-									<p class="mt-1 text-right text-xs text-gray-500">{message.timestamp}</p>
 								</div>
-							</div>
-						{/if}
+							{/if}
+						</div>
 					</div>
-				</div>
-			{/each}
+				{/each}
+			</div>
 		</CardContent>
 
 		<!-- Message Input -->
