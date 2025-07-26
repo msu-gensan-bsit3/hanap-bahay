@@ -151,8 +151,7 @@
 
 	let showConversations = $state(true);
 	let showChat = $state(false);
-
-	let container = getContext("container") as () => HTMLElement;
+	let messagesContainer: HTMLElement | undefined = $state();
 
 	function selectConversation(conversation: (typeof conversations)[0]) {
 		selectedConversation = conversation;
@@ -188,10 +187,19 @@
 		// Update last message in conversation
 		selectedConversation.lastMessage = messageContent;
 		selectedConversation.timestamp = "now";
+
+		// Scroll to bottom after sending
+		setTimeout(scrollToBottom, 100);
 	}
 
 	function handleQuickResponse(message: string) {
 		sendMessage(message);
+	}
+
+	function scrollToBottom() {
+		if (messagesContainer) {
+			messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: "smooth" });
+		}
 	}
 </script>
 
@@ -201,7 +209,7 @@
 
 <div class="flex max-h-[calc(100dvh-6rem-1px)] gap-6 lg:max-h-[calc(100dvh-2rem)]">
 	<!-- Mobile: Show conversations or chat based on state -->
-	<div class="flex-1 @4xl:hidden">
+	<div class="w-full flex-1 @4xl:hidden">
 		{#if showConversations}
 			<ConversationsList
 				{conversations}
@@ -216,9 +224,12 @@
 				onSendMessage={sendMessage}
 				onBack={backToConversations}
 				isMobile={true}
+				bind:messagesContainer
 			/>
 			<!-- Mobile Quick Actions Floating Button -->
-			<MobileQuickActions {selectedConversation} onQuickResponse={handleQuickResponse} />
+			<!-- <div class="@4xl:hidden">
+				<MobileQuickActions {selectedConversation} onQuickResponse={handleQuickResponse} />
+			</div> -->
 		{/if}
 	</div>
 
@@ -233,7 +244,13 @@
 		/>
 
 		<!-- Chat Area -->
-		<ChatArea {selectedConversation} {messages} onSendMessage={sendMessage} isMobile={false} />
+		<ChatArea
+			{selectedConversation}
+			{messages}
+			onSendMessage={sendMessage}
+			isMobile={false}
+			bind:messagesContainer
+		/>
 
 		<!-- Quick Actions Sidebar -->
 		<QuickActions {selectedConversation} onQuickResponse={handleQuickResponse} />

@@ -19,7 +19,7 @@
 </script>
 
 <!-- Mobile Quick Actions Floating Button -->
-<div class="fixed right-4 bottom-20 z-50 lg:hidden">
+<div class="fixed bottom-42 right-8 z-50 flex flex-col items-end">
 	{#if showQuickActions}
 		<!-- Quick Actions Overlay -->
 		<div class="mb-4">
@@ -132,9 +132,8 @@
 	<!-- Floating Action Button -->
 	<Button
 		onclick={toggleQuickActions}
-		class="h-12 w-12 rounded-full shadow-lg {showQuickActions
-			? 'bg-gray-600 hover:bg-gray-700'
-			: ''}"
+		class="size-10 rounded-full opacity-40 shadow-lg transition-colors hover:opacity-100 
+		{showQuickActions ? 'bg-gray-600 opacity-100 hover:bg-gray-700' : ''}"
 		size="icon"
 	>
 		{#if showQuickActions}

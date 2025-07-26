@@ -2,6 +2,7 @@
 	import { Card, CardContent, CardHeader } from "$lib/components/ui/card";
 	import { Button } from "$lib/components/ui/button";
 	import { Input } from "$lib/components/ui/input";
+	import { MobileQuickActions } from ".";
 
 	interface props {
 		selectedConversation: {
@@ -23,6 +24,7 @@
 		onSendMessage: (message: string) => void;
 		onBack?: () => void;
 		isMobile?: boolean;
+		messagesContainer?: HTMLElement;
 	}
 
 	let {
@@ -31,18 +33,15 @@
 		onSendMessage,
 		onBack = () => {},
 		isMobile = false,
+		messagesContainer = $bindable(),
 	}: props = $props();
 
 	let newMessage = $state("");
-	let messagesContainer: HTMLElement | undefined = $state();
 
 	function sendMessage() {
 		if (newMessage.trim()) {
 			onSendMessage(newMessage.trim());
 			newMessage = "";
-
-			// Scroll to bottom after sending
-			setTimeout(scrollToBottom, 100);
 		}
 	}
 
@@ -53,10 +52,8 @@
 		}
 	}
 
-	function scrollToBottom() {
-		if (messagesContainer) {
-			messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: "smooth" });
-		}
+	function handleQuickResponse(message: string) {
+		onSendMessage(message);
 	}
 </script>
 
@@ -137,7 +134,7 @@
 		</CardHeader>
 
 		<!-- Messages Area -->
-		<CardContent class="flex-1 overflow-y-auto p-3  lg:p-4">
+		<CardContent class="relative flex-1 overflow-y-auto  p-3 lg:p-4">
 			<div bind:this={messagesContainer} class="h-full space-y-3 overflow-y-auto lg:space-y-4">
 				{#each messages as message (message.id)}
 					<div class="flex {message.isAgent ? 'justify-end' : 'justify-start'}">
@@ -169,6 +166,9 @@
 						</div>
 					</div>
 				{/each}
+			</div>
+			<div class="relative {isMobile ? '@4xl:hidden' : '@7xl:hidden'}">
+				<MobileQuickActions {selectedConversation} onQuickResponse={handleQuickResponse} />
 			</div>
 		</CardContent>
 
