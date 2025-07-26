@@ -31,7 +31,10 @@
 <div class="container mx-auto max-w-5xl px-4 py-8">
 	<!-- Back Button -->
 	<div class="mb-6">
-		<a href="/" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+		<a
+			href="/"
+			class="inline-flex items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900"
+		>
 			<ArrowLeft class="size-4" />
 			Back
 		</a>
@@ -68,7 +71,7 @@
 				landArea={property.landArea}
 				floorArea={property.floorArea}
 			/>
-			<AgentCard agent={listing.agent} role={data.role} />
+			<AgentCard agent={listing.agent} role={data.role} listingId={listing.id} />
 		</div>
 	</div>
 </div>

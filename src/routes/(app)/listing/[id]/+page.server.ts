@@ -1,8 +1,21 @@
-import { error } from "@sveltejs/kit";
-import type { PageServerLoad } from "./$types";
+import { error, redirect } from "@sveltejs/kit";
+import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
-import { eq } from "drizzle-orm";
-import { listing, listingQuery, user, userQuery } from "$lib/server/db/schema";
+import { and, eq, exists, inArray, sql } from "drizzle-orm";
+import {
+	agent,
+	buyer,
+	conversation,
+	conversationParticipant,
+	listing,
+	listingQuery,
+	offer,
+	offerConversation,
+	user,
+	userQuery,
+} from "$lib/server/db/schema";
+import z from "zod";
+import { fail } from "assert";
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const id = Number(params.id);
@@ -46,4 +59,101 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		user: locals.user,
 		role,
 	};
+};
+
+export const actions: Actions = {
+	sendMessage: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const res = z.object({ agentId: z.number(), listingId: z.number() }).safeParse({
+			agentId: Number(formData.get("agentId")),
+			listingId: Number(formData.get("listingId")),
+		});
+
+		if (res.error) {
+			return fail("invalid input");
+		}
+
+		if (!locals.user) {
+			return error(500, { message: "this shouldn't happen" });
+		}
+
+		const agentId = res.data.agentId;
+		const listingId = res.data.listingId;
+
+		const curAgent = await db.query.agent.findFirst({ where: eq(agent.id, agentId) });
+		if (!curAgent) {
+			return fail("agent id not found");
+		}
+
+		const subquery = db
+			.select({ conversationId: conversation.id })
+			.from(conversationParticipant)
+			.where(eq(conversationParticipant.userId, locals.user.id))
+			.innerJoin(conversation, eq(conversation.id, conversationParticipant.conversationId))
+			.as("subquery");
+
+		let [queryResult] = await db
+			.select({ conversation })
+			.from(conversationParticipant)
+			.where(
+				and(
+					exists(
+						db
+							.select()
+							.from(subquery)
+							.where(eq(conversationParticipant.conversationId, subquery.conversationId)),
+					),
+					eq(conversationParticipant.userId, agentId),
+				),
+			)
+			.innerJoin(conversation, eq(conversation.id, conversationParticipant.conversationId));
+
+		if (!queryResult) {
+			await db.transaction(async (db) => {
+				const createdConversation = (await db.insert(conversation).values({}).returning())[0];
+
+				await db
+					.insert(conversationParticipant)
+					.values({ conversationId: createdConversation.id, userId: locals.user!.id });
+
+				await db
+					.insert(conversationParticipant)
+					.values({ conversationId: createdConversation.id, userId: agentId });
+
+				queryResult = {
+					conversation: createdConversation,
+				};
+			});
+		}
+
+		await db.transaction(async (db) => {
+			let b = await db.query.buyer.findFirst({ where: eq(buyer.id, locals.user!.id) });
+			if (!b) {
+				const [res] = await db.insert(buyer).values({ id: locals.user!.id }).returning();
+				b = res;
+			}
+
+			let o = await db.query.offer.findFirst({
+				where: and(eq(offer.listingId, listingId), eq(offer.buyerId, b.id)),
+			});
+			if (!o) {
+				const [res] = await db.insert(offer).values({ buyerId: b.id, listingId }).returning();
+				o = res;
+			}
+			let res = await db.query.offerConversation.findFirst({
+				where: and(
+					eq(offerConversation.offerId, o.id),
+					eq(offerConversation.conversationId, queryResult.conversation.id),
+				),
+			});
+
+			if (!res) {
+				await db
+					.insert(offerConversation)
+					.values({ offerId: o.id, conversationId: queryResult.conversation.id });
+			}
+		});
+
+		return redirect(302, "/messages?convId=" + queryResult.conversation.id);
+	},
 };

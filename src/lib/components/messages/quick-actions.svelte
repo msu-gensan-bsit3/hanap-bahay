@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
 	import { Button } from "$lib/components/ui/button";
+	import type { Property } from "$lib/server/db/schema";
 
 	interface props {
 		selectedConversation?: {
-			property?: string;
+			properties: Property[];
 		};
 		onQuickResponse: (message: string) => void;
 	}
@@ -20,7 +21,7 @@
 			</CardHeader>
 			<CardContent class="space-y-3">
 				<div>
-					<h4 class="font-medium text-gray-900">{selectedConversation.property}</h4>
+					<h4 class="font-medium text-gray-900">{selectedConversation.properties.at(0)?.name}</h4>
 					<p class="text-sm text-gray-600">3 BR • 2 BA • 140 sqm</p>
 					<p class="mt-1 text-lg font-semibold text-blue-600">₱5,500,000</p>
 				</div>

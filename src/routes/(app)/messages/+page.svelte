@@ -2,49 +2,36 @@
 	import { page } from "$app/state";
 	import { ConversationsList, ChatArea, QuickActions } from "$lib/components/messages";
 	import { heights } from "$lib/states/heights.svelte";
-	import { hideFooter } from "$lib/utils";
+	import { formatTimeAgo, hideFooter } from "$lib/utils";
 
 	let { data } = $props();
 
-	// Sample data for conversations from a user's perspective (conversing with agents)
-	function formatTimeAgo(date: Date): string {
-		const now = new Date();
-		const diffMs = now.getTime() - date.getTime();
-		const diffMins = Math.floor(diffMs / (1000 * 60));
-		const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-		const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-		if (diffMins < 1) return "now";
-		if (diffMins < 60) return `${diffMins} min ago`;
-		if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-		return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
-	}
-
 	let sender = $derived(
-		data.userConversation.at(0)?.conversation.participants.find((v) => v.user.id === data.userId),
+		data.userConversations.at(0)?.participants.find((v) => v.user.id === data.userId),
 	);
 	let senderName = $derived(sender?.user.firstName + " " + sender?.user.lastName);
 
 	let conversations = $derived(
-		data.userConversation.map((v) => {
-			const receiver = v.conversation.participants.filter((v) => v.id !== data.userId)[0];
+		data.userConversations.map((v) => {
+			const receiver = v.participants.filter((v) => v.user.id !== data.userId)[0];
+			const s = v.participants.find((v) => v.user.id === data.userId);
 
-			const lastMessageObject = v.conversation.messages.at(v.conversation.messages.length - 1);
+			const lastMessageObject = v.messages.at(v.messages.length - 1);
 
-			const id = v.conversation.id;
+			const id = v.id;
 			const name = receiver.user.firstName + " " + receiver.user.lastName;
 			const lastMessage = lastMessageObject?.content;
 			const timestamp = lastMessageObject?.updatedAt
 				? formatTimeAgo(new Date(lastMessageObject.updatedAt))
 				: "";
 
-			const unread = v.conversation.messages.filter(
-				(msg) => v.lastReadAt && msg.updatedAt && new Date(msg.updatedAt) > new Date(v.lastReadAt),
+			const unread = v.messages.filter(
+				(msg) => s?.lastReadAt && msg.updatedAt && new Date(msg.updatedAt) > new Date(s.lastReadAt),
 			).length;
 
 			const avatar = receiver.user.profilePicture || "/no-profile.jpg";
 			const online = false;
-			const property = v.conversation.offer?.listing.property.name;
+			const properties = v.offerConversations.map((o) => o.offer.listing.property);
 
 			return {
 				id,
@@ -54,15 +41,19 @@
 				unread,
 				avatar,
 				online,
-				property,
+				properties,
 			};
 		}),
 	);
 
+	// svelte-ignore state_referenced_locally
+	let convId = $state(Number(page.url.searchParams.get("convId")) || conversations?.at(0)?.id);
+	let selectedConversation = $derived(conversations?.find((v) => v.id === convId));
+
 	let messages = $derived(
-		data.userConversation
-			.find((v) => v.conversation.id === selectedConversation?.id)
-			?.conversation.messages.map((v) => {
+		data.userConversations
+			.find((v) => v.id === selectedConversation?.id)
+			?.messages.map((v) => {
 				return {
 					id: v.id,
 					senderId: v.senderId,
@@ -71,12 +62,8 @@
 					content: v.content,
 					timestamp: formatTimeAgo(v.updatedAt),
 				};
-			})||[],
+			}) || [],
 	);
-
-	// svelte-ignore state_referenced_locally
-	let convId = $state(Number(page.url.searchParams.get("convId")) || conversations.at(0)?.id);
-	let selectedConversation = $derived(conversations.find((v) => v.id === convId));
 
 	let showConversations = $state(true);
 	let showChat = $state(false);
@@ -126,48 +113,55 @@
 </svelte:head>
 
 <div class="@container flex gap-6 p-4" style="height: calc(100dvh - {heights.header + 1}px);">
-	<!-- Mobile: Show conversations or chat based on state -->
-	<div class="w-full flex-1 @4xl:hidden">
-		{#if showConversations}
+	{#if conversations.length === 0}
+		<div class="flex w-full flex-col items-center justify-center gap-4 text-center">
+			<h2 class="text-2xl font-bold">No conversations yet</h2>
+			<p class="text-muted-foreground">Start a conversation with an agent to see it here.</p>
+		</div>
+	{:else}
+		<!-- Mobile: Show conversations or chat based on state -->
+		<div class="w-full flex-1 @4xl:hidden">
+			{#if showConversations}
+				<ConversationsList
+					{conversations}
+					{selectedConversation}
+					onSelectConversation={selectConversation}
+					isMobile={true}
+				/>
+			{:else if showChat}
+				<ChatArea
+					userId={1}
+					{messages}
+					{selectedConversation}
+					onSendMessage={sendMessage}
+					onBack={backToConversations}
+					isMobile={true}
+					bind:messagesContainer
+				/>
+			{/if}
+		</div>
+
+		<!-- Desktop: Show all panels side by side -->
+		<div class="hidden @4xl:flex @4xl:flex-1 @4xl:gap-4">
+			<!-- Conversations Sidebar -->
 			<ConversationsList
 				{conversations}
 				{selectedConversation}
 				onSelectConversation={selectConversation}
-				isMobile={true}
+				isMobile={false}
 			/>
-		{:else if showChat}
+
+			<!-- Chat Area -->
 			<ChatArea
-				userId={1}
 				{messages}
 				{selectedConversation}
 				onSendMessage={sendMessage}
-				onBack={backToConversations}
-				isMobile={true}
+				isMobile={false}
 				bind:messagesContainer
 			/>
-		{/if}
-	</div>
 
-	<!-- Desktop: Show all panels side by side -->
-	<div class="hidden @4xl:flex @4xl:flex-1 @4xl:gap-4">
-		<!-- Conversations Sidebar -->
-		<ConversationsList
-			{conversations}
-			{selectedConversation}
-			onSelectConversation={selectConversation}
-			isMobile={false}
-		/>
-
-		<!-- Chat Area -->
-		<ChatArea
-			{messages}
-			{selectedConversation}
-			onSendMessage={sendMessage}
-			isMobile={false}
-			bind:messagesContainer
-		/>
-
-		<!-- Quick Actions Sidebar -->
-		<QuickActions {selectedConversation} onQuickResponse={handleQuickResponse} />
-	</div>
+			<!-- Quick Actions Sidebar -->
+			<QuickActions {selectedConversation} onQuickResponse={handleQuickResponse} />
+		</div>
+	{/if}
 </div>

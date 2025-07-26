@@ -2,6 +2,7 @@
 	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
 	import { Input } from "$lib/components/ui/input";
 	import { Badge } from "$lib/components/ui/badge";
+	import type { Property } from "$lib/server/db/schema";
 
 	interface props {
 		conversations: {
@@ -12,7 +13,7 @@
 			unread: number;
 			avatar: string;
 			online: boolean;
-			property: string | undefined;
+			properties: Property[];
 		}[];
 	}
 	interface props {
@@ -33,7 +34,7 @@
 		conversations.filter(
 			(conv) =>
 				conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				conv.property?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				// conv.property?.toLowerCase().includes(searchQuery.toLowerCase()) ||
 				conv.lastMessage?.toLowerCase().includes(searchQuery.toLowerCase()),
 		),
 	);
@@ -104,7 +105,7 @@
 									</div>
 								</div>
 								<p class="mb-1 truncate text-xs font-medium text-blue-600">
-									{conversation.property}
+									{conversation.properties.at(0)?.name}
 								</p>
 								<p class="truncate text-sm text-gray-600">
 									{conversation.lastMessage}

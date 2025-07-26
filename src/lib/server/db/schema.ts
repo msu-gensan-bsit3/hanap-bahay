@@ -270,7 +270,6 @@ export const address = pgTable("address", {
 export const conversation = pgTable("conversation", {
 	id: serial().primaryKey(),
 	title: varchar(),
-	offerId: integer().references(() => offer.id),
 	type: varchar({ enum: ["direct", "group"] })
 		.notNull()
 		.default("direct"),
@@ -297,6 +296,19 @@ export const conversationQuery = {
 	},
 } as const;
 
+export const offerConversation = pgTable(
+	"offer_conversation",
+	{
+		conversationId: integer()
+			.notNull()
+			.references(() => conversation.id, { onDelete: "cascade" }),
+		offerId: integer()
+			.notNull()
+			.references(() => offer.id, { onDelete: "cascade" }),
+	},
+	(t) => [primaryKey({ columns: [t.conversationId, t.offerId] })],
+);
+
 export const conversationParticipant = pgTable(
 	"conversation_participant",
 	{
@@ -308,7 +320,7 @@ export const conversationParticipant = pgTable(
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
 		joinedAt: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
-		lastReadAt: timestamp({ withTimezone: true, mode: "date" }),
+		lastReadAt: timestamp({ withTimezone: true, mode: "date" }).defaultNow(),
 		role: varchar({ enum: ["admin", "member"] })
 			.notNull()
 			.default("member"),
@@ -394,7 +406,7 @@ export const UserRelation = relations(user, ({ one, many }) => ({
 	agent: one(agent),
 	buyer: one(buyer),
 	seller: one(seller),
-	conversationParticipants: many(conversationParticipant),
+	conversationParticipants: many(conversationParticipant, { relationName: "cpu" }),
 	sentMessages: many(message),
 	messageReactions: many(messageReaction),
 	session: many(session),
@@ -445,7 +457,7 @@ export const ListingRelation = relations(listing, ({ one, many }) => ({
 export const OfferRelation = relations(offer, ({ one, many }) => ({
 	listing: one(listing, { fields: [offer.listingId], references: [listing.id] }),
 	buyer: one(buyer, { fields: [offer.buyerId], references: [buyer.id] }),
-	conversations: many(conversation),
+	offerConversations: many(offerConversation, { relationName: "oco" }),
 }));
 
 export const TransactionRelation = relations(transaction, ({ one }) => ({
@@ -473,12 +485,22 @@ export const AddressRelation = relations(address, ({ many }) => ({
 }));
 
 // Messaging relations
-export const ConversationRelation = relations(conversation, ({ many, one }) => ({
-	participants: many(conversationParticipant),
+export const ConversationRelation = relations(conversation, ({ many }) => ({
+	participants: many(conversationParticipant, { relationName: "cpp" }),
 	messages: many(message),
+	offerConversations: many(offerConversation, { relationName: "occ" }),
+}));
+
+export const OfferConversationRelation = relations(offerConversation, ({ one }) => ({
 	offer: one(offer, {
-		fields: [conversation.offerId],
+		fields: [offerConversation.offerId],
 		references: [offer.id],
+		relationName: "oco",
+	}),
+	conversation: one(conversation, {
+		fields: [offerConversation.conversationId],
+		references: [conversation.id],
+		relationName: "occ",
 	}),
 }));
 
@@ -486,10 +508,12 @@ export const ConversationParticipantRelation = relations(conversationParticipant
 	conversation: one(conversation, {
 		fields: [conversationParticipant.conversationId],
 		references: [conversation.id],
+		relationName: "cpp",
 	}),
 	user: one(user, {
 		fields: [conversationParticipant.userId],
 		references: [user.id],
+		relationName: "cpu",
 	}),
 }));
 
@@ -506,7 +530,6 @@ export const MessageRelation = relations(message, ({ one, many }) => ({
 		fields: [message.replyToId],
 		references: [message.id],
 	}),
-	replies: many(message),
 	reactions: many(messageReaction),
 }));
 

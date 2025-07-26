@@ -1,32 +1,35 @@
 import { redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
-import { conversationParticipant, conversationQuery } from "$lib/server/db/schema";
-import { eq } from "drizzle-orm";
+import { conversation, conversationParticipant, conversationQuery } from "$lib/server/db/schema";
+import { eq, exists } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
 		return redirect(302, "/");
 	}
 
-	const userConversation = await db.query.conversationParticipant.findMany({
-		columns: { conversationId: false, userId: false },
+	const subquery = db
+		.select({ conversationId: conversation.id })
+		.from(conversationParticipant)
+		.where(eq(conversationParticipant.userId, locals.user.id))
+		.innerJoin(conversation, eq(conversation.id, conversationParticipant.conversationId))
+		.as("subquery");
+
+	const userConversations = await db.query.conversation.findMany({
+		where: exists(db.select().from(subquery).where(eq(conversation.id, subquery.conversationId))),
 		with: {
-			conversation: {
-				columns: { offerId: false },
+			...conversationQuery.with,
+			offerConversations: {
+				columns: {},
 				with: {
-					...conversationQuery.with,
 					offer: {
 						columns: {},
 						with: {
 							listing: {
 								columns: {},
 								with: {
-									property: {
-										columns: {
-											name: true,
-										},
-									},
+									property: true,
 								},
 							},
 						},
@@ -34,12 +37,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 				},
 			},
 		},
-		where: eq(conversationParticipant.userId, locals.user.id),
 	});
 
 	return {
-		userConversation,
-		userId: locals.user.id
+		userConversations,
+		userId: locals.user.id,
 	};
 };
 

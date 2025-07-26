@@ -3,14 +3,18 @@
 	import { Button } from "$lib/components/ui/button";
 	import type { ClientListing } from "$lib/types";
 	import { Mail, Phone, MessageCircle } from "@lucide/svelte";
-	import { goto } from "$app/navigation";
+	import { moreEnhance } from "$lib/states/enhance.svelte";
 
 	interface props {
 		agent: ClientListing["agent"];
+		listingId: number;
 		role: "anon" | "buyer" | "seller" | "agent";
 	}
 
-	let { agent, role }: props = $props();
+	let { agent, role, listingId }: props = $props();
+
+	const sendMessage = moreEnhance({ reset: false });
+	const { enhance, submitting } = $derived(sendMessage);
 </script>
 
 {#if agent}
@@ -60,15 +64,14 @@
 				</div>
 			</div>
 			{#if role === "buyer"}
-				<Button
-					variant="outline"
-					size="sm"
-					class="mt-5"
-					onclick={() => goto("/messages?convId=" + agent.user.id)}
-				>
-					<MessageCircle class="mr-2 size-4" />
-					Send Message
-				</Button>
+				<form method="POST" action="?/sendMessage" use:enhance>
+					<input type="hidden" name="agentId" value={agent.user.id} />
+					<input type="hidden" name="listingId" value={listingId} />
+					<Button variant="outline" size="sm" class="mt-5" disabled={submitting} type="submit">
+						<MessageCircle class="mr-2 size-4" />
+						Send Message
+					</Button>
+				</form>
 			{/if}
 		</CardContent>
 	</Card>
