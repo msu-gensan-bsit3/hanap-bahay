@@ -1,14 +1,6 @@
 <script lang="ts">
 	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
-	import {
-		AirVent,
-		Wifi,
-		TreePine,
-		Shield,
-		Home,
-		Shirt,
-		type IconProps,
-	} from "@lucide/svelte";
+	import { AirVent, Wifi, TreePine, Shield, Home, Shirt, type IconProps } from "@lucide/svelte";
 	import type { Component } from "svelte";
 
 	export let features: { name: string }[];
@@ -47,20 +39,3 @@
 		</CardContent>
 	</Card>
 {/if}
-<style>
-	/* Smooth transitions for cards */
-	:global(.property-card) {
-		transition: box-shadow 0.2s ease-in-out;
-	}
-
-	:global(.property-card:hover) {
-		box-shadow:
-			0 10px 25px -5px rgba(0, 0, 0, 0.1),
-			0 4px 6px -2px rgba(0, 0, 0, 0.05);
-	}
-
-	/* Feature icon styling */
-	:global(.feature-icon) {
-		flex-shrink: 0;
-	}
-</style>

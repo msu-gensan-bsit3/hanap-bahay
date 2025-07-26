@@ -19,15 +19,3 @@
 		</CardContent>
 	</Card>
 {/if}
-<style>
-	/* Smooth transitions for cards */
-	:global(.property-card) {
-		transition: box-shadow 0.2s ease-in-out;
-	}
-
-	:global(.property-card:hover) {
-		box-shadow:
-			0 10px 25px -5px rgba(0, 0, 0, 0.1),
-			0 4px 6px -2px rgba(0, 0, 0, 0.05);
-	}
-</style>
