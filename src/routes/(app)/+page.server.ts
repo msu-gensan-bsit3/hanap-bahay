@@ -12,6 +12,7 @@ export const load: PageServerLoad = async () => {
 			agent: agentQuery,
 			property: { ...propertyQuery, columns: { ...propertyQuery.columns, sellerId: false } },
 		},
+		limit: 10,
 	});
 
 	return {
@@ -22,7 +23,7 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
 	askAi: async ({ request }) => {
 		const formData = await request.formData();
-		
+
 		const res = askAiSchema.safeParse(Object.fromEntries(formData));
 		if (!res.success) {
 			return fail(400, { type: "askAi", msg: "invalid data" });
@@ -30,7 +31,7 @@ export const actions: Actions = {
 
 		const aiMessage = await chatbotSendMessage(res.data.chatInput, res.data.sessionId);
 		if (aiMessage.err) {
-			return fail(400, {type: 'askAi', msg: aiMessage.err})
+			return fail(400, { type: "askAi", msg: aiMessage.err });
 		}
 
 		return { type: "askAi", msg: aiMessage.msg! };

@@ -396,6 +396,7 @@ export const UserRelation = relations(user, ({ one, many }) => ({
 	conversationParticipants: many(conversationParticipant),
 	sentMessages: many(message),
 	messageReactions: many(messageReaction),
+	session: many(session),
 }));
 
 export const AgentRelation = relations(agent, ({ one, many }) => ({
@@ -512,6 +513,10 @@ export const MessageReactionRelation = relations(messageReaction, ({ one }) => (
 		fields: [messageReaction.userId],
 		references: [user.id],
 	}),
+}));
+
+export const UserSessionRelation = relations(session, ({ one }) => ({
+	user: one(user, { fields: [session.id], references: [user.id] }),
 }));
 
 export type User = typeof user.$inferSelect;
