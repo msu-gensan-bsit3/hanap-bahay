@@ -12,6 +12,7 @@ import {
 	timestamp,
 	uniqueIndex,
 	varchar,
+	type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { propertyCategory } from "../services/property/type";
 
@@ -262,11 +263,136 @@ export const address = pgTable("address", {
 	province: varchar().notNull(),
 });
 
-export const UserRelation = relations(user, ({ one }) => ({
+// Messaging tables
+export const conversation = pgTable("conversation", {
+	id: serial().primaryKey(),
+	title: varchar(),
+	type: varchar({ enum: ["direct", "group"] })
+		.notNull()
+		.default("direct"),
+	createdAt: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
+	updatedAt: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
+});
+export const conversationQuery = {
+	with: {
+		participants: {
+			columns: { conversationId: false, userId: false },
+			with: {
+				user: userQuery,
+			},
+		},
+		messages: {
+			limit: 1,
+			columns: { conversationId: false },
+			with: {
+				reactions: {
+					columns: { messageId: false },
+				},
+			},
+		},
+	},
+} as const;
+
+export const conversationParticipant = pgTable(
+	"conversation_participant",
+	{
+		id: serial().primaryKey(),
+		conversationId: integer()
+			.notNull()
+			.references(() => conversation.id, { onDelete: "cascade" }),
+		userId: integer()
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		joinedAt: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
+		lastReadAt: timestamp({ withTimezone: true, mode: "date" }),
+		role: varchar({ enum: ["admin", "member"] })
+			.notNull()
+			.default("member"),
+	},
+	(t) => [
+		index("idx_conversation_participant_conversation").on(t.conversationId),
+		index("idx_conversation_participant_user").on(t.userId),
+		uniqueIndex("idx_conversation_participant_unique").on(t.conversationId, t.userId),
+	],
+);
+export const conversationParticipantQuery = {
+	columns: { conversationId: false, userId: false },
+	with: {
+		user: userQuery,
+		conversation: conversationQuery,
+	},
+} as const;
+
+export const message = pgTable(
+	"message",
+	{
+		id: serial().primaryKey(),
+		conversationId: integer()
+			.notNull()
+			.references(() => conversation.id, { onDelete: "cascade" }),
+		senderId: integer()
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		content: text().notNull(),
+		messageType: varchar({ enum: ["text", "image", "file", "system"] })
+			.notNull()
+			.default("text"),
+		attachmentUrl: varchar(),
+		replyToId: integer().references((): AnyPgColumn => message.id),
+		createdAt: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
+		updatedAt: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
+		isEdited: text({ enum: ["true", "false"] })
+			.notNull()
+			.default("false"),
+		isDeleted: text({ enum: ["true", "false"] })
+			.notNull()
+			.default("false"),
+	},
+	(t) => [
+		index("idx_message_conversation").on(t.conversationId),
+		index("idx_message_sender").on(t.senderId),
+		index("idx_message_created_at").on(t.createdAt),
+	],
+);
+
+export const messageReaction = pgTable(
+	"message_reaction",
+	{
+		id: serial().primaryKey(),
+		messageId: integer()
+			.notNull()
+			.references(() => message.id, { onDelete: "cascade" }),
+		userId: integer()
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		emoji: varchar().notNull(),
+		createdAt: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
+	},
+	(t) => [
+		index("idx_message_reaction_message").on(t.messageId),
+		uniqueIndex("idx_message_reaction_unique").on(t.messageId, t.userId, t.emoji),
+	],
+);
+export const messageQuery = {
+	columns: {
+		senderId: false,
+	},
+	with: {
+		reactions: {
+			columns: { messageId: false },
+		},
+		sender: userQuery,
+	},
+} as const;
+
+export const UserRelation = relations(user, ({ one, many }) => ({
 	address: one(address, { fields: [user.addressId], references: [address.id] }),
 	agent: one(agent),
 	buyer: one(buyer),
 	seller: one(seller),
+	conversationParticipants: many(conversationParticipant),
+	sentMessages: many(message),
+	messageReactions: many(messageReaction),
 }));
 
 export const AgentRelation = relations(agent, ({ one, many }) => ({
@@ -340,7 +466,56 @@ export const AddressRelation = relations(address, ({ many }) => ({
 	properties: many(property),
 }));
 
+// Messaging relations
+export const ConversationRelation = relations(conversation, ({ many }) => ({
+	participants: many(conversationParticipant),
+	messages: many(message),
+}));
+
+export const ConversationParticipantRelation = relations(conversationParticipant, ({ one }) => ({
+	conversation: one(conversation, {
+		fields: [conversationParticipant.conversationId],
+		references: [conversation.id],
+	}),
+	user: one(user, {
+		fields: [conversationParticipant.userId],
+		references: [user.id],
+	}),
+}));
+
+export const MessageRelation = relations(message, ({ one, many }) => ({
+	conversation: one(conversation, {
+		fields: [message.conversationId],
+		references: [conversation.id],
+	}),
+	sender: one(user, {
+		fields: [message.senderId],
+		references: [user.id],
+	}),
+	replyTo: one(message, {
+		fields: [message.replyToId],
+		references: [message.id],
+	}),
+	replies: many(message),
+	reactions: many(messageReaction),
+}));
+
+export const MessageReactionRelation = relations(messageReaction, ({ one }) => ({
+	message: one(message, {
+		fields: [messageReaction.messageId],
+		references: [message.id],
+	}),
+	user: one(user, {
+		fields: [messageReaction.userId],
+		references: [user.id],
+	}),
+}));
+
 export type User = typeof user.$inferSelect;
 export type Session = typeof session.$inferSelect;
 export type Address = typeof address.$inferSelect;
 export type Property = typeof property.$inferSelect;
+export type Conversation = typeof conversation.$inferSelect;
+export type ConversationParticipant = typeof conversationParticipant.$inferSelect;
+export type Message = typeof message.$inferSelect;
+export type MessageReaction = typeof messageReaction.$inferSelect;
