@@ -3,6 +3,7 @@
 	import { Button } from "$lib/components/ui/button";
 	import { Input } from "$lib/components/ui/input";
 	import { MobileQuickActions } from ".";
+	import { Info, Paperclip, Phone, Send } from "@lucide/svelte";
 
 	interface props {
 		selectedConversation: {
@@ -96,39 +97,13 @@
 				<div class="flex gap-2">
 					<!-- TODO: Copy phone number -->
 					<Button variant="outline" size="sm" class="hidden sm:flex">
-						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-							/>
-						</svg>
+						<Phone />
 						<span class="ml-1 hidden lg:inline">Call</span>
 					</Button>
-					<Button variant="outline" size={isMobile ? "icon" : "sm"}>
-						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-							/>
-						</svg>
-						{#if !isMobile}<span class="ml-1 hidden lg:inline">Info</span>{/if}
+					<Button variant="outline" size="sm">
+						<Info />
+						<span class="ml-1 hidden lg:inline">Info</span>
 					</Button>
-					{#if isMobile}
-						<Button variant="outline" size="icon">
-							<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-								/>
-							</svg>
-						</Button>
-					{/if}
 				</div>
 			</div>
 		</CardHeader>
@@ -176,14 +151,7 @@
 		<div class="border-t p-3 lg:p-4">
 			<div class="flex gap-2 lg:gap-3">
 				<Button variant="outline" size="icon" class="hidden shrink-0 sm:flex">
-					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-						/>
-					</svg>
+					<Paperclip />
 				</Button>
 				<div class="flex-1">
 					<Input
@@ -195,14 +163,7 @@
 					/>
 				</div>
 				<Button onclick={sendMessage} disabled={!newMessage.trim()} class="shrink-0">
-					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-						/>
-					</svg>
+					<Send />
 					<span class="ml-1 hidden sm:inline">Send</span>
 				</Button>
 			</div>
