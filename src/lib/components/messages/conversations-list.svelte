@@ -7,16 +7,16 @@
 		conversations: {
 			id: number;
 			name: string;
-			lastMessage: string;
+			lastMessage: string | undefined;
 			timestamp: string;
 			unread: number;
 			avatar: string;
 			online: boolean;
-			property: string;
+			property: string | undefined;
 		}[];
 	}
 	interface props {
-		selectedConversation: props["conversations"][0];
+		selectedConversation?: props["conversations"][0];
 		onSelectConversation: (conversation: props["conversations"][0]) => void;
 		isMobile: boolean;
 	}
@@ -33,15 +33,15 @@
 		conversations.filter(
 			(conv) =>
 				conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				conv.property.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()),
+				conv.property?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				conv.lastMessage?.toLowerCase().includes(searchQuery.toLowerCase()),
 		),
 	);
 
 	let totalUnread = $derived(conversations.reduce((sum, conv) => sum + conv.unread, 0));
 </script>
 
-<div class="h-full {isMobile ? "w-full" : "flex w-85 flex-col"}">
+<div class="h-full {isMobile ? 'w-full' : 'flex w-85 flex-col'}">
 	<Card class="flex h-full flex-col gap-0 py-0 pt-6">
 		<CardHeader class="border-b pb-4">
 			<div class="flex items-center justify-between">
@@ -65,7 +65,7 @@
 			<div class="divide-y {!isMobile ? 'border-b' : ''}">
 				{#each filteredConversations as conversation (conversation.id)}
 					<button
-						class="w-full p-4 text-left transition-colors hover:bg-gray-50 {selectedConversation.id ===
+						class="w-full p-4 text-left transition-colors hover:bg-gray-50 {selectedConversation?.id ===
 							conversation.id && !isMobile
 							? 'border-r-2 border-blue-500 bg-blue-50'
 							: ''} active:bg-gray-100"

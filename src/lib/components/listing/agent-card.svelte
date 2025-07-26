@@ -3,6 +3,7 @@
 	import { Button } from "$lib/components/ui/button";
 	import type { ClientListing } from "$lib/types";
 	import { Mail, Phone, MessageCircle } from "@lucide/svelte";
+	import { goto } from "$app/navigation";
 
 	interface props {
 		agent: ClientListing["agent"];
@@ -59,7 +60,12 @@
 				</div>
 			</div>
 			{#if role === "buyer"}
-				<Button variant="outline" size="sm" class="mt-5">
+				<Button
+					variant="outline"
+					size="sm"
+					class="mt-5"
+					onclick={() => goto("/messages?convId=" + agent.user.id)}
+				>
 					<MessageCircle class="mr-2 size-4" />
 					Send Message
 				</Button>

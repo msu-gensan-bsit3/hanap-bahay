@@ -5,8 +5,8 @@
 	import type { Component } from "svelte";
 
 	interface props {
-		selectedConversation: {
-			property: string;
+		selectedConversation?: {
+			property?: string;
 		};
 		onQuickResponse: (message: string) => void;
 	}
@@ -28,7 +28,7 @@
 			<Card class="w-72 py-0 shadow-lg">
 				<CardContent class="space-y-3 p-4">
 					<div class="border-b pb-3">
-						<h4 class="text-sm font-medium text-gray-900">{selectedConversation.property}</h4>
+						<h4 class="text-sm font-medium text-gray-900">{selectedConversation?.property}</h4>
 						<p class="text-xs text-gray-600">3 BR • 2 BA • 140 sqm</p>
 						<p class="mt-1 text-sm font-semibold text-blue-600">₱5,500,000</p>
 					</div>

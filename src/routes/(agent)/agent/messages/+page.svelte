@@ -219,6 +219,7 @@
 			/>
 		{:else if showChat}
 			<ChatArea
+				userId={1}
 				{selectedConversation}
 				{messages}
 				onSendMessage={sendMessage}

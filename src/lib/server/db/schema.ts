@@ -270,6 +270,7 @@ export const address = pgTable("address", {
 export const conversation = pgTable("conversation", {
 	id: serial().primaryKey(),
 	title: varchar(),
+	offerId: integer().references(() => offer.id),
 	type: varchar({ enum: ["direct", "group"] })
 		.notNull()
 		.default("direct"),
@@ -285,7 +286,7 @@ export const conversationQuery = {
 			},
 		},
 		messages: {
-			limit: 1,
+			// limit: 1,
 			columns: { conversationId: false },
 			with: {
 				reactions: {
@@ -357,6 +358,17 @@ export const message = pgTable(
 		index("idx_message_created_at").on(t.createdAt),
 	],
 );
+export const messageQuery = {
+	columns: {
+		senderId: false,
+	},
+	with: {
+		reactions: {
+			columns: { messageId: false },
+		},
+		sender: userQuery,
+	},
+} as const;
 
 export const messageReaction = pgTable(
 	"message_reaction",
@@ -376,17 +388,6 @@ export const messageReaction = pgTable(
 		uniqueIndex("idx_message_reaction_unique").on(t.messageId, t.userId, t.emoji),
 	],
 );
-export const messageQuery = {
-	columns: {
-		senderId: false,
-	},
-	with: {
-		reactions: {
-			columns: { messageId: false },
-		},
-		sender: userQuery,
-	},
-} as const;
 
 export const UserRelation = relations(user, ({ one, many }) => ({
 	address: one(address, { fields: [user.addressId], references: [address.id] }),
@@ -441,9 +442,10 @@ export const ListingRelation = relations(listing, ({ one, many }) => ({
 	offers: many(offer),
 }));
 
-export const OfferRelation = relations(offer, ({ one }) => ({
+export const OfferRelation = relations(offer, ({ one, many }) => ({
 	listing: one(listing, { fields: [offer.listingId], references: [listing.id] }),
 	buyer: one(buyer, { fields: [offer.buyerId], references: [buyer.id] }),
+	conversations: many(conversation),
 }));
 
 export const TransactionRelation = relations(transaction, ({ one }) => ({
@@ -471,9 +473,13 @@ export const AddressRelation = relations(address, ({ many }) => ({
 }));
 
 // Messaging relations
-export const ConversationRelation = relations(conversation, ({ many }) => ({
+export const ConversationRelation = relations(conversation, ({ many, one }) => ({
 	participants: many(conversationParticipant),
 	messages: many(message),
+	offer: one(offer, {
+		fields: [conversation.offerId],
+		references: [offer.id],
+	}),
 }));
 
 export const ConversationParticipantRelation = relations(conversationParticipant, ({ one }) => ({
