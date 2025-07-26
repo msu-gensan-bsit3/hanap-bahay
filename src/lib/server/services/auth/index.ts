@@ -2,7 +2,7 @@ import { SessionDuration } from "$lib/opts";
 import { db } from "$lib/server/db";
 import type { Session } from "$lib/server/db/schema";
 import * as table from "$lib/server/db/schema";
-import { days } from "$lib/utils";
+import { days, omit } from "$lib/utils";
 import { sha256 } from "@oslojs/crypto/sha2";
 import { encodeBase64url, encodeHexLowerCase } from "@oslojs/encoding";
 import type { RequestEvent } from "@sveltejs/kit";
@@ -58,7 +58,7 @@ export async function validateSessionToken(token: string) {
 			.where(eq(table.session.id, session.id));
 	}
 
-	return { session, user };
+	return { session, user: omit(user, "passwordHash") };
 }
 
 export type SessionValidationResult = Awaited<ReturnType<typeof validateSessionToken>>;
