@@ -38,20 +38,20 @@
 	}
 </script>
 
-<div class="mb-3 flex items-start justify-between">
+<div class="mb-3 flex items-start justify-between gap-6">
 	<div>
 		<div class="mb-2 flex items-center gap-3">
 			<h1 class="text-3xl font-bold">
 				{formatPrice(price)}
 			</h1>
-			<Badge variant={listingType} class="text-sm font-semibold capitalize">
-				{listingType}
-			</Badge>
 		</div>
-		<p class="mb-3 text-xl text-gray-600">
-			{propertyName}
+		<div class="mb-3 text-xl text-gray-600">
+			<h1>{propertyName}</h1>
+			<Badge variant={listingType}>
+				For {toTitleCase(listingType)}
+			</Badge>
 			<Badge variant={getCategoryVariant(category)}>{toTitleCase(category)}</Badge>
-		</p>
+		</div>
 	</div>
 	<div class="flex gap-2">
 		<!-- <Button variant="ghost" size="icon">

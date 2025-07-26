@@ -1,9 +1,15 @@
 <script lang="ts">
 	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
+	import { Button } from "$lib/components/ui/button";
 	import type { ClientListing } from "$lib/types";
-	import { Mail, Phone } from "@lucide/svelte";
+	import { Mail, Phone, MessageCircle } from "@lucide/svelte";
 
-	export let agent: ClientListing["agent"];
+	interface props {
+		agent: ClientListing["agent"];
+		role: "anon" | "buyer" | "seller" | "agent";
+	}
+
+	let { agent, role }: props = $props();
 </script>
 
 {#if agent}
@@ -12,7 +18,7 @@
 			<CardTitle>Listed By</CardTitle>
 		</CardHeader>
 		<CardContent>
-			<div class="grid grid-cols-1 gap-7 min-[500px]:grid-cols-2">
+			<div class="grid grid-cols-1 gap-7 min-[700px]:grid-cols-2">
 				<div class="flex items-center gap-3">
 					<div class="h-12 w-12 overflow-hidden rounded-full bg-gray-200">
 						{#if agent.user.profilePicture}
@@ -52,6 +58,12 @@
 					{/if}
 				</div>
 			</div>
+			{#if role === "buyer"}
+				<Button variant="outline" size="sm" class="mt-5">
+					<MessageCircle class="mr-2 size-4" />
+					Send Message
+				</Button>
+			{/if}
 		</CardContent>
 	</Card>
 {/if}

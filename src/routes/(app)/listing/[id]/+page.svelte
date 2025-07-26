@@ -1,5 +1,6 @@
 <script lang="ts">
 	import PropertyImageGallery from "$lib/components/property-image-gallery.svelte";
+	import { ArrowLeft } from "@lucide/svelte";
 	import {
 		Header,
 		Specs,
@@ -8,39 +9,34 @@
 		FeaturesCard,
 		TagsCard,
 		InfoCard,
-		AgentCard
+		AgentCard,
 	} from "$lib/components/listing";
 
 	let { data } = $props();
-	const { listing } = data;
-	const property = listing.property;
 
-	const location = property.location as { longitude: number; latitude: number } | undefined;
+	const { listing } = $derived(data);
+	const property = $derived(listing.property);
 
-	const address = property.address;
-	const fullAddress = [
-		address.street,
-		address.barangay,
-		address.city,
-		address.province,
-		"Philippines",
-	]
-		.filter(Boolean)
-		.join(", ");
-
-	property.photosUrl = [
-		property.photosUrl[0],
-		{ url: "/no-image.jpg" },
-		property.photosUrl[0],
-		property.photosUrl[0],
-		{ url: "/no-image.jpg" },
-		{ url: "/no-image.jpg" },
-		property.photosUrl[0],
-		property.photosUrl[0],
-	];
+	const location = $derived(
+		property.location as { longitude: number; latitude: number } | undefined,
+	);
+	const address = $derived(property.address);
+	const fullAddress = $derived(
+		[address.street, address.barangay, address.city, address.province, "Philippines"]
+			.filter(Boolean)
+			.join(", "),
+	);
 </script>
 
 <div class="container mx-auto max-w-5xl px-4 py-8">
+	<!-- Back Button -->
+	<div class="mb-6">
+		<a href="/" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+			<ArrowLeft class="size-4" />
+			Back
+		</a>
+	</div>
+
 	<Header
 		propertyName={property.name}
 		price={property.price}
@@ -72,7 +68,7 @@
 				landArea={property.landArea}
 				floorArea={property.floorArea}
 			/>
-			<AgentCard agent={listing.agent} />
+			<AgentCard agent={listing.agent} role={data.role} />
 		</div>
 	</div>
 </div>
