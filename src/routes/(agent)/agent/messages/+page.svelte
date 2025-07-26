@@ -226,10 +226,6 @@
 				isMobile={true}
 				bind:messagesContainer
 			/>
-			<!-- Mobile Quick Actions Floating Button -->
-			<!-- <div class="@4xl:hidden">
-				<MobileQuickActions {selectedConversation} onQuickResponse={handleQuickResponse} />
-			</div> -->
 		{/if}
 	</div>
 

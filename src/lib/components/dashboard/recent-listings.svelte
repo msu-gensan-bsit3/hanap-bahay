@@ -60,7 +60,9 @@
 		<div>
 			{#each filteredListings as listing}
 				<div class="h-[2px] w-full bg-black/10"></div>
-				<div class="flex h-23 items-center gap-4 p-4">
+				<button
+					class="flex h-23 w-full cursor-pointer items-center gap-4 p-4 text-start transition-colors hover:bg-black/5"
+				>
 					<!-- svelte-ignore hydration_attribute_changed -->
 					<img src={listing.image} alt={listing.title} class="size-14 rounded-lg object-cover" />
 					<div class="flex-1">
@@ -71,7 +73,7 @@
 					<Badge class={getStatusColor(listing.status)}>
 						{listing.status}
 					</Badge>
-				</div>
+				</button>
 			{/each}
 			<div class="h-[1px] w-full bg-black/10"></div>
 		</div>

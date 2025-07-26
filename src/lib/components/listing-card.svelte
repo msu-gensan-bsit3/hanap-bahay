@@ -38,7 +38,7 @@
 			<Separator orientation="vertical" />
 			<span class="font-semibold">{ property.bathrooms } <span class="font-normal">ba</span></span>
 			<Separator orientation="vertical" />
-			<span class="font-semibold">{ property.landArea } <span class="font-normal">sqft</span></span>
+			<span class="font-semibold">{ property.landArea } <span class="font-normal">sqm</span></span>
 			<Separator orientation="vertical" />
 			<span>Active</span>
 		</div>
