@@ -2,7 +2,7 @@ import { error, redirect, type Handle } from "@sveltejs/kit";
 import * as auth from "$lib/server/services/auth";
 import { db } from "$lib/server/db";
 import { eq } from "drizzle-orm";
-import { agent } from "$lib/server/db/schema";
+import { agent, user } from "$lib/server/db/schema";
 
 const protectedRoutes = ["admin", "(agent)"];
 
@@ -23,17 +23,22 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		return error(404);
 	}
 
+	if (sessionToken) {
+		const res = await auth.validateSessionToken(sessionToken);
+
+		event.locals.user = res.user;
+		event.locals.session = res.session;
+
+		if (!res.user) {
+			auth.deleteSessionTokenCookie(event);
+		}
+	}
+
 	if (validateRoute(route)) {
-		if (!sessionToken) {
+		if (!event.locals.user) {
 			event.locals.user = null;
 			event.locals.session = null;
-			return redirect(302, "/signin");
-		}
 
-		const { session, user } = await auth.validateSessionToken(sessionToken);
-
-		if (!session) {
-			auth.deleteSessionTokenCookie(event);
 			return redirect(302, "/signin");
 		}
 
@@ -44,9 +49,6 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 				return redirect(302, "/");
 			}
 		}
-
-		event.locals.user = user;
-		event.locals.session = session;
 	}
 
 	return resolve(event);
