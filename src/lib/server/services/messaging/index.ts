@@ -32,7 +32,7 @@ export class Messaging {
 							columns: {},
 							with: {
 								listing: {
-									columns: {},
+									columns: { id: true },
 									with: {
 										property: true,
 									},

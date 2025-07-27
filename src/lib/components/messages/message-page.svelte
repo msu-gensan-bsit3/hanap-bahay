@@ -4,7 +4,7 @@
 	import { onMount, tick } from "svelte";
 	import { ChatArea, ConversationsList, QuickActions } from ".";
 	import type { PageServerData } from "../../../routes/(app)/messages/$types";
-	import { invalidate, invalidateAll, replaceState } from "$app/navigation";
+	import { invalidate, replaceState } from "$app/navigation";
 	import { source, type Source } from "sveltekit-sse";
 
 	interface props {
@@ -39,7 +39,10 @@
 
 			const avatar = receiver.user.profilePicture || "/no-profile.jpg";
 			const online = false;
-			const properties = v.offerConversations.map((o) => o.offer.listing.property);
+			const properties = v.offerConversations.map((o) => ({
+				...o.offer.listing.property,
+				listingId: o.offer.listing.id,
+			}));
 
 			return {
 				id,
@@ -101,7 +104,17 @@
 	let messagesContainer: HTMLElement | undefined = $state();
 
 	function selectConversation(conversation: (typeof conversations)[0]) {
+		if (selectedConversation) {
+			selectedConversation = { ...selectedConversation, unread: 0 };
+		}
+
 		convId = conversation.id;
+		tick().then(() => {
+			if (selectedConversation?.unread) {
+				updateTimeBtn?.click();
+			}
+		});
+
 		// Mark as read
 		conversation.unread = 0;
 
@@ -119,6 +132,17 @@
 	}
 
 	function sendMessage(messageContent: string) {
+		messages = [
+			...messages,
+			{
+				content: messageContent,
+				id: (messages.at(messages.length - 1)?.id || 0) + 1,
+				senderId: userId,
+				senderName,
+				timestamp: "sending",
+			},
+		];
+
 		message = messageContent;
 
 		tick().then(() => {
@@ -134,9 +158,12 @@
 	}
 
 	let submitButton: HTMLElement | undefined = $state();
-
 	const sendMessageForm = moreEnhance();
-	const { enhance, submitting } = $derived(sendMessageForm);
+	const { enhance: sendMessageEnhance } = $derived(sendMessageForm);
+
+	let updateTimeBtn: HTMLElement | undefined = $state();
+	const updateReadTimeForm = moreEnhance();
+	const { enhance: updateReadTimeEnhance } = $derived(updateReadTimeForm);
 </script>
 
 <div class="w-full flex-1 @4xl:hidden">
@@ -155,7 +182,7 @@
 			onSendMessage={sendMessage}
 			onBack={backToConversations}
 			isMobile={true}
-			sending={submitting}
+			sending={sendMessageForm.submitting}
 			bind:messagesContainer
 		/>
 	{/if}
@@ -176,18 +203,26 @@
 		{userId}
 		{selectedConversation}
 		{messages}
-		sending={submitting}
+		sending={sendMessageForm.submitting}
 		onSendMessage={sendMessage}
 		isMobile={false}
 		bind:messagesContainer
 	/>
 
 	<!-- Quick Actions Sidebar -->
-	<QuickActions {selectedConversation} onQuickResponse={handleQuickResponse} />
+	<QuickActions
+		properties={selectedConversation?.properties}
+		onQuickResponse={handleQuickResponse}
+	/>
 </div>
 
-<form action="?/sendMessage" method="post" class="hidden" use:enhance>
+<form action="?/sendMessage" method="post" class="hidden" use:sendMessageEnhance>
 	<input type="hidden" name="convId" value={convId} required />
 	<input type="hidden" name="message" value={message} required />
 	<button bind:this={submitButton} aria-label="submit"></button>
+</form>
+
+<form action="?/updateReadTime" method="post" class="hidden" use:updateReadTimeEnhance>
+	<input type="hidden" name="convId" value={convId} required />
+	<button bind:this={updateTimeBtn} aria-label="submit"></button>
 </form>

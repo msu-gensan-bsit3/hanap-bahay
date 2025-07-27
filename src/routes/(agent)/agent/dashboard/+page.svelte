@@ -82,16 +82,6 @@
 	<StatsCards {stats} />
 </div>
 
-<!-- <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8 mb-6 lg:mb-8"> -->
-<!-- Monthly Performance Chart -->
-<!-- <div class="xl:col-span-2">
-	<MonthlyPerformance data={monthlyData} />
-</div> -->
-
-<!-- Today's Tasks -->
-<!-- <TodaysTasks tasks={todaysTasks} /> -->
-<!-- </div> -->
-
 <div class="grid grid-cols-1 gap-6 @4xl:grid-cols-2 @4xl:gap-8">
 	<!-- Recent Listings -->
 	<RecentListings listings={recentListings} />

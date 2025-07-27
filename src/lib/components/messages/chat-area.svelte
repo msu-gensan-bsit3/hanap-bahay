@@ -4,7 +4,8 @@
 	import { Input } from "$lib/components/ui/input";
 	import { MobileQuickActions } from ".";
 	import { Info, LoaderCircle, Paperclip, Phone, Send } from "@lucide/svelte";
-	import { tick, untrack } from "svelte";
+	import { tick } from "svelte";
+	import type { Property } from "$lib/server/db/schema";
 
 	interface props {
 		selectedConversation?: {
@@ -12,7 +13,7 @@
 			name: string;
 			avatar: string;
 			online: boolean;
-			property?: string;
+			properties: (Property&{listingId: number})[];
 			timestamp: string;
 		};
 		messages: Array<{
@@ -76,6 +77,8 @@
 			});
 		}
 	}
+
+	const lastMessageReceiver = $derived(messages.findLast((v) => v.senderId !== userId)?.timestamp);
 </script>
 
 <div class="flex h-full flex-1 flex-col">
@@ -83,7 +86,7 @@
 		<Card class="flex h-full flex-col">
 			<!-- Chat Header -->
 			<CardHeader class="border-b pb-4">
-				<div class="flex items-center gap-3">
+				<div class="flex w-full items-center gap-3">
 					{#if isMobile && onBack}
 						<Button variant="ghost" size="icon" onclick={onBack} class="shrink-0">
 							<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,15 +111,17 @@
 							></div>
 						{/if}
 					</div>
-					<div class="min-w-0 flex-1">
+					<div class="w-full min-w-0 flex-1">
 						<h2 class="truncate font-semibold text-gray-900">{selectedConversation.name}</h2>
-						<p class="truncate text-sm font-medium text-blue-600">
-							{selectedConversation.property}
+						<p class="line-clamp-1 text-sm font-medium text-ellipsis text-blue-600">
+							{selectedConversation.properties?.at(0)?.name}
 						</p>
 						<p class="text-xs text-gray-500">
 							{selectedConversation.online
 								? "Online"
-								: "Last seen " + selectedConversation.timestamp}
+								: lastMessageReceiver
+									? "Last seen " + lastMessageReceiver
+									: ""}
 						</p>
 					</div>
 					<div class="flex gap-2">
@@ -140,7 +145,7 @@
 						<div class="flex {message.senderId === userId ? 'justify-end' : 'justify-start'}">
 							<div class="max-w-[280px] sm:max-w-xs lg:max-w-md">
 								{#if message.senderId !== userId}
-									<div class="flex items-end gap-2">
+									<div class="flex items-center gap-2">
 										<img
 											src={selectedConversation.avatar}
 											alt={selectedConversation.name}
@@ -150,9 +155,9 @@
 											<div class="rounded-2xl bg-gray-100 px-3 py-2 lg:px-4">
 												<p class="text-sm break-words text-gray-900">{message.content}</p>
 											</div>
-											<p class="mt-1 text-xs text-gray-500">{message.timestamp}</p>
 										</div>
 									</div>
+									<p class="mt-1 text-xs text-gray-500">{message.timestamp}</p>
 								{:else}
 									<div class="flex items-end justify-end gap-2">
 										<div class="min-w-0">
@@ -168,7 +173,10 @@
 					{/each}
 				</div>
 				<div class="relative {isMobile ? '@4xl:hidden' : '@7xl:hidden'}">
-					<MobileQuickActions {selectedConversation} onQuickResponse={handleQuickResponse} />
+					<MobileQuickActions
+						properties={selectedConversation.properties}
+						onQuickResponse={handleQuickResponse}
+					/>
 				</div>
 			</CardContent>
 

@@ -13,7 +13,7 @@
 			unread: number;
 			avatar: string;
 			online: boolean;
-			properties: Property[];
+			properties: (Property & { listingId: number })[];
 		}[];
 	}
 	interface props {

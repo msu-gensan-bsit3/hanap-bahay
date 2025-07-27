@@ -2,7 +2,7 @@
 	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
 	import { Button } from "$lib/components/ui/button";
 	import type { ClientListing } from "$lib/types";
-	import { Mail, Phone, MessageCircle } from "@lucide/svelte";
+	import { Mail, Phone, MessageCircle, LoaderCircle } from "@lucide/svelte";
 	import { moreEnhance } from "$lib/states/enhance.svelte";
 
 	interface props {
@@ -63,16 +63,20 @@
 					{/if}
 				</div>
 			</div>
-			{#if role === "buyer"}
-				<form method="POST" action="?/sendMessage" use:enhance>
-					<input type="hidden" name="agentId" value={agent.user.id} />
-					<input type="hidden" name="listingId" value={listingId} />
-					<Button variant="outline" size="sm" class="mt-5" disabled={submitting} type="submit">
+			<!-- {#if role === "buyer"} -->
+			<form method="POST" action="?/sendMessage" use:enhance>
+				<input type="hidden" name="agentId" value={agent.user.id} />
+				<input type="hidden" name="listingId" value={listingId} />
+				<Button variant="outline" size="sm" class="mt-5" disabled={submitting} type="submit">
+					{#if submitting}
+						<LoaderCircle class="mr-2 size-4 animate-spin" />
+					{:else}
 						<MessageCircle class="mr-2 size-4" />
-						Send Message
-					</Button>
-				</form>
-			{/if}
+					{/if}
+					Send Message
+				</Button>
+			</form>
+			<!-- {/if} -->
 		</CardContent>
 	</Card>
 {/if}

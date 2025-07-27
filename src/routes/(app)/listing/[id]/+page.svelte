@@ -58,6 +58,7 @@
 	<div class="grid grid-cols-1 gap-8">
 		<!-- Image Gallery -->
 		<PropertyImageGallery photos={property.photosUrl || []} propertyName={property.name} />
+		<AgentCard agent={listing.agent} role={data.role} listingId={listing.id} />
 
 		<!-- Property Details -->
 		<div class="space-y-6">
@@ -71,7 +72,6 @@
 				landArea={property.landArea}
 				floorArea={property.floorArea}
 			/>
-			<AgentCard agent={listing.agent} role={data.role} listingId={listing.id} />
 		</div>
 	</div>
 </div>
