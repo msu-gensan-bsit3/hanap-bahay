@@ -15,6 +15,17 @@
 
 	// Image gallery state
 	let selectedImageIndex = $state(0);
+	
+	// Loading states for images
+	let mainImageLoaded = $state(false);
+	let thumbnailLoaded = $state<boolean[]>([]);
+
+	// Initialize thumbnail loading states
+	$effect(() => {
+		if (photos?.length) {
+			thumbnailLoaded = new Array(photos.length).fill(false);
+		}
+	});
 
 	// Navigate between images
 	function navigateImage(direction: "prev" | "next") {
@@ -25,6 +36,8 @@
 		} else {
 			selectedImageIndex = selectedImageIndex === photos.length - 1 ? 0 : selectedImageIndex + 1;
 		}
+		// Reset main image loading state when changing images
+		mainImageLoaded = false;
 	}
 </script>
 
@@ -34,10 +47,19 @@
 
 		<!-- Main Image -->
 		<div class="relative aspect-video overflow-hidden rounded-lg shadow-lg">
+			<!-- Loading skeleton for main image -->
+			{#if !mainImageLoaded}
+				<div class="absolute inset-0 animate-pulse bg-muted">
+					<div class="h-full w-full bg-gradient-to-r from-muted via-muted/50 to-muted bg-[length:200%_100%] animate-shimmer"></div>
+				</div>
+			{/if}
+			
 			<img
 				src={mainPhoto.url}
 				alt={propertyName}
-				class="main-image h-full w-full object-cover"
+				class="main-image h-full w-full object-cover transition-opacity duration-300 {mainImageLoaded ? 'opacity-100' : 'opacity-0'}"
+				onload={() => mainImageLoaded = true}
+				onerror={() => mainImageLoaded = true}
 			/>
 
 			<!-- Navigation buttons for main image -->
@@ -114,13 +136,22 @@
 						onclick={() => (selectedImageIndex = index)}
 						aria-label="View image {index + 1}"
 					>
-						<div class="aspect-video h-20 w-28 overflow-hidden rounded-lg">
+						<div class="relative aspect-video h-20 w-28 overflow-hidden rounded-lg">
+							<!-- Loading skeleton for thumbnail -->
+							{#if !thumbnailLoaded[index]}
+								<div class="absolute inset-0 animate-pulse bg-muted">
+									<div class="h-full w-full bg-gradient-to-r from-muted via-muted/50 to-muted bg-[length:200%_100%] animate-shimmer rounded-lg"></div>
+								</div>
+							{/if}
+							
 							<img
 								src={photo.url}
 								alt={`${propertyName} - Image ${index + 1}`}
 								class="h-full w-full object-cover transition-opacity {selectedImageIndex === index
 									? 'opacity-100'
-									: 'opacity-70 hover:opacity-100'}"
+									: 'opacity-70 hover:opacity-100'} {thumbnailLoaded[index] ? 'opacity-100' : 'opacity-0'}"
+								onload={() => thumbnailLoaded[index] = true}
+								onerror={() => thumbnailLoaded[index] = true}
 							/>
 						</div>
 					</button>

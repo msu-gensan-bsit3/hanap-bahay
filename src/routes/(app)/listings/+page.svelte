@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { MediaQuery } from "svelte/reactivity";
-
+	import RoomsFilter from "$lib/components/listings-page/filter-babd.svelte";
 	import CategoryFilter from "$lib/components/listings-page/filter-category.svelte";
 	import PriceFilter from "$lib/components/listings-page/filter-price.svelte";
-	import RoomsFilter from "$lib/components/listings-page/filter-babd.svelte";
 	import TypeFilter from "$lib/components/listings-page/filter-type.svelte";
 
 	import SearchAI from "$lib/components/listings-page/search-ai.svelte";
@@ -14,8 +12,6 @@
 
 	import { Button } from "$lib/components/ui/button/index";
 	import { Input } from "$lib/components/ui/input/index";
-
-	import * as Pagination from "$lib/components/ui/pagination/index";
 
 	import { RotateCcw } from "@lucide/svelte";
 
@@ -32,8 +28,7 @@
 	let bathrooms = $state(0);
 	let exactBaths = $state(false);
 
-	//
-	let sortBy: string | undefined = $state();
+	let sortBy: string = $state("Default");
 
 	let { data } = $props();
 	let { listings } = $derived(data);
@@ -52,17 +47,10 @@
 		filteredListings.slice((pageNum - 1) * perPage, pageNum * perPage),
 	);
 
-	// Initialize filteredListings
-	$effect(() => {
-		if (listings && filteredListings.length === 0) {
-			filteredListings = listings;
-		}
-	});
-
 	// Reset filters function
 	function resetFilters() {
 		address = "";
-		saleType = "For Sale";
+		saleType = "All Types";
 		category = "all";
 		minPrice = 0;
 		maxPrice = 0;
@@ -70,7 +58,7 @@
 		exactBeds = false;
 		exactBaths = false;
 		bathrooms = 0;
-		sortBy = undefined;
+		sortBy = "Default";
 	}
 
 	//
@@ -104,7 +92,9 @@
 						address.trim() === "" || listingAddress.toLowerCase().includes(address.toLowerCase());
 
 					// Sale type filter
-					const matchType = saleType.toLowerCase().includes(property.type.toLowerCase());
+					const matchType =
+						saleType === "All Types" ||
+						saleType.toLowerCase().includes(property.type.toLowerCase());
 
 					// Category filter - only apply if category is not "all"
 					const matchCategory = category === "all" || property.category === category;
@@ -166,47 +156,74 @@
 <div class="min-h-screen w-full bg-background">
 	<!-- Filters -->
 	<div
-		class="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+		class="sticky top-16 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
 	>
-		<div class="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4">
-			<!-- Search Bar -->
-			<div class="relative max-w-md flex-grow">
-				<Input bind:value={address} placeholder="Search by location..." class="h-10" />
+		<div class="mx-auto max-w-7xl px-4 py-3">
+			<!-- Mobile: Stacked layout -->
+			<div class="flex flex-col gap-3 lg:hidden">
+				<!-- Search Bar -->
+				<div class="relative">
+					<Input bind:value={address} placeholder="Search by location..." class="h-10" />
+				</div>
+				<!-- Filter Row 1 -->
+				<div class="flex flex-wrap items-center gap-2">
+					<CategoryFilter bind:category />
+					<TypeFilter bind:saleType />
+					<PriceFilter bind:minPrice bind:maxPrice />
+				</div>
+				<!-- Filter Row 2 -->
+				<div class="flex flex-wrap items-center gap-2">
+					<RoomsFilter bind:bedrooms bind:exactBeds bind:bathrooms bind:exactBaths />
+					<Button variant="outline" class="flex items-center gap-2" onclick={resetFilters}>
+						<RotateCcw class="h-4 w-4" />
+						<span class="hidden sm:inline">Reset</span>
+					</Button>
+				</div>
 			</div>
-			<CategoryFilter bind:category />
-			<TypeFilter bind:saleType />
-			<PriceFilter bind:minPrice bind:maxPrice />
-			<RoomsFilter bind:bedrooms bind:exactBeds bind:bathrooms bind:exactBaths />
-			<Button variant="outline" class="flex items-center gap-2" onclick={resetFilters}>
-				<RotateCcw class="h-4 w-4" />
-				Reset
-			</Button>
+
+			<!-- Desktop: Single row layout -->
+			<div class="hidden items-center gap-2 lg:flex">
+				<!-- Search Bar -->
+				<div class="relative max-w-md flex-grow">
+					<Input bind:value={address} placeholder="Search by location..." class="h-10" />
+				</div>
+				<CategoryFilter bind:category />
+				<TypeFilter bind:saleType />
+				<PriceFilter bind:minPrice bind:maxPrice />
+				<RoomsFilter bind:bedrooms bind:exactBeds bind:bathrooms bind:exactBaths />
+				<Button variant="outline" class="flex items-center gap-2" onclick={resetFilters}>
+					<RotateCcw class="h-4 w-4" />
+					Reset
+				</Button>
+			</div>
 		</div>
 	</div>
 
 	<!-- Content -->
-	<div class="mx-auto max-w-7xl px-4 py-6">
-		<div class="mb-6 flex items-center justify-between">
-			<div>
-				<h1 class="text-3xl font-bold tracking-tight">
+	<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+		<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+			<div class="flex-grow">
+				<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
 					{#if address !== ""}
 						Results for "{address}"
 					{:else}
 						All Properties
 					{/if}
 				</h1>
-				<div class="mt-2 flex items-center gap-4">
+				<div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
 					<p class="text-sm text-muted-foreground">
 						{count} properties {#if totalPages > 1}• Page {pageNum} of {totalPages}{/if}
 					</p>
 					<SortBy bind:sortBy />
 				</div>
 			</div>
-			<SearchAI />
+			<div class="flex-shrink-0">
+				<SearchAI />
+			</div>
 		</div>
 
 		<!-- Listings Grid -->
-		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+		<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
 			{#if loading}
 				{#each { length: 12 }}
 					<div class="">
@@ -236,7 +253,9 @@
 							/>
 						</svg>
 						<h3 class="mb-2 text-lg font-medium">No properties found</h3>
-						<p class="text-sm">Try adjusting your search criteria or filters</p>
+						<p class="text-sm text-muted-foreground">
+							Try adjusting your search criteria or filters
+						</p>
 					</div>
 					<Button onclick={resetFilters} variant="outline">
 						<RotateCcw class="mr-2 h-4 w-4" />
@@ -248,44 +267,52 @@
 
 		<!-- Pagination -->
 		{#if totalPages > 1}
-			<div class="mt-12 flex items-center justify-center gap-4 border-t pt-8">
-				<Button
-					variant="outline"
-					size="sm"
-					disabled={pageNum <= 1}
-					onclick={() => (pageNum = Math.max(1, pageNum - 1))}
-				>
-					Previous
-				</Button>
+			<div
+				class="mt-8 flex flex-col items-center justify-center gap-4 border-t pt-6 sm:mt-12 sm:pt-8"
+			>
+				<div class="flex items-center gap-2 sm:gap-4">
+					<Button
+						variant="outline"
+						size="sm"
+						disabled={pageNum <= 1}
+						onclick={() => (pageNum = Math.max(1, pageNum - 1))}
+						class="px-3 py-2 text-sm"
+					>
+						<span class="hidden sm:inline">Previous</span>
+						<span class="sm:hidden">Prev</span>
+					</Button>
 
-				<div class="flex items-center gap-2">
-					{#if totalPages <= 7}
-						{#each Array(totalPages) as _, i}
-							<Button
-								variant={pageNum === i + 1 ? "default" : "outline"}
-								size="sm"
-								class="w-10"
-								onclick={() => (pageNum = i + 1)}
-							>
-								{i + 1}
-							</Button>
-						{/each}
-					{:else}
-						<!-- Show simplified pagination for many pages -->
-						<span class="px-3 py-2 text-sm text-muted-foreground">
-							Page {pageNum} of {totalPages}
-						</span>
-					{/if}
+					<div class="flex items-center gap-1 sm:gap-2">
+						{#if totalPages <= 7}
+							{#each Array(totalPages) as _, i}
+								<Button
+									variant={pageNum === i + 1 ? "default" : "outline"}
+									size="sm"
+									class="h-8 w-8 p-0 text-sm sm:h-10 sm:w-10"
+									onclick={() => (pageNum = i + 1)}
+								>
+									{i + 1}
+								</Button>
+							{/each}
+						{:else}
+							<!-- Show simplified pagination for many pages -->
+							<span class="px-2 py-2 text-xs text-muted-foreground sm:px-3 sm:text-sm">
+								Page {pageNum} of {totalPages}
+							</span>
+						{/if}
+					</div>
+
+					<Button
+						variant="outline"
+						size="sm"
+						disabled={pageNum >= totalPages}
+						onclick={() => (pageNum = Math.min(totalPages, pageNum + 1))}
+						class="px-3 py-2 text-sm"
+					>
+						<span class="hidden sm:inline">Next</span>
+						<span class="sm:hidden">Next</span>
+					</Button>
 				</div>
-
-				<Button
-					variant="outline"
-					size="sm"
-					disabled={pageNum >= totalPages}
-					onclick={() => (pageNum = Math.min(totalPages, pageNum + 1))}
-				>
-					Next
-				</Button>
 			</div>
 		{/if}
 	</div>

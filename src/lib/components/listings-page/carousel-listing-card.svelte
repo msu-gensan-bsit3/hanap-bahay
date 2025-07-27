@@ -1,16 +1,15 @@
 <script lang="ts">
-	import { formatPrice } from "$lib/utils";
-
 	import { Badge } from "$lib/components/ui/badge/index";
-	import { Separator } from "$lib/components/ui/separator/index";
-
 	import * as Card from "$lib/components/ui/card/index";
-
+	import type { ClientListing } from "$lib/types";
+	import { formatPrice } from "$lib/utils";
 	import { Heart, MapPin } from "@lucide/svelte";
 
-	import type { ClientListing } from "$lib/types";
-
 	let { agent, property, ...listing }: ClientListing = $props();
+
+	// Loading states for images
+	let propertyImageLoaded = $state(false);
+	let agentImageLoaded = $state(false);
 
 	let featuredPhoto = $derived.by(() => {
 		const url = property.photosUrl.at(0)?.url;
@@ -44,22 +43,22 @@
 
 	function getCategoryVariant(category: string) {
 		const lowerCategory = category.toLowerCase();
-		
+
 		// House-related categories
 		if (lowerCategory.includes("house") || lowerCategory.includes("townhouse")) {
 			return "category-house";
 		}
-		
+
 		// Condo-related categories
 		if (lowerCategory.includes("condo") || lowerCategory.includes("apartment")) {
 			return "category-condo";
 		}
-		
+
 		// Lot/Land categories
 		if (lowerCategory.includes("lot") || lowerCategory.includes("land")) {
 			return "category-lot";
 		}
-		
+
 		// Commercial categories
 		if (
 			lowerCategory.includes("commercial") ||
@@ -69,7 +68,7 @@
 		) {
 			return "category-commercial";
 		}
-		
+
 		// Default category variant
 		return "category";
 	}
@@ -89,11 +88,28 @@
 			>
 				<Heart class="h-4 w-4" />
 			</button>
+
+			<!-- Loading skeleton for property image -->
+			{#if !propertyImageLoaded}
+				<div class="absolute inset-0 animate-pulse bg-muted">
+					<div
+						class="animate-shimmer h-full w-full bg-gradient-to-r from-muted via-muted/50 to-muted bg-[length:200%_100%]"
+					></div>
+				</div>
+			{/if}
+
 			<img
 				src={featuredPhoto}
-				class="h-full w-full object-cover"
+				class="h-full w-full object-cover transition-opacity duration-300 {propertyImageLoaded
+					? 'opacity-100'
+					: 'opacity-0'}"
 				alt={property.name}
 				loading="lazy"
+				onload={() => (propertyImageLoaded = true)}
+				onerror={() => {
+					featuredPhoto = "/no-image.jpg";
+					propertyImageLoaded = true;
+				}}
 			/>
 		</div>
 
@@ -129,7 +145,7 @@
 				<div class="flex justify-between gap-4">
 					<!-- Features - show only first 2 -->
 					{#if property.features.length > 0}
-						<div class="flex overflow-scroll no-scrollbar scroll-m-0 gap-1">
+						<div class="no-scrollbar flex scroll-m-0 gap-1 overflow-scroll">
 							{#each property.features as feature (feature.name)}
 								<Badge variant="secondary" class="px-2 py-0.5 text-xs">
 									{feature.name}
@@ -143,12 +159,15 @@
 						</div>
 					{:else}
 						<!-- <Badge variant="outline" class="px-2 py-0.5 text-xs">Listing</Badge> -->
-						 <p></p>
+						<p></p>
 					{/if}
 
 					<!-- Category -->
 					<div class="flex items-center gap-2">
-						<Badge variant={getCategoryVariant(property.category)} class="px-2 py-0.5 text-xs capitalize">
+						<Badge
+							variant={getCategoryVariant(property.category)}
+							class="px-2 py-0.5 text-xs capitalize"
+						>
 							{property.category.replace(/-/g, " ")}
 						</Badge>
 					</div>
@@ -158,11 +177,24 @@
 			<!-- Agent info -->
 			<div class="mt-3 border-t pt-3">
 				<div class="flex items-center gap-3">
-					<div class="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+					<div class="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+						<!-- Loading skeleton for agent image -->
+						{#if !agentImageLoaded}
+							<div class="absolute inset-0 animate-pulse bg-muted">
+								<div
+									class="animate-shimmer h-full w-full rounded-full bg-gradient-to-r from-muted via-muted/50 to-muted bg-[length:200%_100%]"
+								></div>
+							</div>
+						{/if}
+
 						<img
 							src={agent.user.profilePicture || "/no-profile.jpg"}
 							alt="{agent.user.firstName} {agent.user.lastName}"
-							class="h-full w-full object-cover"
+							class="h-full w-full object-cover transition-opacity duration-300 {agentImageLoaded
+								? 'opacity-100'
+								: 'opacity-0'}"
+							onload={() => (agentImageLoaded = true)}
+							onerror={() => (agentImageLoaded = true)}
 						/>
 					</div>
 					<div class="min-w-0 flex-1">
