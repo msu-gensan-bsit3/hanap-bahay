@@ -6,6 +6,8 @@
 
 	let { data } = $props();
 
+	const convId = Number(page.url.searchParams.get("convId"));
+
 	hideFooter();
 </script>
 
@@ -14,9 +16,5 @@
 </svelte:head>
 
 <div class="@container flex gap-6 p-4" style="height: calc(100dvh - {heights.header + 1}px);">
-	<MessagePage
-		userConversations={data.userConversations}
-		userId={data.userId}
-		convIdParam={Number(page.url.searchParams.get("convId"))}
-	/>
+	<MessagePage {...data} role="user" convIdParam={convId} />
 </div>

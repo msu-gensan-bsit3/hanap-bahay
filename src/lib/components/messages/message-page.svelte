@@ -1,15 +1,20 @@
 <script lang="ts">
+	import { moreEnhance } from "$lib/states/enhance.svelte";
 	import { formatTimeAgo } from "$lib/utils";
+	import { onMount, tick } from "svelte";
 	import { ChatArea, ConversationsList, QuickActions } from ".";
 	import type { PageServerData } from "../../../routes/(app)/messages/$types";
+	import { invalidate, invalidateAll, replaceState } from "$app/navigation";
+	import { source, type Source } from "sveltekit-sse";
 
 	interface props {
 		userConversations: PageServerData["userConversations"];
 		userId: number;
 		convIdParam?: number;
+		role: "user" | "agent";
 	}
 
-	let { userConversations, userId, convIdParam }: props = $props();
+	let { userConversations, userId, convIdParam, role }: props = $props();
 
 	let sender = $derived(userConversations.at(0)?.participants.find((v) => v.user.id === userId));
 	let senderName = $derived(sender?.user.firstName + " " + sender?.user.lastName);
@@ -49,9 +54,36 @@
 		}),
 	);
 
+	function getSelectedConversation(id?: number) {
+		return conversations?.find((v) => v.id === id);
+	}
+
 	// svelte-ignore state_referenced_locally
 	let convId = $state(convIdParam || conversations?.at(0)?.id);
-	let selectedConversation = $derived(conversations?.find((v) => v.id === convId));
+	let selectedConversation = $derived(getSelectedConversation(convId));
+
+	onMount(async () => {
+		if (!selectedConversation) {
+			await tick();
+			replaceState(window.location.pathname, {});
+		}
+	});
+
+	onMount(() => {
+		const sources: Source[] = [];
+		conversations.forEach((v) => {
+			const mSource = source("/events/messaging/" + v.id);
+
+			mSource.select(`messaging-${v.id}`).subscribe(() => {
+				invalidate("message");
+			});
+
+			sources.push(mSource);
+		});
+		return () => {
+			sources.forEach((v) => v.close());
+		};
+	});
 
 	let messages = $derived(
 		userConversations
@@ -73,9 +105,13 @@
 	let messagesContainer: HTMLElement | undefined = $state();
 
 	function selectConversation(conversation: (typeof conversations)[0]) {
-		selectedConversation = conversation;
+		convId = conversation.id;
 		// Mark as read
 		conversation.unread = 0;
+
+		const url = new URL(window.location.href);
+		url.searchParams.set("convId", String(convId));
+		replaceState(url.href, {});
 
 		showConversations = false;
 		showChat = true;
@@ -91,12 +127,19 @@
 		const timestamp = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 		// Update last message in conversation
-		selectedConversation!.lastMessage = messageContent;
-		selectedConversation!.timestamp = "now";
+
+		message = messageContent;
 
 		// Scroll to bottom after sending
-		setTimeout(scrollToBottom, 100);
+		setTimeout(() => {
+			submitButton?.click();
+			// scrollToBottom();
+		}, 10);
+
+		message = "";
 	}
+
+	let message = $state("");
 
 	function handleQuickResponse(message: string) {
 		sendMessage(message);
@@ -107,6 +150,11 @@
 			messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: "smooth" });
 		}
 	}
+
+	let submitButton: HTMLElement | undefined = $state();
+
+	const sendMessageForm = moreEnhance({});
+	const { enhance, submitting } = $derived(sendMessageForm);
 </script>
 
 <div class="w-full flex-1 @4xl:hidden">
@@ -119,7 +167,7 @@
 		/>
 	{:else if showChat}
 		<ChatArea
-			userId={1}
+			{userId}
 			{selectedConversation}
 			{messages}
 			onSendMessage={sendMessage}
@@ -142,6 +190,7 @@
 
 	<!-- Chat Area -->
 	<ChatArea
+		{userId}
 		{selectedConversation}
 		{messages}
 		onSendMessage={sendMessage}
@@ -152,3 +201,9 @@
 	<!-- Quick Actions Sidebar -->
 	<QuickActions {selectedConversation} onQuickResponse={handleQuickResponse} />
 </div>
+
+<form action="?/sendMessage" method="post" class="hidden" use:enhance>
+	<input type="hidden" name="convId" value={convId} required />
+	<input type="hidden" name="message" value={message} required />
+	<button bind:this={submitButton} aria-label="submit"></button>
+</form>

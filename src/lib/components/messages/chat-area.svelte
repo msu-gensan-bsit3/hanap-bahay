@@ -21,7 +21,7 @@
 			content: string;
 			timestamp: string;
 		}>;
-		userId?: number;
+		userId: number;
 		onSendMessage: (message: string) => void;
 		onBack?: () => void;
 		isMobile?: boolean;
@@ -56,6 +56,17 @@
 
 	function handleQuickResponse(message: string) {
 		onSendMessage(message);
+	}
+
+	$effect(() => {
+		messages;
+		scrollToBottom();
+	});
+
+	function scrollToBottom() {
+		if (messagesContainer) {
+			messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: "smooth" });
+		}
 	}
 </script>
 
