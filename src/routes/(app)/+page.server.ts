@@ -1,9 +1,9 @@
-import { db } from "$lib/server/db";
-import { agentQuery, listingQuery, propertyQuery, userQuery } from "$lib/server/db/schema";
-import type { Actions, PageServerLoad } from "./$types";
 import { askAiSchema } from "$lib/schema";
-import { fail } from "@sveltejs/kit";
+import { db } from "$lib/server/db";
+import { agentQuery, listingQuery, propertyQuery } from "$lib/server/db/schema";
 import { chatbotSendMessage } from "$lib/server/services/chatbot";
+import { fail } from "@sveltejs/kit";
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async () => {
 	const listings = await db.query.listing.findMany({
@@ -12,11 +12,17 @@ export const load: PageServerLoad = async () => {
 			agent: agentQuery,
 			property: { ...propertyQuery, columns: { ...propertyQuery.columns, sellerId: false } },
 		},
-		limit: 20,
+		limit: 8,
+	});
+
+	const agents = await db.query.agent.findMany({
+		...agentQuery,
+		limit: 8,
 	});
 
 	return {
 		listings,
+		agents,
 	};
 };
 

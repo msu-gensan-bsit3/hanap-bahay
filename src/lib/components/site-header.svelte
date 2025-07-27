@@ -41,7 +41,7 @@
 </script>
 
 <header
-	class="sticky top-0 z-50 h-16 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+	class="sticky top-0 z-50 h-16 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85"
 	bind:clientHeight={heights.header}
 >
 	<div

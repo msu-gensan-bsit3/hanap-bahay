@@ -1,5 +1,6 @@
 <script lang="ts">
 	import AskAi from "$lib/components/ask-ai.svelte";
+	import AgentCard from "$lib/components/listings-page/agent-card.svelte";
 	import CarouselListingCard from "$lib/components/listings-page/carousel-listing-card.svelte";
 
 	import { Button } from "$lib/components/ui/button/index";
@@ -11,13 +12,7 @@
 	import { ChevronLast, Search } from "@lucide/svelte";
 
 	let { data } = $props();
-	let { listings } = $derived(data);
-
-	// Split listings for different carousels
-	const featuredListings = $derived(
-		listings.slice(0, Math.min(8, Math.floor(listings.length * 0.6))),
-	);
-	const nearbyListings = $derived(listings.slice(Math.min(8, Math.floor(listings.length * 0.6))));
+	let { listings: featuredListings, agents: featuredAgents } = $derived(data);
 </script>
 
 <div
@@ -46,7 +41,7 @@
 					</span>
 				</h1>
 
-				<div class="mx-auto mt-20 max-w-2xl">
+				<div class="mx-auto mt-25 mb-10 max-w-2xl">
 					<div class="rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-xs">
 						<form action="/listings" method="get" class="space-y-4">
 							<div class="text-center">
@@ -62,14 +57,6 @@
 								<Button type="submit" size="lg" class="h-11 px-6">
 									<Search class="h-4 w-4" />
 								</Button>
-							</div>
-
-							<div class="flex justify-center">
-								<div class="inline-flex rounded-lg bg-gray-100 p-1">
-									<Button size="sm" class="h-8 rounded-md px-4" variant="default">For Rent</Button>
-									<Button size="sm" class="h-8 rounded-md px-4" variant="ghost">For Sale</Button>
-									<Button size="sm" class="h-8 rounded-md px-4" variant="ghost">For Lease</Button>
-								</div>
 							</div>
 						</form>
 					</div>
@@ -112,13 +99,15 @@
 	</Carousel.Root>
 </div>
 
-<!-- Nearby Listings Carousel -->
+<!-- Featured Agents Carousel -->
 <div class="w-full bg-muted/30 px-4">
 	<Carousel.Root class="mx-auto max-w-screen-xl space-y-4 py-12">
 		<div class="flex w-full items-center justify-between">
 			<div>
-				<h2 class="text-2xl font-bold tracking-tight">More Properties</h2>
-				<p class="text-sm text-muted-foreground">{nearbyListings.length} additional properties</p>
+				<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
+				<p class="text-sm text-muted-foreground">
+					{featuredAgents.length} expert real estate professionals
+				</p>
 			</div>
 			<div class="mx-3 inline-flex gap-6">
 				<Carousel.Previous />
@@ -126,26 +115,26 @@
 			</div>
 		</div>
 		<Carousel.Content class="-ml-2 md:-ml-4">
-			{#each nearbyListings as listing}
+			{#each featuredAgents as agent}
 				<Carousel.Item class="pl-2 md:basis-1/2 md:pl-4 lg:basis-1/3">
-					<div class="h-128">
-						<CarouselListingCard {...listing} />
+					<div class="h-full">
+						<AgentCard {agent} />
 					</div>
 				</Carousel.Item>
 			{/each}
-			{#if nearbyListings.length === 0}
+			{#if featuredAgents.length === 0}
 				<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
 					<div class="py-8 text-center text-muted-foreground">
-						<p>No additional listings available</p>
+						<p>No agents available</p>
 					</div>
 				</Carousel.Item>
 			{/if}
 			<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
 				<a
-					href="/listings"
+					href="/agents"
 					class="inline-flex rounded-lg border-2 border-dashed border-muted-foreground/25 px-8 py-4 text-muted-foreground transition-colors hover:border-muted-foreground/50"
 				>
-					See All Listings <ChevronLast strokeWidth={1} class="ml-2" />
+					See All Agents <ChevronLast strokeWidth={1} class="ml-2" />
 				</a>
 			</Carousel.Item>
 		</Carousel.Content>
