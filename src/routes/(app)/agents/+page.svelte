@@ -26,27 +26,18 @@
 	let showFilters = $state(false);
 
 	let { data } = $props();
-	let { agents } = $derived(data);
 
 	// svelte-ignore state_referenced_locally
-	let filteredAgents = $derived(filter());
 	let loading = $state(true);
 	let timeoutId: NodeJS.Timeout;
 
 	// pagination
 	const perPage = 12;
 	let pageNum = $derived.by(() => {
-		filteredAgents;
 		return parseInt(page.url.searchParams.get("page") || "1");
 	});
 
-	const count = $derived(filteredAgents.length);
-	const totalPages = $derived(Math.ceil(count / perPage));
-	const paginatedAgents = $derived(
-		filteredAgents.slice((pageNum - 1) * perPage, pageNum * perPage),
-	);
-
-	function filter() {
+	function filter(agents: Awaited<typeof data.agents>) {
 		return agents
 			.filter((agent) => {
 				// Search term filter
@@ -281,117 +272,167 @@
 	</div>
 
 	<!-- Content -->
-	<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
-		<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-			<div class="flex-grow">
-				<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
-					{#if searchTerm !== ""}
-						Results for "{searchTerm}"
-					{:else}
-						Our Real Estate Agents
-					{/if}
-				</h1>
-				<div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-					<p class="text-sm text-muted-foreground">
-						{count} agents {#if totalPages > 1}• Page {pageNum} of {totalPages}{/if}
-					</p>
-					<SortAgents bind:sortBy />
+	{#await data.agents}
+		<!-- Loading state -->
+		<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+			<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+				<div class="flex-grow">
+					<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Our Real Estate Agents</h1>
+					<div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+						<p class="text-sm text-muted-foreground">Loading agents...</p>
+					</div>
 				</div>
 			</div>
-		</div>
 
-		<!-- Agents Grid -->
-		<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-			{#if loading}
+			<!-- Loading Grid -->
+			<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#each { length: 8 } as _}
 					<div class="h-full">
 						<SkeletonAgentCard />
 					</div>
 				{/each}
-			{:else if paginatedAgents.length > 0}
-				{#each paginatedAgents as agent (agent.user.id)}
-					<div class="h-full">
-						<AgentCard {agent} />
-					</div>
-				{/each}
-			{:else}
-				<div class="col-span-full flex flex-col items-center justify-center py-12 text-center">
-					<div class="mb-4 text-muted-foreground">
-						<svg
-							class="mx-auto mb-4 h-16 w-16"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="1"
-								d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-							/>
-						</svg>
-						<h3 class="mb-2 text-lg font-medium">No agents found</h3>
+			</div>
+		</div>
+	{:then agents}
+		<!-- Content loaded successfully -->
+		{@const filteredAgents = filter(agents)}
+		{@const count = filteredAgents.length}
+		{@const totalPages = Math.ceil(count / perPage)}
+		{@const paginatedAgents = filteredAgents.slice((pageNum - 1) * perPage, pageNum * perPage)}
+
+		<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+			<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+				<div class="flex-grow">
+					<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
+						{#if searchTerm !== ""}
+							Results for "{searchTerm}"
+						{:else}
+							Our Real Estate Agents
+						{/if}
+					</h1>
+					<div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
 						<p class="text-sm text-muted-foreground">
-							Try adjusting your search criteria or filters
+							{count} agents {#if totalPages > 1}• Page {pageNum} of {totalPages}{/if}
 						</p>
+						<SortAgents bind:sortBy />
 					</div>
-					<Button onclick={resetFilters} variant="outline">
-						<RotateCcw class="mr-2 h-4 w-4" />
-						Clear all filters
-					</Button>
+				</div>
+			</div>
+
+			<!-- Agents Grid -->
+			<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+				{#if loading}
+					{#each { length: 8 } as _}
+						<div class="h-full">
+							<SkeletonAgentCard />
+						</div>
+					{/each}
+				{:else if paginatedAgents.length > 0}
+					{#each paginatedAgents as agent (agent.user.id)}
+						<div class="h-full">
+							<AgentCard {agent} />
+						</div>
+					{/each}
+				{:else}
+					<div class="col-span-full flex flex-col items-center justify-center py-12 text-center">
+						<div class="mb-4 text-muted-foreground">
+							<svg
+								class="mx-auto mb-4 h-16 w-16"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="1"
+									d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+								/>
+							</svg>
+							<h3 class="mb-2 text-lg font-medium">No agents found</h3>
+							<p class="text-sm text-muted-foreground">
+								Try adjusting your search criteria or filters
+							</p>
+						</div>
+						<Button onclick={resetFilters} variant="outline">
+							<RotateCcw class="mr-2 h-4 w-4" />
+							Clear all filters
+						</Button>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Pagination -->
+			{#if totalPages > 1}
+				<div
+					class="mt-8 flex flex-col items-center justify-center gap-4 border-t pt-6 sm:mt-12 sm:pt-8"
+				>
+					<div class="flex items-center gap-2 sm:gap-4">
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={pageNum <= 1}
+							onclick={() => (pageNum = Math.max(1, pageNum - 1))}
+							class="px-3 py-2 text-sm"
+						>
+							<span class="hidden sm:inline">Previous</span>
+							<span class="sm:hidden">Prev</span>
+						</Button>
+
+						<div class="flex items-center gap-1 sm:gap-2">
+							{#if totalPages <= 7}
+								{#each Array(totalPages) as _, i}
+									<Button
+										variant={pageNum === i + 1 ? "default" : "outline"}
+										size="sm"
+										class="h-8 w-8 p-0 text-sm sm:h-10 sm:w-10"
+										onclick={() => (pageNum = i + 1)}
+									>
+										{i + 1}
+									</Button>
+								{/each}
+							{:else}
+								<!-- Show simplified pagination for many pages -->
+								<span class="px-2 py-2 text-xs text-muted-foreground sm:px-3 sm:text-sm">
+									Page {pageNum} of {totalPages}
+								</span>
+							{/if}
+						</div>
+
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={pageNum >= totalPages}
+							onclick={() => (pageNum = Math.min(totalPages, pageNum + 1))}
+							class="px-3 py-2 text-sm"
+						>
+							<span class="hidden sm:inline">Next</span>
+							<span class="sm:hidden">Next</span>
+						</Button>
+					</div>
 				</div>
 			{/if}
 		</div>
-
-		<!-- Pagination -->
-		{#if totalPages > 1}
-			<div
-				class="mt-8 flex flex-col items-center justify-center gap-4 border-t pt-6 sm:mt-12 sm:pt-8"
-			>
-				<div class="flex items-center gap-2 sm:gap-4">
-					<Button
-						variant="outline"
-						size="sm"
-						disabled={pageNum <= 1}
-						onclick={() => (pageNum = Math.max(1, pageNum - 1))}
-						class="px-3 py-2 text-sm"
-					>
-						<span class="hidden sm:inline">Previous</span>
-						<span class="sm:hidden">Prev</span>
-					</Button>
-
-					<div class="flex items-center gap-1 sm:gap-2">
-						{#if totalPages <= 7}
-							{#each Array(totalPages) as _, i}
-								<Button
-									variant={pageNum === i + 1 ? "default" : "outline"}
-									size="sm"
-									class="h-8 w-8 p-0 text-sm sm:h-10 sm:w-10"
-									onclick={() => (pageNum = i + 1)}
-								>
-									{i + 1}
-								</Button>
-							{/each}
-						{:else}
-							<!-- Show simplified pagination for many pages -->
-							<span class="px-2 py-2 text-xs text-muted-foreground sm:px-3 sm:text-sm">
-								Page {pageNum} of {totalPages}
-							</span>
-						{/if}
-					</div>
-
-					<Button
-						variant="outline"
-						size="sm"
-						disabled={pageNum >= totalPages}
-						onclick={() => (pageNum = Math.min(totalPages, pageNum + 1))}
-						class="px-3 py-2 text-sm"
-					>
-						<span class="hidden sm:inline">Next</span>
-						<span class="sm:hidden">Next</span>
-					</Button>
+	{:catch error}
+		<!-- Error state -->
+		<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+			<div class="flex flex-col items-center justify-center py-12 text-center">
+				<div class="mb-4 text-muted-foreground">
+					<svg class="mx-auto mb-4 h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="1"
+							d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+						/>
+					</svg>
+					<h3 class="mb-2 text-lg font-medium">Failed to load agents</h3>
+					<p class="text-sm text-muted-foreground">
+						{error.message}
+					</p>
 				</div>
+				<Button onclick={() => window.location.reload()} variant="outline">Try again</Button>
 			</div>
-		{/if}
-	</div>
+		</div>
+	{/await}
 </div>

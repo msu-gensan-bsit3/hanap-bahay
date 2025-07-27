@@ -6,7 +6,7 @@ import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async () => {
-	const listings = await db.query.listing.findMany({
+	const listingsPromise = db.query.listing.findMany({
 		...listingQuery,
 		with: {
 			agent: agentQuery,
@@ -15,14 +15,14 @@ export const load: PageServerLoad = async () => {
 		limit: 8,
 	});
 
-	const agents = await db.query.agent.findMany({
+	const agentsPromise = db.query.agent.findMany({
 		...agentQuery,
 		limit: 8,
 	});
 
 	return {
-		listings,
-		agents,
+		listings: listingsPromise,
+		agents: agentsPromise,
 	};
 };
 

@@ -12,7 +12,6 @@
 	import { ChevronLast, Search } from "@lucide/svelte";
 
 	let { data } = $props();
-	let { listings: featuredListings, agents: featuredAgents } = $derived(data);
 </script>
 
 <div
@@ -68,77 +67,153 @@
 
 <!-- Featured Listings Carousel -->
 <div class="w-full bg-background px-4">
-	<Carousel.Root class="mx-auto my-8 max-w-screen-xl space-y-4">
-		<div class="flex w-full items-center justify-between">
-			<div>
-				<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
-				<p class="text-sm text-muted-foreground">{featuredListings.length} premium properties</p>
+	{#await data.listings}
+		<!-- Loading state for listings -->
+		<div class="mx-auto my-8 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
+					<p class="text-sm text-muted-foreground">Loading premium properties...</p>
+				</div>
 			</div>
-			<div class="mx-3 inline-flex gap-6">
-				<Carousel.Previous />
-				<Carousel.Next />
+			<div class="flex gap-4 overflow-hidden">
+				{#each Array(4) as _}
+					<div class="h-128 w-80 flex-shrink-0 animate-pulse rounded-lg bg-muted"></div>
+				{/each}
 			</div>
 		</div>
-		<Carousel.Content class="-ml-2 md:-ml-4">
-			{#each featuredListings as listing}
-				<Carousel.Item class="pl-2 md:basis-1/2 md:pl-4 lg:basis-1/3">
-					<div class="h-128">
-						<CarouselListingCard {...listing} />
-					</div>
+	{:then featuredListings}
+		<!-- Listings loaded successfully -->
+		<Carousel.Root class="mx-auto my-8 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
+					<p class="text-sm text-muted-foreground">{featuredListings.length} premium properties</p>
+				</div>
+				<div class="mx-3 inline-flex gap-6">
+					<Carousel.Previous />
+					<Carousel.Next />
+				</div>
+			</div>
+			<Carousel.Content class="-ml-2 md:-ml-4">
+				{#each featuredListings as listing}
+					<Carousel.Item class="pl-2 md:basis-1/2 md:pl-4 lg:basis-1/3">
+						<div class="h-128">
+							<CarouselListingCard {...listing} />
+						</div>
+					</Carousel.Item>
+				{/each}
+				<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
+					<a
+						href="/listings"
+						class="inline-flex rounded-lg border-2 border-dashed border-muted-foreground/25 px-8 py-4 text-muted-foreground transition-colors hover:border-muted-foreground/50"
+					>
+						See All Listings <ChevronLast strokeWidth={1} class="ml-2" />
+					</a>
 				</Carousel.Item>
-			{/each}
-			<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
-				<a
-					href="/listings"
-					class="inline-flex rounded-lg border-2 border-dashed border-muted-foreground/25 px-8 py-4 text-muted-foreground transition-colors hover:border-muted-foreground/50"
-				>
-					See All Listings <ChevronLast strokeWidth={1} class="ml-2" />
-				</a>
-			</Carousel.Item>
-		</Carousel.Content>
-	</Carousel.Root>
+			</Carousel.Content>
+		</Carousel.Root>
+	{:catch error}
+		<!-- Error state for listings -->
+		<div class="mx-auto my-8 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
+					<p class="text-sm text-red-500">Failed to load properties</p>
+				</div>
+			</div>
+			<div
+				class="flex items-center justify-center rounded-lg border-2 border-dashed border-red-200 py-12"
+			>
+				<div class="text-center">
+					<p class="text-sm text-muted-foreground">{error.message}</p>
+					<Button onclick={() => window.location.reload()} variant="outline" class="mt-2">
+						Try again
+					</Button>
+				</div>
+			</div>
+		</div>
+	{/await}
 </div>
 
 <!-- Featured Agents Carousel -->
 <div class="w-full bg-muted/30 px-4">
-	<Carousel.Root class="mx-auto my-4 max-w-screen-xl space-y-4">
-		<div class="flex w-full items-center justify-between">
-			<div>
-				<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
-				<p class="text-sm text-muted-foreground">
-					{featuredAgents.length} expert real estate professionals
-				</p>
+	{#await data.agents}
+		<!-- Loading state for agents -->
+		<div class="mx-auto my-4 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
+					<p class="text-sm text-muted-foreground">Loading expert real estate professionals...</p>
+				</div>
 			</div>
-			<div class="mx-3 inline-flex gap-6">
-				<Carousel.Previous />
-				<Carousel.Next />
+			<div class="flex gap-4 overflow-hidden">
+				{#each Array(4) as _}
+					<div class="h-64 w-80 flex-shrink-0 animate-pulse rounded-lg bg-muted"></div>
+				{/each}
 			</div>
 		</div>
-		<Carousel.Content class="-ml-2 md:-ml-4">
-			{#each featuredAgents as agent}
-				<Carousel.Item class="pl-2 md:basis-1/2 md:pl-4 lg:basis-1/3">
-					<div class="h-full">
-						<AgentCard {agent} />
-					</div>
-				</Carousel.Item>
-			{/each}
-			{#if featuredAgents.length === 0}
+	{:then featuredAgents}
+		<!-- Agents loaded successfully -->
+		<Carousel.Root class="mx-auto my-4 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
+					<p class="text-sm text-muted-foreground">
+						{featuredAgents.length} expert real estate professionals
+					</p>
+				</div>
+				<div class="mx-3 inline-flex gap-6">
+					<Carousel.Previous />
+					<Carousel.Next />
+				</div>
+			</div>
+			<Carousel.Content class="-ml-2 md:-ml-4">
+				{#each featuredAgents as agent}
+					<Carousel.Item class="pl-2 md:basis-1/2 md:pl-4 lg:basis-1/3">
+						<div class="h-full">
+							<AgentCard {agent} />
+						</div>
+					</Carousel.Item>
+				{/each}
+				{#if featuredAgents.length === 0}
+					<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
+						<div class="py-8 text-center text-muted-foreground">
+							<p>No agents available</p>
+						</div>
+					</Carousel.Item>
+				{/if}
 				<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
-					<div class="py-8 text-center text-muted-foreground">
-						<p>No agents available</p>
-					</div>
+					<a
+						href="/agents"
+						class="inline-flex rounded-lg border-2 border-dashed border-muted-foreground/25 px-8 py-4 text-muted-foreground transition-colors hover:border-muted-foreground/50"
+					>
+						See All Agents <ChevronLast strokeWidth={1} class="ml-2" />
+					</a>
 				</Carousel.Item>
-			{/if}
-			<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
-				<a
-					href="/agents"
-					class="inline-flex rounded-lg border-2 border-dashed border-muted-foreground/25 px-8 py-4 text-muted-foreground transition-colors hover:border-muted-foreground/50"
-				>
-					See All Agents <ChevronLast strokeWidth={1} class="ml-2" />
-				</a>
-			</Carousel.Item>
-		</Carousel.Content>
-	</Carousel.Root>
+			</Carousel.Content>
+		</Carousel.Root>
+	{:catch error}
+		<!-- Error state for agents -->
+		<div class="mx-auto my-4 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
+					<p class="text-sm text-red-500">Failed to load agents</p>
+				</div>
+			</div>
+			<div
+				class="flex items-center justify-center rounded-lg border-2 border-dashed border-red-200 py-12"
+			>
+				<div class="text-center">
+					<p class="text-sm text-muted-foreground">{error.message}</p>
+					<Button onclick={() => window.location.reload()} variant="outline" class="mt-2">
+						Try again
+					</Button>
+				</div>
+			</div>
+		</div>
+	{/await}
 </div>
 
 <AskAi />
