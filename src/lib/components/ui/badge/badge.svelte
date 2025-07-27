@@ -14,12 +14,25 @@
 				outline: "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
 
 				// Tag Variants
-				sale:
-					"bg-red-500 text-primary-foreground [a&]:hover:bg-primary/90 border-transparent",
-				rent:
-					"bg-green-500 text-primary-foreground [a&]:hover:bg-primary/90 border-transparent",
-				lease:
-					"bg-yellow-500 text-primary-foreground [a&]:hover:bg-primary/90 border-transparent",
+
+				"sale":
+					"bg-green-500 text-white [a&]:hover:bg-red-600 border-transparent",
+				"rent":
+					"bg-orange-500 text-white [a&]:hover:bg-green-600 border-transparent",
+				"lease":
+					"bg-yellow-500 text-white [a&]:hover:bg-yellow-600 border-transparent",
+				
+				// Category Variants
+				"category":
+					"bg-blue-100 text-blue-800 border-blue-200 [a&]:hover:bg-blue-200",
+				"category-house":
+					"bg-purple-100 text-purple-800 border-purple-200 [a&]:hover:bg-purple-200",
+				"category-condo":
+					"bg-indigo-100 text-indigo-800 border-indigo-200 [a&]:hover:bg-indigo-200",
+				"category-lot":
+					"bg-emerald-100 text-emerald-800 border-emerald-200 [a&]:hover:bg-emerald-200",
+				"category-commercial":
+					"bg-orange-100 text-orange-800 border-orange-200 [a&]:hover:bg-orange-200",
 			},
 		},
 		defaultVariants: {

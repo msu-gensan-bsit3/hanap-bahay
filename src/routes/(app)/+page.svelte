@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AskAi from "$lib/components/ask-ai.svelte";
 	import ListingCard from "$lib/components/listing-card.svelte";
 
 	import { Button } from "$lib/components/ui/button/index";
@@ -111,3 +112,5 @@
 		</Carousel.Content>
 	</Carousel.Root>
 </div>
+
+<AskAi />

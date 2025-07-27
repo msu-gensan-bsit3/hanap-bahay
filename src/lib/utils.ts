@@ -1,5 +1,6 @@
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { clsx, type ClassValue } from "clsx";
+import { onMount } from "svelte";
+import { twMerge } from "tailwind-merge";
 
 export type MakeOptional<T, TOptional extends keyof T = keyof T> = Pick<
 	T,
@@ -18,11 +19,11 @@ export const days = (n: number) => 1000 * 60 * 60 * 24 * n;
 export function toTitleCase(str: string): string {
 	return str
 		.toLowerCase()
-		.split(' ')
+		.split(/[-\s]+/)
 		.map((word) => {
 			return word.charAt(0).toUpperCase() + word.slice(1);
 		})
-		.join(' ');
+		.join(" ");
 }
 
 export function cn(...inputs: ClassValue[]) {
@@ -30,13 +31,12 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WithoutChild<T> = T extends { child?: any } ? Omit<T, 'child'> : T;
+export type WithoutChild<T> = T extends { child?: any } ? Omit<T, "child"> : T;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, 'children'> : T;
+export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, "children"> : T;
 export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
 export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?: U | null };
 
-//
 export function formatPrice(num: number, useCompactNotation: boolean = true): string {
 	if (useCompactNotation) {
 		return (
@@ -56,3 +56,31 @@ export function formatPrice(num: number, useCompactNotation: boolean = true): st
 	}
 }
 
+export function hideFooter() {
+	onMount(() => {
+		const footer = document.querySelector("footer");
+
+		if (footer) {
+			// footer.style.setProperty("display", "none");
+			footer.style.display = "none";
+		}
+		return () => {
+			if (footer) {
+				footer.style.display = "block";
+			}
+		};
+	});
+}
+
+export function formatTimeAgo(date: Date): string {
+	const now = new Date();
+	const diffMs = now.getTime() - date.getTime();
+	const diffMins = Math.floor(diffMs / (1000 * 60));
+	const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+	if (diffMins < 1) return "now";
+	if (diffMins < 60) return `${diffMins} min ago`;
+	if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+	return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+}
