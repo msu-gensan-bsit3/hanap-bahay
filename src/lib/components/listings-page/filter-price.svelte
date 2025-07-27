@@ -77,7 +77,7 @@
 
 <DropdownMenu.Root bind:open={isOpen}>
 	<DropdownMenu.Trigger class="flex-1">
-		<Button variant="outline" class="w-full">
+		<Button variant={minPrice > 0 || maxPrice > 0 ? "default" : "outline"} class="w-full">
 			{triggerContent}
 			{#if isOpen}
 				<ChevronUp />

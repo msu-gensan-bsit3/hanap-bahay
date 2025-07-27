@@ -39,7 +39,7 @@
 
 <DropdownMenu.Root bind:open={isOpen}>
 	<DropdownMenu.Trigger class="flex-1">
-		<Button variant="outline" class="w-full">
+		<Button variant={category !== "all" ? "default" : "outline"} class="w-full">
 			{categories.find((c) => c.value === category)?.label || "Category"}
 			{#if isOpen}
 				<ChevronUp />

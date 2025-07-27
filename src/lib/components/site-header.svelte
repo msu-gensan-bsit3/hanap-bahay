@@ -58,22 +58,10 @@
 		<nav class="hidden items-center gap-8 md:flex">
 			<div class="flex items-center gap-6">
 				<a
-					href="/"
+					href="/listings"
 					class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
 				>
-					Buy
-				</a>
-				<a
-					href="/"
-					class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-				>
-					Rent
-				</a>
-				<a
-					href="/"
-					class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-				>
-					Sell
+					Listings
 				</a>
 				<a
 					href="/"

@@ -25,7 +25,7 @@
 
 <DropdownMenu.Root bind:open={isOpen}>
 	<DropdownMenu.Trigger class="flex-1">
-		<Button variant="outline" class="w-full">
+		<Button variant={saleType !== "All Types" ? "default" : "outline"} class="w-full">
 			{saleType}
 			{#if isOpen}
 				<ChevronUp />

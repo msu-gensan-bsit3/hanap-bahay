@@ -1,6 +1,5 @@
 <script lang="ts">
 	import PropertyImageGallery from "$lib/components/property-image-gallery.svelte";
-	import { ArrowLeft } from "@lucide/svelte";
 	import {
 		Header,
 		Specs,
@@ -11,7 +10,6 @@
 		InfoCard,
 		AgentCard,
 	} from "$lib/components/listing";
-	import { Button } from "$lib/components/ui/button";
 
 	let { data } = $props();
 
