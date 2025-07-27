@@ -74,7 +74,7 @@
 	}
 </script>
 
-<a href="/listings/{listing.id}" class="block h-full">
+<a href="/listings/{listing.id}" class="group block h-full">
 	<Card.Root
 		class="relative flex h-full flex-col gap-0 overflow-hidden p-0 shadow-sm transition-shadow hover:shadow-md"
 	>
@@ -100,7 +100,7 @@
 
 			<img
 				src={featuredPhoto}
-				class="h-full w-full object-cover transition-opacity duration-300 {propertyImageLoaded
+				class="h-full w-full object-cover transition-all duration-300 group-hover:scale-105 {propertyImageLoaded
 					? 'opacity-100'
 					: 'opacity-0'}"
 				alt={property.name}

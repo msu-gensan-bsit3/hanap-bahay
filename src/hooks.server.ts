@@ -1,10 +1,10 @@
-import { error, redirect, type Handle } from "@sveltejs/kit";
-import * as auth from "$lib/server/services/auth";
 import { db } from "$lib/server/db";
-import { eq } from "drizzle-orm";
 import { agent, user } from "$lib/server/db/schema";
+import * as auth from "$lib/server/services/auth";
+import { error, redirect, type Handle } from "@sveltejs/kit";
+import { eq } from "drizzle-orm";
 
-const protectedRoutes = ["admin", "(agent)"];
+const protectedRoutes = ["admin", "(agent)", "(user)"];
 
 function validateRoute(currentRoute: string) {
 	for (const route of protectedRoutes) {

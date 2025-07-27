@@ -4,7 +4,6 @@
 	import PriceFilter from "$lib/components/listings-page/filter-price.svelte";
 	import TypeFilter from "$lib/components/listings-page/filter-type.svelte";
 
-	import SearchAI from "$lib/components/listings-page/search-ai.svelte";
 	import SortBy from "$lib/components/listings-page/sort-by.svelte";
 
 	import CarouselListingCard from "$lib/components/listings-page/carousel-listing-card.svelte";
@@ -218,9 +217,9 @@
 					<SortBy bind:sortBy />
 				</div>
 			</div>
-			<div class="flex-shrink-0">
+			<!-- <div class="flex-shrink-0">
 				<SearchAI />
-			</div>
+			</div> -->
 		</div>
 
 		<!-- Listings Grid -->
