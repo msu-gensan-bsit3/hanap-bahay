@@ -15,7 +15,7 @@
 
 	import { replaceState } from "$app/navigation";
 	import { page } from "$app/state";
-	import { RotateCcw, Search } from "@lucide/svelte";
+	import { ChevronDown, ChevronUp, Funnel, RotateCcw, Search } from "@lucide/svelte";
 	import { tick } from "svelte";
 
 	// Filters - Initialize from URL params
@@ -33,6 +33,9 @@
 	let exactBaths = $state(page.url.searchParams.get("exactBaths") === "true");
 
 	let sortBy: string = $state(page.url.searchParams.get("sort") || "Default");
+
+	// Mobile filter visibility toggle
+	let showFilters = $state(false);
 
 	let { data } = $props();
 	let { listings } = $derived(data);
@@ -268,32 +271,56 @@
 		<div class="mx-auto max-w-7xl px-4 py-3">
 			<!-- Mobile: Stacked layout -->
 			<div class="flex flex-col gap-3 lg:hidden">
-				<!-- Search Bar -->
-				<div class="relative">
-					<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-					<Input
-						bind:value={searchTerm}
-						placeholder="Search properties by name, location, features..."
-						class="h-10 pl-9"
-					/>
-				</div>
-				<!-- Filter Row 1 -->
-				<div class="flex flex-wrap items-center gap-2">
-					<div class="min-w-0 flex-1">
-						<LocationFilter bind:location />
+				<!-- Mobile Filter Toggle Button -->
+				<div class="flex items-center justify-between">
+					<div class="relative flex-1">
+						<Search
+							class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+						/>
+						<Input
+							bind:value={searchTerm}
+							placeholder="Search properties by name, location, features..."
+							class="h-10 pl-9"
+						/>
 					</div>
-					<CategoryFilter bind:category />
-					<TypeFilter bind:saleType />
-				</div>
-				<!-- Filter Row 2 -->
-				<div class="flex flex-wrap items-center gap-2">
-					<PriceFilter bind:minPrice bind:maxPrice />
-					<RoomsFilter bind:bedrooms bind:exactBeds bind:bathrooms bind:exactBaths />
-					<Button variant="outline" class="flex items-center gap-2" onclick={resetFilters}>
-						<RotateCcw class="h-4 w-4" />
-						<span class="hidden sm:inline">Reset</span>
+					<Button
+						variant="outline"
+						size="sm"
+						class="ml-2 flex items-center gap-2"
+						onclick={() => (showFilters = !showFilters)}
+					>
+						<Funnel class="h-4 w-4" />
+						<span class="hidden sm:inline">Filters</span>
+						{#if showFilters}
+							<ChevronUp class="h-4 w-4" />
+						{:else}
+							<ChevronDown class="h-4 w-4" />
+						{/if}
 					</Button>
 				</div>
+
+				<!-- Collapsible Filters -->
+				{#if showFilters}
+					<div class="flex flex-col gap-3">
+						<!-- Filter Row 1 -->
+						<div class="flex flex-wrap items-center gap-2">
+							<div class="min-w-0 flex-1">
+								<LocationFilter bind:location />
+							</div>
+							<CategoryFilter bind:category />
+							<TypeFilter bind:saleType />
+						</div>
+						<!-- Filter Row 2 -->
+						<div class="flex flex-wrap items-center gap-2">
+							<PriceFilter bind:minPrice bind:maxPrice />
+							<RoomsFilter bind:bedrooms bind:exactBeds bind:bathrooms bind:exactBaths />
+							<Button variant="outline" class="flex items-center gap-2" onclick={resetFilters}>
+								<RotateCcw class="h-4 w-4" />
+								<span class="hidden sm:inline">Reset</span>
+							</Button>
+						</div>
+					</div>
+				{/if}
 			</div>
 
 			<!-- Desktop: Single row layout -->

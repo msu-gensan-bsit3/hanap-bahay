@@ -12,7 +12,7 @@
 
 	import { replaceState } from "$app/navigation";
 	import { page } from "$app/state";
-	import { RotateCcw, Search } from "@lucide/svelte";
+	import { ChevronDown, ChevronUp, Funnel, RotateCcw, Search } from "@lucide/svelte";
 	import { tick } from "svelte";
 
 	// Filters - Initialize from URL params
@@ -21,6 +21,9 @@
 	let credential = $state(page.url.searchParams.get("credential") || "All Credentials");
 	let experience = $state(page.url.searchParams.get("experience") || "Any Experience");
 	let sortBy: string = $state(page.url.searchParams.get("sort") || "Default");
+
+	// Mobile filter visibility toggle
+	let showFilters = $state(false);
 
 	let { data } = $props();
 	let { agents } = $derived(data);
@@ -200,35 +203,59 @@
 		<div class="mx-auto max-w-7xl px-4 py-3">
 			<!-- Mobile: Stacked layout -->
 			<div class="flex flex-col gap-3 lg:hidden">
-				<!-- Search Bar -->
-				<div class="relative">
-					<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-					<Input bind:value={searchTerm} placeholder="Search agents..." class="h-10 pl-9" />
-				</div>
-				<!-- Filter Row -->
-				<div class="flex flex-wrap items-center gap-2">
-					<div class="min-w-0 flex-1">
-						<LocationFilter bind:location />
-					</div>
-					<div class="min-w-0 flex-1">
-						<CredentialsFilter bind:credential />
-					</div>
-				</div>
-				<!-- Filter Row 2 -->
-				<div class="flex flex-wrap items-center gap-2">
-					<div class="min-w-0 flex-1">
-						<ExperienceFilter bind:experience />
+				<!-- Mobile Filter Toggle Button -->
+				<div class="flex items-center justify-between">
+					<div class="relative flex-1">
+						<Search
+							class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+						/>
+						<Input bind:value={searchTerm} placeholder="Search agents..." class="h-10 pl-9" />
 					</div>
 					<Button
 						variant="outline"
 						size="sm"
-						class="flex items-center gap-1 px-3"
-						onclick={resetFilters}
+						class="ml-2 flex items-center gap-2"
+						onclick={() => (showFilters = !showFilters)}
 					>
-						<RotateCcw class="h-4 w-4" />
-						Reset
+						<Funnel class="h-4 w-4" />
+						<span class="hidden sm:inline">Filters</span>
+						{#if showFilters}
+							<ChevronUp class="h-4 w-4" />
+						{:else}
+							<ChevronDown class="h-4 w-4" />
+						{/if}
 					</Button>
 				</div>
+
+				<!-- Collapsible Filters -->
+				{#if showFilters}
+					<div class="flex flex-col gap-3">
+						<!-- Filter Row -->
+						<div class="flex flex-wrap items-center gap-2">
+							<div class="min-w-0 flex-1">
+								<LocationFilter bind:location />
+							</div>
+							<div class="min-w-0 flex-1">
+								<CredentialsFilter bind:credential />
+							</div>
+						</div>
+						<!-- Filter Row 2 -->
+						<div class="flex flex-wrap items-center gap-2">
+							<div class="min-w-0 flex-1">
+								<ExperienceFilter bind:experience />
+							</div>
+							<Button
+								variant="outline"
+								size="sm"
+								class="flex items-center gap-1 px-3"
+								onclick={resetFilters}
+							>
+								<RotateCcw class="h-4 w-4" />
+								Reset
+							</Button>
+						</div>
+					</div>
+				{/if}
 			</div>
 
 			<!-- Desktop: Single row layout -->

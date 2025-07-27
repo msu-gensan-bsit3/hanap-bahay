@@ -44,9 +44,7 @@
 	class="sticky top-0 z-50 h-16 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85"
 	bind:clientHeight={heights.header}
 >
-	<div
-		class="mx-auto flex h-full max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8"
-	>
+	<div class="mx-auto flex h-full max-w-screen-2xl items-center justify-between px-4 lg:px-6">
 		<!-- Logo -->
 		<div class="flex items-center">
 			<a href="/" class="flex items-center space-x-2">
