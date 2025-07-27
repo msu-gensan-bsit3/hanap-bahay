@@ -14,6 +14,7 @@
 				outline: "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
 
 				// Tag Variants
+
 				"sale":
 					"bg-green-500 text-white [a&]:hover:bg-red-600 border-transparent",
 				"rent":
