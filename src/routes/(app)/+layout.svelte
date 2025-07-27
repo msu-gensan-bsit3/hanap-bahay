@@ -5,10 +5,8 @@
 	let { children } = $props();
 </script>
 
-<div>
-	<SiteHeader />
-		<main>
-			{@render children()}
-		</main>
-	<SiteFooter />
-</div>
+<SiteHeader />
+	<main>
+		{@render children()}
+	</main>
+<SiteFooter />

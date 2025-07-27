@@ -14,11 +14,11 @@
 				outline: "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
 
 				// Tag Variants
-				"sale":
+				sale:
 					"bg-red-500 text-primary-foreground [a&]:hover:bg-primary/90 border-transparent",
-				"rent":
+				rent:
 					"bg-green-500 text-primary-foreground [a&]:hover:bg-primary/90 border-transparent",
-				"lease":
+				lease:
 					"bg-yellow-500 text-primary-foreground [a&]:hover:bg-primary/90 border-transparent",
 			},
 		},

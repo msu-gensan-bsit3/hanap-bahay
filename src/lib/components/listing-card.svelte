@@ -9,7 +9,7 @@
 	let { agent, property, ...listing }: ClientListing = $props()
 
 	const toTagType = (t:typeof property.type) => {
-		return "For" + t.replace(/^\w/, t => t.toUpperCase())
+		return "For " + t.replace(/^\w/, t => t.toUpperCase())
 	}
 
 	let listingType = $derived(toTagType(property.type))
@@ -33,7 +33,7 @@
 
 	<Card.Content class="bg-background px-2 pb-2">
 
-		<h2 class="text-xl font-bold tracking-tight">₱1,000</h2>
+		<h2 class="text-xl font-bold tracking-tight">{ property.price }</h2>
 		<div class="h-5 flex items-center space-x-2 text-sm tracking-tight">
 			<span class="font-semibold">{ property.bedrooms } <span class="font-normal">bds</span></span>
 			<Separator orientation="vertical" />
@@ -45,7 +45,7 @@
 		</div>
 
 		<p class="text-sm">{ Object.values(property.address).slice(1).filter(v => v).join(', ')}</p>
-		<p class="text-xs text-muted-foreground">{agent.user.lastName}, {agent.user.firstName}</p>
+		<p class="text-xs text-muted-foreground">{ agent.user.lastName }, { agent.user.firstName }</p>
 
 	</Card.Content>
 </Card.Root>
