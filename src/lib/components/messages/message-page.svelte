@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { invalidate, replaceState } from "$app/navigation";
 	import { moreEnhance } from "$lib/states/enhance.svelte";
 	import { formatTimeAgo } from "$lib/utils";
 	import { onMount, tick } from "svelte";
-	import { ChatArea, ConversationsList, QuickActions } from ".";
-	import type { PageServerData } from "../../../routes/(app)/messages/$types";
-	import { invalidate, replaceState } from "$app/navigation";
 	import { source, type Source } from "sveltekit-sse";
+	import { ChatArea, ConversationsList, QuickActions } from ".";
+	import type { PageServerData } from "../../../routes/(app)/(user)/messages/$types";
 
 	interface props {
 		userConversations: PageServerData["userConversations"];

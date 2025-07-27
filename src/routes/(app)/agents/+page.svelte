@@ -10,32 +10,89 @@
 	import { Button } from "$lib/components/ui/button/index";
 	import { Input } from "$lib/components/ui/input/index";
 
+	import { replaceState } from "$app/navigation";
+	import { page } from "$app/state";
 	import { RotateCcw, Search } from "@lucide/svelte";
+	import { tick } from "svelte";
 
-	// Filters
-	let searchTerm = $state("");
-	let location = $state("All Locations");
-	let credential = $state("All Credentials");
-	let experience = $state("Any Experience");
-	let sortBy: string = $state("Default");
+	// Filters - Initialize from URL params
+	let searchTerm = $state(page.url.searchParams.get("search") || "");
+	let location = $state(page.url.searchParams.get("location") || "All Locations");
+	let credential = $state(page.url.searchParams.get("credential") || "All Credentials");
+	let experience = $state(page.url.searchParams.get("experience") || "Any Experience");
+	let sortBy: string = $state(page.url.searchParams.get("sort") || "Default");
 
 	let { data } = $props();
 	let { agents } = $derived(data);
 
 	// svelte-ignore state_referenced_locally
-	let filteredAgents = $state(agents);
-	let loading = $state(false);
+	let filteredAgents = $derived(filter());
+	let loading = $state(true);
 	let timeoutId: NodeJS.Timeout;
 
 	// pagination
 	const perPage = 12;
-	let pageNum = $state(1);
+	let pageNum = $derived.by(() => {
+		filteredAgents;
+		return parseInt(page.url.searchParams.get("page") || "1");
+	});
 
 	const count = $derived(filteredAgents.length);
 	const totalPages = $derived(Math.ceil(count / perPage));
 	const paginatedAgents = $derived(
 		filteredAgents.slice((pageNum - 1) * perPage, pageNum * perPage),
 	);
+
+	function filter() {
+		return agents
+			.filter((agent) => {
+				// Search term filter
+				const fullName = `${agent.user.firstName} ${agent.user.lastName}`.toLowerCase();
+				const agentLocation = Object.values(agent.user.address).join(",");
+
+				const matchesSearch =
+					searchTerm.trim() === "" ||
+					fullName.includes(searchTerm.toLowerCase()) ||
+					agent.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					agent.about?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					agentLocation.toLowerCase().includes(searchTerm.toLowerCase());
+
+				// Location filter
+				const matchesLocation = location === "All Locations" || agentLocation.includes(location);
+
+				// Credential filter
+				const matchesCredential =
+					credential === "All Credentials" || agent.credentials === credential;
+
+				// Experience filter
+				const agentExperience = getExperienceYears(agent.user.dateCreated);
+				const matchesExp = matchesExperience(agentExperience, experience);
+
+				return matchesSearch && matchesLocation && matchesCredential && matchesExp;
+			})
+			.sort((a, b) => {
+				switch (sortBy) {
+					case "Highest Rated":
+						return getMockRating() - getMockRating(); // Mock random sort
+					case "Most Experienced":
+						return getExperienceYears(b.user.dateCreated) - getExperienceYears(a.user.dateCreated);
+					case "Newest Member":
+						return new Date(b.user.dateCreated).getTime() - new Date(a.user.dateCreated).getTime();
+					case "Most Active":
+						return getMockActiveListings() - getMockActiveListings(); // Mock random sort
+					case "Name A-Z":
+						return `${a.user.firstName} ${a.user.lastName}`.localeCompare(
+							`${b.user.firstName} ${b.user.lastName}`,
+						);
+					case "Name Z-A":
+						return `${b.user.firstName} ${b.user.lastName}`.localeCompare(
+							`${a.user.firstName} ${a.user.lastName}`,
+						);
+					default:
+						return 0;
+				}
+			});
+	}
 
 	// Reset filters function
 	function resetFilters() {
@@ -44,6 +101,44 @@
 		credential = "All Credentials";
 		experience = "Any Experience";
 		sortBy = "Default";
+		pageNum = 1;
+		updateURL();
+	}
+
+	// Update URL with current filter values
+	async function updateURL() {
+		const url = new URL(page.url);
+
+		// Clear existing params
+		url.searchParams.delete("search");
+		url.searchParams.delete("location");
+		url.searchParams.delete("credential");
+		url.searchParams.delete("experience");
+		url.searchParams.delete("sort");
+		url.searchParams.delete("page");
+
+		// Set params only if they're not default values
+		if (searchTerm.trim() !== "") {
+			url.searchParams.set("search", searchTerm);
+		}
+		if (location !== "All Locations") {
+			url.searchParams.set("location", location);
+		}
+		if (credential !== "All Credentials") {
+			url.searchParams.set("credential", credential);
+		}
+		if (experience !== "Any Experience") {
+			url.searchParams.set("experience", experience);
+		}
+		if (sortBy !== "Default") {
+			url.searchParams.set("sort", sortBy);
+		}
+		if (pageNum > 1) {
+			url.searchParams.set("page", pageNum.toString());
+		}
+
+		await tick();
+		replaceState(url, {});
 	}
 
 	function getExperienceYears(dateCreated: Date) {
@@ -81,63 +176,11 @@
 
 		clearTimeout(timeoutId);
 		timeoutId = setTimeout(() => {
-			filteredAgents = agents
-				.filter((agent) => {
-					// Search term filter
-					const fullName = `${agent.user.firstName} ${agent.user.lastName}`.toLowerCase();
-					const agentLocation = Object.values(agent.user.address).join(",");
-
-					const matchesSearch =
-						searchTerm.trim() === "" ||
-						fullName.includes(searchTerm.toLowerCase()) ||
-						agent.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-						agent.about?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-						agentLocation.toLowerCase().includes(searchTerm.toLowerCase());
-
-					// Location filter
-					const matchesLocation = location === "All Locations" || agentLocation.includes(location);
-
-					// Credential filter
-					const matchesCredential =
-						credential === "All Credentials" || agent.credentials === credential;
-
-					// Experience filter
-					const agentExperience = getExperienceYears(agent.user.dateCreated);
-					const matchesExp = matchesExperience(agentExperience, experience);
-
-					return matchesSearch && matchesLocation && matchesCredential && matchesExp;
-				})
-				.sort((a, b) => {
-					switch (sortBy) {
-						case "Highest Rated":
-							return getMockRating() - getMockRating(); // Mock random sort
-						case "Most Experienced":
-							return (
-								getExperienceYears(b.user.dateCreated) - getExperienceYears(a.user.dateCreated)
-							);
-						case "Newest Member":
-							return (
-								new Date(b.user.dateCreated).getTime() - new Date(a.user.dateCreated).getTime()
-							);
-						case "Most Active":
-							return getMockActiveListings() - getMockActiveListings(); // Mock random sort
-						case "Name A-Z":
-							return `${a.user.firstName} ${a.user.lastName}`.localeCompare(
-								`${b.user.firstName} ${b.user.lastName}`,
-							);
-						case "Name Z-A":
-							return `${b.user.firstName} ${b.user.lastName}`.localeCompare(
-								`${a.user.firstName} ${a.user.lastName}`,
-							);
-						default:
-							return 0;
-					}
-				});
-
 			// Reset to first page when filters change
-			pageNum = 1;
 			loading = false;
 		}, 250);
+
+		updateURL();
 	});
 </script>
 
@@ -191,7 +234,7 @@
 			<!-- Desktop: Single row layout -->
 			<div class="hidden items-center gap-3 lg:flex">
 				<!-- Search Bar -->
-				<div class="relative w-full max-w-lg">
+				<div class="relative w-[200%] max-w-lg">
 					<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 					<Input
 						bind:value={searchTerm}

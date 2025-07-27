@@ -13,41 +13,142 @@
 	import { Button } from "$lib/components/ui/button/index";
 	import { Input } from "$lib/components/ui/input/index";
 
+	import { replaceState } from "$app/navigation";
+	import { page } from "$app/state";
 	import { RotateCcw, Search } from "@lucide/svelte";
+	import { tick } from "svelte";
 
-	// Filters
-	let searchTerm = $state("");
-	let location = $state("All Locations");
-	let saleType = $state("All Types");
-	let category = $state("all");
+	// Filters - Initialize from URL params
+	let searchTerm = $state(page.url.searchParams.get("search") || "");
+	let location = $state(page.url.searchParams.get("location") || "All Locations");
+	let saleType = $state(page.url.searchParams.get("saleType") || "All Types");
+	let category = $state(page.url.searchParams.get("category") || "all");
 
-	let minPrice = $state(0);
-	let maxPrice = $state(0);
+	let minPrice = $state(parseInt(page.url.searchParams.get("minPrice") || "0"));
+	let maxPrice = $state(parseInt(page.url.searchParams.get("maxPrice") || "0"));
 
-	let bedrooms = $state(0);
-	let exactBeds = $state(false);
-	let bathrooms = $state(0);
-	let exactBaths = $state(false);
+	let bedrooms = $state(parseInt(page.url.searchParams.get("bedrooms") || "0"));
+	let exactBeds = $state(page.url.searchParams.get("exactBeds") === "true");
+	let bathrooms = $state(parseInt(page.url.searchParams.get("bathrooms") || "0"));
+	let exactBaths = $state(page.url.searchParams.get("exactBaths") === "true");
 
-	let sortBy: string = $state("Default");
+	let sortBy: string = $state(page.url.searchParams.get("sort") || "Default");
 
 	let { data } = $props();
 	let { listings } = $derived(data);
 
 	// svelte-ignore state_referenced_locally
-	let filteredListings = $state(listings);
-	let loading = $state(false);
+	let filteredListings = $derived(filter());
+	let loading = $state(true);
 	let timeoutId: NodeJS.Timeout;
 
 	// pagination
 	const perPage = 24;
-	let pageNum = $state(1);
+	let pageNum = $derived.by(() => {
+		filteredListings;
+		return parseInt(page.url.searchParams.get("page") || "1");
+	});
 
 	const count = $derived(filteredListings.length);
 	const totalPages = $derived(Math.ceil(count / perPage));
 	const paginatedListings = $derived(
 		filteredListings.slice((pageNum - 1) * perPage, pageNum * perPage),
 	);
+
+	function filter() {
+		return listings
+			.filter((listing) => {
+				const property = listing.property;
+
+				// Search term filter - search in name, description, features, and address
+				const propertyName = property.name?.toLowerCase() || "";
+				const listingDescription = property.description?.toLowerCase() || "";
+				const listingFeatures =
+					property.features
+						?.map((f) => f.name)
+						.join(" ")
+						.toLowerCase() || "";
+				const listingAddress = Object.values(property.address)
+					.slice(1)
+					.filter((v) => v)
+					.join(", ")
+					.toLowerCase();
+				const floorArea = property.floorArea?.toString() || "";
+				const landArea = property.landArea?.toString() || "";
+
+				const matchesSearch =
+					searchTerm.trim() === "" ||
+					propertyName.includes(searchTerm.toLowerCase()) ||
+					listingDescription.includes(searchTerm.toLowerCase()) ||
+					listingFeatures.includes(searchTerm.toLowerCase()) ||
+					listingAddress.includes(searchTerm.toLowerCase()) ||
+					floorArea.includes(searchTerm.toLowerCase()) ||
+					landArea.includes(searchTerm.toLowerCase());
+
+				// Location filter
+				const matchesLocation =
+					location === "All Locations" || listingAddress.includes(location.toLowerCase());
+
+				// Sale type filter
+				const matchType =
+					saleType === "All Types" || saleType.toLowerCase().includes(property.type.toLowerCase());
+
+				// Category filter - only apply if category is not "all"
+				const matchCategory = category === "all" || property.category === category;
+
+				// Price filter
+				let matchPrice = true;
+				if (minPrice > 0 || maxPrice > 0) {
+					if (maxPrice > 0) {
+						matchPrice = property.price >= minPrice && property.price <= maxPrice;
+					} else {
+						matchPrice = property.price >= minPrice;
+					}
+				}
+
+				// Bedrooms filter - only apply if bedrooms > 0
+				const matchBeds =
+					bedrooms === 0 ||
+					(exactBeds
+						? property.bedrooms === bedrooms
+						: property.bedrooms && property.bedrooms >= bedrooms);
+
+				// Bathrooms filter - only apply if bathrooms > 0
+				const matchBaths =
+					bathrooms === 0 ||
+					(exactBaths
+						? property.bathrooms === bathrooms
+						: property.bathrooms && property.bathrooms >= bathrooms);
+
+				return (
+					matchesSearch &&
+					matchesLocation &&
+					matchType &&
+					matchCategory &&
+					matchPrice &&
+					matchBeds &&
+					matchBaths
+				);
+			})
+			.sort((a, b) => {
+				if (!sortBy) {
+					return 0;
+				}
+
+				switch (sortBy) {
+					case "Highest Price":
+						return b.property.price - a.property.price;
+					case "Lowest Price":
+						return a.property.price - b.property.price;
+					case "Newest First":
+						return new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime();
+					case "Oldest First":
+						return new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
+					default:
+						return 0;
+				}
+			});
+	}
 
 	// Reset filters function
 	function resetFilters() {
@@ -62,9 +163,69 @@
 		exactBaths = false;
 		bathrooms = 0;
 		sortBy = "Default";
+		updateURL();
 	}
 
-	//
+	// Update URL with current filter values
+	async function updateURL() {
+		const url = new URL(page.url);
+
+		// Clear existing params
+		url.searchParams.delete("search");
+		url.searchParams.delete("location");
+		url.searchParams.delete("saleType");
+		url.searchParams.delete("category");
+		url.searchParams.delete("minPrice");
+		url.searchParams.delete("maxPrice");
+		url.searchParams.delete("bedrooms");
+		url.searchParams.delete("bathrooms");
+		url.searchParams.delete("exactBeds");
+		url.searchParams.delete("exactBaths");
+		url.searchParams.delete("sort");
+		url.searchParams.delete("page");
+
+		// Set params only if they're not default values
+		if (searchTerm.trim() !== "") {
+			url.searchParams.set("search", searchTerm);
+		}
+		if (location !== "All Locations") {
+			url.searchParams.set("location", location);
+		}
+		if (saleType !== "All Types") {
+			url.searchParams.set("saleType", saleType);
+		}
+		if (category !== "all") {
+			url.searchParams.set("category", category);
+		}
+		if (minPrice > 0) {
+			url.searchParams.set("minPrice", minPrice.toString());
+		}
+		if (maxPrice > 0) {
+			url.searchParams.set("maxPrice", maxPrice.toString());
+		}
+		if (bedrooms > 0) {
+			url.searchParams.set("bedrooms", bedrooms.toString());
+		}
+		if (bathrooms > 0) {
+			url.searchParams.set("bathrooms", bathrooms.toString());
+		}
+		if (exactBeds) {
+			url.searchParams.set("exactBeds", "true");
+		}
+		if (exactBaths) {
+			url.searchParams.set("exactBaths", "true");
+		}
+		if (sortBy !== "Default") {
+			url.searchParams.set("sort", sortBy);
+		}
+		if (pageNum > 1) {
+			url.searchParams.set("page", pageNum.toString());
+		}
+
+		await tick();
+		replaceState(url, {});
+	}
+
 	$effect(() => {
 		loading = true;
 		const _ = [
@@ -83,104 +244,11 @@
 
 		clearTimeout(timeoutId);
 		timeoutId = setTimeout(() => {
-			filteredListings = listings
-				.filter((listing) => {
-					const property = listing.property;
-
-					// Search term filter - search in name, description, features, and address
-					const propertyName = property.name?.toLowerCase() || "";
-					const listingDescription = property.description?.toLowerCase() || "";
-					const listingFeatures =
-						property.features
-							?.map((f) => f.name)
-							.join(" ")
-							.toLowerCase() || "";
-					const listingAddress = Object.values(property.address)
-						.slice(1)
-						.filter((v) => v)
-						.join(", ")
-						.toLowerCase();
-					const floorArea = property.floorArea?.toString() || "";
-					const landArea = property.landArea?.toString() || "";
-
-					const matchesSearch =
-						searchTerm.trim() === "" ||
-						propertyName.includes(searchTerm.toLowerCase()) ||
-						listingDescription.includes(searchTerm.toLowerCase()) ||
-						listingFeatures.includes(searchTerm.toLowerCase()) ||
-						listingAddress.includes(searchTerm.toLowerCase()) ||
-						floorArea.includes(searchTerm.toLowerCase()) ||
-						landArea.includes(searchTerm.toLowerCase());
-
-					// Location filter
-					const matchesLocation =
-						location === "All Locations" || listingAddress.includes(location.toLowerCase());
-
-					// Sale type filter
-					const matchType =
-						saleType === "All Types" ||
-						saleType.toLowerCase().includes(property.type.toLowerCase());
-
-					// Category filter - only apply if category is not "all"
-					const matchCategory = category === "all" || property.category === category;
-
-					// Price filter
-					let matchPrice = true;
-					if (minPrice > 0 || maxPrice > 0) {
-						if (maxPrice > 0) {
-							matchPrice = property.price >= minPrice && property.price <= maxPrice;
-						} else {
-							matchPrice = property.price >= minPrice;
-						}
-					}
-
-					// Bedrooms filter - only apply if bedrooms > 0
-					const matchBeds =
-						bedrooms === 0 ||
-						(exactBeds
-							? property.bedrooms === bedrooms
-							: property.bedrooms && property.bedrooms >= bedrooms);
-
-					// Bathrooms filter - only apply if bathrooms > 0
-					const matchBaths =
-						bathrooms === 0 ||
-						(exactBaths
-							? property.bathrooms === bathrooms
-							: property.bathrooms && property.bathrooms >= bathrooms);
-
-					return (
-						matchesSearch &&
-						matchesLocation &&
-						matchType &&
-						matchCategory &&
-						matchPrice &&
-						matchBeds &&
-						matchBaths
-					);
-				})
-				.sort((a, b) => {
-					if (!sortBy) {
-						return 0;
-					}
-
-					switch (sortBy) {
-						case "Highest Price":
-							return b.property.price - a.property.price;
-						case "Lowest Price":
-							return a.property.price - b.property.price;
-						case "Newest First":
-							return new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime();
-						case "Oldest First":
-							return new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
-						default:
-							return 0;
-					}
-				});
-
 			// Reset to first page when filters change
-			pageNum = 1;
 			loading = false;
 		}, 250);
+
+		updateURL();
 	});
 </script>
 
