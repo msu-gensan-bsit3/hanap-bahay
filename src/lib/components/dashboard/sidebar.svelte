@@ -43,12 +43,12 @@
 			href: "/agent/listings",
 			icon: Building,
 		},
-		{
-			label: "Messages",
-			href: "/agent/messages",
-			icon: MessageSquare,
-			badge: 12,
-		},
+		// {
+		// 	label: "Messages",
+		// 	href: "/agent/messages",
+		// 	icon: MessageSquare,
+		// 	badge: 12,
+		// },
 		{
 			label: "Leads",
 			href: "/agent/leads",

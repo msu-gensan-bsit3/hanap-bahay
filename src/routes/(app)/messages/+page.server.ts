@@ -1,43 +1,21 @@
 import { redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
+import { Messaging } from "$lib/server/services/messaging";
 import { db } from "$lib/server/db";
-import { conversation, conversationParticipant, conversationQuery } from "$lib/server/db/schema";
-import { eq, exists } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { agent } from "$lib/server/db/schema";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
 		return redirect(302, "/");
 	}
 
-	const subquery = db
-		.select({ conversationId: conversation.id })
-		.from(conversationParticipant)
-		.where(eq(conversationParticipant.userId, locals.user.id))
-		.innerJoin(conversation, eq(conversation.id, conversationParticipant.conversationId))
-		.as("subquery");
+	const isAgent = await db.query.agent.findFirst({ where: eq(agent.id, locals.user.id) });
+	if (isAgent) {
+		return redirect(302, "/agent/messages");
+	}
 
-	const userConversations = await db.query.conversation.findMany({
-		where: exists(db.select().from(subquery).where(eq(conversation.id, subquery.conversationId))),
-		with: {
-			...conversationQuery.with,
-			offerConversations: {
-				columns: {},
-				with: {
-					offer: {
-						columns: {},
-						with: {
-							listing: {
-								columns: {},
-								with: {
-									property: true,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	});
+	const userConversations = await Messaging.getConversations(locals.user.id);
 
 	return {
 		userConversations,

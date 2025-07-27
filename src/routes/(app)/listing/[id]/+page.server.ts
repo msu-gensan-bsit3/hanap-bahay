@@ -77,83 +77,85 @@ export const actions: Actions = {
 			return error(500, { message: "this shouldn't happen" });
 		}
 
-		const agentId = res.data.agentId;
-		const listingId = res.data.listingId;
+		return
 
-		const curAgent = await db.query.agent.findFirst({ where: eq(agent.id, agentId) });
-		if (!curAgent) {
-			return fail("agent id not found");
-		}
+		// const agentId = res.data.agentId;
+		// const listingId = res.data.listingId;
 
-		const subquery = db
-			.select({ conversationId: conversation.id })
-			.from(conversationParticipant)
-			.where(eq(conversationParticipant.userId, locals.user.id))
-			.innerJoin(conversation, eq(conversation.id, conversationParticipant.conversationId))
-			.as("subquery");
+		// const curAgent = await db.query.agent.findFirst({ where: eq(agent.id, agentId) });
+		// if (!curAgent) {
+		// 	return fail("agent id not found");
+		// }
 
-		let [queryResult] = await db
-			.select({ conversation })
-			.from(conversationParticipant)
-			.where(
-				and(
-					exists(
-						db
-							.select()
-							.from(subquery)
-							.where(eq(conversationParticipant.conversationId, subquery.conversationId)),
-					),
-					eq(conversationParticipant.userId, agentId),
-				),
-			)
-			.innerJoin(conversation, eq(conversation.id, conversationParticipant.conversationId));
+		// const subquery = db
+		// 	.select({ conversationId: conversation.id })
+		// 	.from(conversationParticipant)
+		// 	.where(eq(conversationParticipant.userId, locals.user.id))
+		// 	.innerJoin(conversation, eq(conversation.id, conversationParticipant.conversationId))
+		// 	.as("subquery");
 
-		if (!queryResult) {
-			await db.transaction(async (db) => {
-				const createdConversation = (await db.insert(conversation).values({}).returning())[0];
+		// let [queryResult] = await db
+		// 	.select({ conversation })
+		// 	.from(conversationParticipant)
+		// 	.where(
+		// 		and(
+		// 			exists(
+		// 				db
+		// 					.select()
+		// 					.from(subquery)
+		// 					.where(eq(conversationParticipant.conversationId, subquery.conversationId)),
+		// 			),
+		// 			eq(conversationParticipant.userId, agentId),
+		// 		),
+		// 	)
+		// 	.innerJoin(conversation, eq(conversation.id, conversationParticipant.conversationId));
 
-				await db
-					.insert(conversationParticipant)
-					.values({ conversationId: createdConversation.id, userId: locals.user!.id });
+		// if (!queryResult) {
+		// 	await db.transaction(async (db) => {
+		// 		const createdConversation = (await db.insert(conversation).values({}).returning())[0];
 
-				await db
-					.insert(conversationParticipant)
-					.values({ conversationId: createdConversation.id, userId: agentId });
+		// 		await db
+		// 			.insert(conversationParticipant)
+		// 			.values({ conversationId: createdConversation.id, userId: locals.user!.id });
 
-				queryResult = {
-					conversation: createdConversation,
-				};
-			});
-		}
+		// 		await db
+		// 			.insert(conversationParticipant)
+		// 			.values({ conversationId: createdConversation.id, userId: agentId });
 
-		await db.transaction(async (db) => {
-			let b = await db.query.buyer.findFirst({ where: eq(buyer.id, locals.user!.id) });
-			if (!b) {
-				const [res] = await db.insert(buyer).values({ id: locals.user!.id }).returning();
-				b = res;
-			}
+		// 		queryResult = {
+		// 			conversation: createdConversation,
+		// 		};
+		// 	});
+		// }
 
-			let o = await db.query.offer.findFirst({
-				where: and(eq(offer.listingId, listingId), eq(offer.buyerId, b.id)),
-			});
-			if (!o) {
-				const [res] = await db.insert(offer).values({ buyerId: b.id, listingId }).returning();
-				o = res;
-			}
-			let res = await db.query.offerConversation.findFirst({
-				where: and(
-					eq(offerConversation.offerId, o.id),
-					eq(offerConversation.conversationId, queryResult.conversation.id),
-				),
-			});
+		// await db.transaction(async (db) => {
+		// 	let b = await db.query.buyer.findFirst({ where: eq(buyer.id, locals.user!.id) });
+		// 	if (!b) {
+		// 		const [res] = await db.insert(buyer).values({ id: locals.user!.id }).returning();
+		// 		b = res;
+		// 	}
 
-			if (!res) {
-				await db
-					.insert(offerConversation)
-					.values({ offerId: o.id, conversationId: queryResult.conversation.id });
-			}
-		});
+		// 	let o = await db.query.offer.findFirst({
+		// 		where: and(eq(offer.listingId, listingId), eq(offer.buyerId, b.id)),
+		// 	});
+		// 	if (!o) {
+		// 		const [res] = await db.insert(offer).values({ buyerId: b.id, listingId }).returning();
+		// 		o = res;
+		// 	}
+		// 	let res = await db.query.offerConversation.findFirst({
+		// 		where: and(
+		// 			eq(offerConversation.offerId, o.id),
+		// 			eq(offerConversation.conversationId, queryResult.conversation.id),
+		// 		),
+		// 	});
 
-		return redirect(302, "/messages?convId=" + queryResult.conversation.id);
+		// 	if (!res) {
+		// 		await db
+		// 			.insert(offerConversation)
+		// 			.values({ offerId: o.id, conversationId: queryResult.conversation.id });
+		// 	}
+		// });
+
+		// return redirect(302, "/messages?convId=" + queryResult.conversation.id);
 	},
 };

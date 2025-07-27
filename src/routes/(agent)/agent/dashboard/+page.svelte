@@ -21,7 +21,8 @@
 			const isLandProperty = ["commercial-lot", "residential-lot", "industrial-lot"].includes(
 				v.property.category,
 			);
-			const area = isLandProperty ? v.property.landArea : v.property.floorArea;
+			const area =
+				(isLandProperty ? v.property.landArea : v.property.floorArea) || v.property.landArea;
 
 			const details = [];
 			if (v.property.bedrooms && v.property.bedrooms > 0) {
