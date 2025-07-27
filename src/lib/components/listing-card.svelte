@@ -7,6 +7,7 @@
 
 	let { agent, property, ...listing }: ClientListing = $props();
 
+
 	const toTagType = (t: typeof property.type) => {
 		return "For " + t.replace(/^\w/, (t) => t.toUpperCase());
 	};

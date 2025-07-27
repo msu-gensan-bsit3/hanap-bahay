@@ -15,7 +15,7 @@
 </script>
 
 <div
-	class="mb-4 w-full bg-[url(https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iU07NrehBC9I/v0/-1x-1.webp)] bg-no-repeat"
+	class="w-full bg-[url(https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iU07NrehBC9I/v0/-1x-1.webp)] bg-no-repeat mb-4"
 >
 	<div class="mx-auto max-h-screen max-w-xl">
 		<div class="container mx-auto py-12">
@@ -107,7 +107,7 @@
 		</div>
 		<Carousel.Content>
 			<Carousel.Item class="basis-auto">
-				<ListingCard {...listings[0]} />
+				<ListingCard {...listings[1]} />
 			</Carousel.Item>
 		</Carousel.Content>
 	</Carousel.Root>

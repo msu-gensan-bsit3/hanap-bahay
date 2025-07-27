@@ -37,6 +37,25 @@ export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, "childre
 export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
 export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?: U | null };
 
+export function formatPrice(num: number, useCompactNotation: boolean = true): string {
+	if (useCompactNotation) {
+		return (
+			'₱' +
+			new Intl.NumberFormat('en-US', {
+				notation: 'compact',
+				compactDisplay: 'short',
+			}).format(num)
+		);
+	} else {
+		return (
+			'₱' +
+			new Intl.NumberFormat('en-US', {
+				useGrouping: true,
+			}).format(num)
+		);
+	}
+}
+
 export function hideFooter() {
 	onMount(() => {
 		const footer = document.querySelector("footer");
