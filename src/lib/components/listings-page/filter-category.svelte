@@ -1,21 +1,21 @@
 <script lang="ts">
-	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index"
-	import * as RadioGroup from "$lib/components/ui/radio-group/index"
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index";
+	import * as RadioGroup from "$lib/components/ui/radio-group/index";
 
-	import { Button } from "$lib/components/ui/button/index"
-	import { Label } from "$lib/components/ui/label/index"
+	import { Button } from "$lib/components/ui/button/index";
+	import { Label } from "$lib/components/ui/label/index";
 
-	import { ChevronDown, ChevronUp } from "@lucide/svelte"
+	import { ChevronDown, ChevronUp } from "@lucide/svelte";
 
-	let isOpen = $state(false)
-	let tempType = $state("For Sale")
+	let isOpen = $state(false);
+	let tempType = $state("For Sale");
 
-	let { saleType } = $props()
+	let { saleType = $bindable() }: { saleType: string } = $props();
 
 	const applyChanges = () => {
-		isOpen = false
-		saleType = tempType
-	}
+		isOpen = false;
+		saleType = tempType;
+	};
 </script>
 
 <DropdownMenu.Root bind:open={isOpen}>
@@ -44,11 +44,6 @@
 				<Label>For Lease</Label>
 			</div>
 		</RadioGroup.Root>
-		<Button
-			onclick={applyChanges}
-			class="w-full"
-		>
-			Apply
-		</Button>
+		<Button onclick={applyChanges} class="w-full">Apply</Button>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>

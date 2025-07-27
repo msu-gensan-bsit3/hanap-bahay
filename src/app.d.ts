@@ -13,3 +13,5 @@ declare global {
 
 // interface Platform {}
 export {};
+
+declare module 'select-philippines-address';

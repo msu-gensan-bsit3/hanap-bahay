@@ -39,7 +39,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 			event.locals.user = null;
 			event.locals.session = null;
 
-			return redirect(302, "/signin");
+			return redirect(302, "/login");
 		}
 
 		if (route.includes("(agent)")) {
