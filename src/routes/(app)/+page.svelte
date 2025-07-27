@@ -68,7 +68,7 @@
 
 <!-- Featured Listings Carousel -->
 <div class="w-full bg-background px-4">
-	<Carousel.Root class="mx-auto max-w-screen-xl space-y-4 py-12">
+	<Carousel.Root class="mx-auto my-8 max-w-screen-xl space-y-4">
 		<div class="flex w-full items-center justify-between">
 			<div>
 				<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
@@ -101,7 +101,7 @@
 
 <!-- Featured Agents Carousel -->
 <div class="w-full bg-muted/30 px-4">
-	<Carousel.Root class="mx-auto max-w-screen-xl space-y-4 py-12">
+	<Carousel.Root class="mx-auto my-4 max-w-screen-xl space-y-4">
 		<div class="flex w-full items-center justify-between">
 			<div>
 				<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>

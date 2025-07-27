@@ -261,7 +261,7 @@
 			<!-- Desktop: Single row layout -->
 			<div class="hidden items-center gap-3 lg:flex">
 				<!-- Search Bar -->
-				<div class="relative w-[200%] max-w-lg">
+				<div class="relative w-[400%] max-w-md">
 					<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 					<Input
 						bind:value={searchTerm}
