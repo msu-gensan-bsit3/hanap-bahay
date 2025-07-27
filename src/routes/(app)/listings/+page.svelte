@@ -33,7 +33,8 @@
 	let { data } = $props();
 	let { listings } = $derived(data);
 
-	let filteredListings: typeof listings = $state([]);
+	// svelte-ignore state_referenced_locally
+	let filteredListings = $state(listings);
 	let loading = $state(false);
 	let timeoutId: NodeJS.Timeout;
 

@@ -21,7 +21,7 @@
 </script>
 
 <div
-	class="relative w-full bg-[url(https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iU07NrehBC9I/v0/-1x-1.webp)] bg-cover bg-center bg-no-repeat"
+	class="relative w-full bg-[url(https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iU07NrehBC9I/v0/-1x-1.webp)] bg-cover bg-center bg-no-repeat pb-5"
 >
 	<!-- Overlay for better text readability -->
 	<div class="absolute inset-0 bg-black/40"></div>
@@ -46,33 +46,32 @@
 					</span>
 				</h1>
 
-				<div class="mx-auto max-w-3xl">
-					<div class="rounded-2xl border bg-white/95 shadow-2xl backdrop-blur-sm">
-						<div class="flex w-full items-center justify-between p-2">
-							<div class="flex flex-1 justify-start"></div>
-							<div class="flex items-center justify-center">
-								<div class="inline-flex rounded-lg bg-muted p-1">
-									<Button size="sm" class="rounded-md" variant="default">For Rent</Button>
-									<Button size="sm" class="rounded-md" variant="ghost">For Sale</Button>
-									<Button size="sm" class="rounded-md" variant="ghost">For Lease</Button>
-								</div>
+				<div class="mx-auto mt-20 max-w-2xl">
+					<div class="rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-xs">
+						<form action="/listings" method="get" class="space-y-4">
+							<div class="text-center">
+								<Label class="text-lg font-medium text-gray-900">What are you looking for?</Label>
 							</div>
-							<div class="flex flex-1 justify-end"></div>
-						</div>
 
-						<div class="space-y-4 border-t p-6">
-							<Label class="text-base font-medium">What are you looking for?</Label>
-							<form action="/listings" method="get" class="flex w-full gap-3">
+							<div class="flex gap-2">
 								<Input
 									name="search"
-									placeholder="Enter location, property type, or keywords..."
-									class="h-12 flex-1 text-base"
+									placeholder="Search by location, property type, or keywords..."
+									class="h-11 flex-1 border-gray-200 text-base focus:border-primary focus:ring-1 focus:ring-primary"
 								/>
-								<Button type="submit" size="lg" class="px-8">
-									<Search class="mr-2 h-4 w-4" /> Search
+								<Button type="submit" size="lg" class="h-11 px-6">
+									<Search class="h-4 w-4" />
 								</Button>
-							</form>
-						</div>
+							</div>
+
+							<div class="flex justify-center">
+								<div class="inline-flex rounded-lg bg-gray-100 p-1">
+									<Button size="sm" class="h-8 rounded-md px-4" variant="default">For Rent</Button>
+									<Button size="sm" class="h-8 rounded-md px-4" variant="ghost">For Sale</Button>
+									<Button size="sm" class="h-8 rounded-md px-4" variant="ghost">For Lease</Button>
+								</div>
+							</div>
+						</form>
 					</div>
 				</div>
 			</div>
