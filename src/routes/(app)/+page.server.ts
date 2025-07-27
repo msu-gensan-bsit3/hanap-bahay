@@ -12,7 +12,7 @@ export const load: PageServerLoad = async () => {
 			agent: agentQuery,
 			property: { ...propertyQuery, columns: { ...propertyQuery.columns, sellerId: false } },
 		},
-		limit: 10,
+		limit: 20,
 	});
 
 	return {

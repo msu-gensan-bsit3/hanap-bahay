@@ -3,7 +3,9 @@
 
 	const sorts = [
 		"Highest Price",
-		"Lowest Price"
+		"Lowest Price",
+		"Newest First",
+		"Oldest First"
 	]
 
 	let { sortBy = $bindable() } = $props()

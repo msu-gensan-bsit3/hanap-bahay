@@ -8,7 +8,7 @@
 	import { ChevronDown, ChevronUp } from "@lucide/svelte"
 
 	let isOpen = $state(false)
-	let tempType = $state("For Sale")
+	let tempType = $state("All Types")
 
 	let { saleType = $bindable() } = $props()
 
@@ -16,6 +16,11 @@
 		isOpen = false
 		saleType = tempType
 	}
+
+	// Update tempType when saleType changes externally (like reset)
+	$effect(() => {
+		tempType = saleType
+	})
 </script>
 
 <DropdownMenu.Root bind:open={isOpen}>
@@ -29,26 +34,35 @@
 			{/if}
 		</Button>
 	</DropdownMenu.Trigger>
-	<DropdownMenu.Content align="start" class="min-w-xs p-2 space-y-2">
+	<DropdownMenu.Content align="start" class="w-40">
 		<RadioGroup.Root bind:value={tempType}>
-			<div class="flex items-center gap-2">
+			<label
+				class="flex cursor-pointer items-center gap-2 rounded-sm p-2 transition-colors hover:bg-muted/50"
+			>
+				<RadioGroup.Item value="All Types" />
+				<span class="text-sm">All Types</span>
+			</label>
+			<label
+				class="flex cursor-pointer items-center gap-2 rounded-sm p-2 transition-colors hover:bg-muted/50"
+			>
 				<RadioGroup.Item value="For sale" />
-				<Label>For Sale</Label>
-			</div>
-			<div class="flex items-center gap-2">
+				<span class="text-sm">For Sale</span>
+			</label>
+			<label
+				class="flex cursor-pointer items-center gap-2 rounded-sm p-2 transition-colors hover:bg-muted/50"
+			>
 				<RadioGroup.Item value="For rent" />
-				<Label>For Rent</Label>
-			</div>
-			<div class="flex items-center gap-2">
+				<span class="text-sm">For Rent</span>
+			</label>
+			<label
+				class="flex cursor-pointer items-center gap-2 rounded-sm p-2 transition-colors hover:bg-muted/50"
+			>
 				<RadioGroup.Item value="For lease" />
-				<Label>For Lease</Label>
-			</div>
+				<span class="text-sm">For Lease</span>
+			</label>
 		</RadioGroup.Root>
-		<Button
-			onclick={applyChanges}
-			class="w-full"
-		>
-			Apply
-		</Button>
+		<div class="p-2 pt-0 mt-3">
+			<Button onclick={applyChanges} class="w-full" size="sm">Apply</Button>
+		</div>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
