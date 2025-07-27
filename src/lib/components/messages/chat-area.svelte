@@ -3,7 +3,8 @@
 	import { Button } from "$lib/components/ui/button";
 	import { Input } from "$lib/components/ui/input";
 	import { MobileQuickActions } from ".";
-	import { Info, Paperclip, Phone, Send } from "@lucide/svelte";
+	import { Info, LoaderCircle, Paperclip, Phone, Send } from "@lucide/svelte";
+	import { tick, untrack } from "svelte";
 
 	interface props {
 		selectedConversation?: {
@@ -26,6 +27,7 @@
 		onBack?: () => void;
 		isMobile?: boolean;
 		messagesContainer?: HTMLElement;
+		sending?: boolean;
 	}
 
 	let {
@@ -36,6 +38,7 @@
 		onBack = () => {},
 		isMobile = false,
 		messagesContainer = $bindable(),
+		sending,
 	}: props = $props();
 
 	let newMessage = $state("");
@@ -60,12 +63,17 @@
 
 	$effect(() => {
 		messages;
-		scrollToBottom();
+		tick().then(() => {
+			scrollToBottom();
+		});
 	});
 
 	function scrollToBottom() {
 		if (messagesContainer) {
-			messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: "smooth" });
+			messagesContainer.scrollTo({
+				top: messagesContainer.scrollHeight,
+				behavior: "instant",
+			});
 		}
 	}
 </script>
@@ -180,7 +188,11 @@
 						/>
 					</div>
 					<Button onclick={sendMessage} disabled={!newMessage.trim()} class="shrink-0">
-						<Send />
+						{#if sending}
+							<LoaderCircle class="animate-spin" />
+						{:else}
+							<Send />
+						{/if}
 						<span class="ml-1 hidden sm:inline">Send</span>
 					</Button>
 				</div>

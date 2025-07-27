@@ -54,13 +54,9 @@
 		}),
 	);
 
-	function getSelectedConversation(id?: number) {
-		return conversations?.find((v) => v.id === id);
-	}
-
 	// svelte-ignore state_referenced_locally
 	let convId = $state(convIdParam || conversations?.at(0)?.id);
-	let selectedConversation = $derived(getSelectedConversation(convId));
+	let selectedConversation = $derived(conversations?.find((v) => v.id === convId));
 
 	onMount(async () => {
 		if (!selectedConversation) {
@@ -123,20 +119,12 @@
 	}
 
 	function sendMessage(messageContent: string) {
-		const now = new Date();
-		const timestamp = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-		// Update last message in conversation
-
 		message = messageContent;
 
-		// Scroll to bottom after sending
-		setTimeout(() => {
+		tick().then(() => {
 			submitButton?.click();
-			// scrollToBottom();
-		}, 10);
-
-		message = "";
+			message = "";
+		});
 	}
 
 	let message = $state("");
@@ -145,15 +133,9 @@
 		sendMessage(message);
 	}
 
-	function scrollToBottom() {
-		if (messagesContainer) {
-			messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: "smooth" });
-		}
-	}
-
 	let submitButton: HTMLElement | undefined = $state();
 
-	const sendMessageForm = moreEnhance({});
+	const sendMessageForm = moreEnhance();
 	const { enhance, submitting } = $derived(sendMessageForm);
 </script>
 
@@ -173,6 +155,7 @@
 			onSendMessage={sendMessage}
 			onBack={backToConversations}
 			isMobile={true}
+			sending={submitting}
 			bind:messagesContainer
 		/>
 	{/if}
@@ -193,6 +176,7 @@
 		{userId}
 		{selectedConversation}
 		{messages}
+		sending={submitting}
 		onSendMessage={sendMessage}
 		isMobile={false}
 		bind:messagesContainer
