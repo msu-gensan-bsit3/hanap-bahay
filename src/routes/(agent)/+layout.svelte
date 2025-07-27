@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Sidebar } from "$lib/components/dashboard";
+	import AgentBreadcrumbs from "$lib/components/agent-breadcrumbs.svelte";
 	import { Menu, X } from "@lucide/svelte";
 	import { setAgentContext } from "$lib/contexts/agentContext";
 
@@ -67,8 +68,11 @@
 		<div class="w-0 {sidebarOpen ? 'lg:w-64' : 'lg:w-16'}"></div>
 
 		<!-- Main Content -->
-		<div class="@container flex-1 p-4" bind:this={container}>
-			{@render children()}
+		<div class="@container flex-1">
+			<!-- <AgentBreadcrumbs /> -->
+			<div class="p-4" bind:this={container}>
+				{@render children()}
+			</div>
 		</div>
 	</div>
 </div>

@@ -21,7 +21,7 @@
 
 	// Filters
 	let address = $state("");
-	let saleType = $state("For Sale");
+	let saleType = $state("All Types");
 	let category = $state("all");
 
 	let minPrice = $state(0);
@@ -43,7 +43,7 @@
 
 	// pagination
 	const isDesktop = new MediaQuery("(min-width: 768px)");
-	const perPage = 20;
+	const perPage = 24;
 	let pageNum = $state(1);
 
 	const count = $derived(filteredListings.length);

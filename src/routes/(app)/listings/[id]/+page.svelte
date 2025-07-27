@@ -11,6 +11,7 @@
 		InfoCard,
 		AgentCard,
 	} from "$lib/components/listing";
+	import { Button } from "$lib/components/ui/button";
 
 	let { data } = $props();
 
@@ -28,18 +29,7 @@
 	);
 </script>
 
-<div class="container mx-auto max-w-5xl px-4 py-8">
-	<!-- Back Button -->
-	<div class="mb-6">
-		<a
-			href="/"
-			class="inline-flex items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900"
-		>
-			<ArrowLeft class="size-4" />
-			Back
-		</a>
-	</div>
-
+<div class="container mx-auto max-w-5xl px-3 py-8">
 	<Header
 		propertyName={property.name}
 		price={property.price}
