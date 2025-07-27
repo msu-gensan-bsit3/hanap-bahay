@@ -1,6 +1,7 @@
 <script lang="ts">
 	import RoomsFilter from "$lib/components/listings-page/filter-babd.svelte";
 	import CategoryFilter from "$lib/components/listings-page/filter-category.svelte";
+	import LocationFilter from "$lib/components/listings-page/filter-location.svelte";
 	import PriceFilter from "$lib/components/listings-page/filter-price.svelte";
 	import TypeFilter from "$lib/components/listings-page/filter-type.svelte";
 
@@ -12,10 +13,11 @@
 	import { Button } from "$lib/components/ui/button/index";
 	import { Input } from "$lib/components/ui/input/index";
 
-	import { RotateCcw } from "@lucide/svelte";
+	import { RotateCcw, Search } from "@lucide/svelte";
 
 	// Filters
-	let address = $state("");
+	let searchTerm = $state("");
+	let location = $state("All Locations");
 	let saleType = $state("All Types");
 	let category = $state("all");
 
@@ -49,7 +51,8 @@
 
 	// Reset filters function
 	function resetFilters() {
-		address = "";
+		searchTerm = "";
+		location = "All Locations";
 		saleType = "All Types";
 		category = "all";
 		minPrice = 0;
@@ -66,7 +69,8 @@
 		loading = true;
 		const _ = [
 			sortBy,
-			address,
+			searchTerm,
+			location,
 			saleType,
 			category,
 			minPrice,
@@ -83,13 +87,34 @@
 				.filter((listing) => {
 					const property = listing.property;
 
-					// Address filter - only apply if address is provided
+					// Search term filter - search in name, description, features, and address
+					const propertyName = property.name?.toLowerCase() || "";
+					const listingDescription = property.description?.toLowerCase() || "";
+					const listingFeatures =
+						property.features
+							?.map((f) => f.name)
+							.join(" ")
+							.toLowerCase() || "";
 					const listingAddress = Object.values(property.address)
 						.slice(1)
 						.filter((v) => v)
-						.join(", ");
-					const matchAddress =
-						address.trim() === "" || listingAddress.toLowerCase().includes(address.toLowerCase());
+						.join(", ")
+						.toLowerCase();
+					const floorArea = property.floorArea?.toString() || "";
+					const landArea = property.landArea?.toString() || "";
+
+					const matchesSearch =
+						searchTerm.trim() === "" ||
+						propertyName.includes(searchTerm.toLowerCase()) ||
+						listingDescription.includes(searchTerm.toLowerCase()) ||
+						listingFeatures.includes(searchTerm.toLowerCase()) ||
+						listingAddress.includes(searchTerm.toLowerCase()) ||
+						floorArea.includes(searchTerm.toLowerCase()) ||
+						landArea.includes(searchTerm.toLowerCase());
+
+					// Location filter
+					const matchesLocation =
+						location === "All Locations" || listingAddress.includes(location.toLowerCase());
 
 					// Sale type filter
 					const matchType =
@@ -124,7 +149,13 @@
 							: property.bathrooms && property.bathrooms >= bathrooms);
 
 					return (
-						matchAddress && matchType && matchCategory && matchPrice && matchBeds && matchBaths
+						matchesSearch &&
+						matchesLocation &&
+						matchType &&
+						matchCategory &&
+						matchPrice &&
+						matchBeds &&
+						matchBaths
 					);
 				})
 				.sort((a, b) => {
@@ -153,6 +184,14 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Property Listings - Find Your Perfect Home</title>
+	<meta
+		name="description"
+		content="Browse our extensive collection of property listings. Find homes, condos, and commercial properties for sale or rent in your desired location."
+	/>
+</svelte:head>
+
 <div class="min-h-screen w-full bg-background">
 	<!-- Filters -->
 	<div
@@ -163,16 +202,24 @@
 			<div class="flex flex-col gap-3 lg:hidden">
 				<!-- Search Bar -->
 				<div class="relative">
-					<Input bind:value={address} placeholder="Search by location..." class="h-10" />
+					<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+					<Input
+						bind:value={searchTerm}
+						placeholder="Search properties by name, location, features..."
+						class="h-10 pl-9"
+					/>
 				</div>
 				<!-- Filter Row 1 -->
 				<div class="flex flex-wrap items-center gap-2">
+					<div class="min-w-0 flex-1">
+						<LocationFilter bind:location />
+					</div>
 					<CategoryFilter bind:category />
 					<TypeFilter bind:saleType />
-					<PriceFilter bind:minPrice bind:maxPrice />
 				</div>
 				<!-- Filter Row 2 -->
 				<div class="flex flex-wrap items-center gap-2">
+					<PriceFilter bind:minPrice bind:maxPrice />
 					<RoomsFilter bind:bedrooms bind:exactBeds bind:bathrooms bind:exactBaths />
 					<Button variant="outline" class="flex items-center gap-2" onclick={resetFilters}>
 						<RotateCcw class="h-4 w-4" />
@@ -184,9 +231,15 @@
 			<!-- Desktop: Single row layout -->
 			<div class="hidden items-center gap-2 lg:flex">
 				<!-- Search Bar -->
-				<div class="relative max-w-md flex-grow">
-					<Input bind:value={address} placeholder="Search by location..." class="h-10" />
+				<div class="relative w-[200%] max-w-lg min-w-40 flex-grow">
+					<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+					<Input
+						bind:value={searchTerm}
+						placeholder="Search properties by name, location, features..."
+						class="h-10 pl-9"
+					/>
 				</div>
+				<LocationFilter bind:location />
 				<CategoryFilter bind:category />
 				<TypeFilter bind:saleType />
 				<PriceFilter bind:minPrice bind:maxPrice />
@@ -204,8 +257,8 @@
 		<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 			<div class="flex-grow">
 				<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
-					{#if address !== ""}
-						Results for "{address}"
+					{#if searchTerm !== ""}
+						Results for "{searchTerm}"
 					{:else}
 						All Properties
 					{/if}

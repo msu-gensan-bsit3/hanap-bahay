@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { heights } from "$lib/states/heights.svelte";
+	import * as Avatar from "$lib/components/ui/avatar";
 	import { Button } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-	import * as Avatar from "$lib/components/ui/avatar";
-	import { Menu, X, User, LogOut } from "@lucide/svelte";
 	import type { SessionValidationResult } from "$lib/server/services/auth";
+	import { heights } from "$lib/states/heights.svelte";
+	import { LogOut, Menu, User, X } from "@lucide/svelte";
 
 	type Props = {
 		user: SessionValidationResult["user"];
@@ -64,7 +64,7 @@
 					Listings
 				</a>
 				<a
-					href="/"
+					href="/agents"
 					class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
 				>
 					Agents
@@ -88,15 +88,15 @@
 							<span class="text-sm font-medium">{user.firstName} {user.lastName}</span>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content align="end" class="w-40">
-							<DropdownMenu.Item class="p-0 w-full">
+							<DropdownMenu.Item class="w-full p-0">
 								<a href="/profile" class="flex w-full cursor-pointer items-center gap-2 p-2">
 									<User class="h-4 w-4" />
 									Profile
 								</a>
 							</DropdownMenu.Item>
 							<DropdownMenu.Separator />
-							<DropdownMenu.Item class="p-0 w-full">
-								<a href="/logout" class="flex cursor-pointer w-full items-center gap-2 p-2">
+							<DropdownMenu.Item class="w-full p-0">
+								<a href="/logout" class="flex w-full cursor-pointer items-center gap-2 p-2">
 									<LogOut class="h-4 w-4" />
 									Logout
 								</a>
