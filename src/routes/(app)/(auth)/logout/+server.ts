@@ -1,7 +1,7 @@
 import { redirect, type RequestHandler } from '@sveltejs/kit';
 import { invalidateSession, deleteSessionTokenCookie } from '$lib/server/services/auth';
 
-export const POST: RequestHandler = async (event) => {
+export const GET: RequestHandler = async (event) => {
   const sessionToken = event.cookies.get('auth-session');
   
   if (sessionToken) {
