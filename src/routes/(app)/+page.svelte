@@ -23,7 +23,7 @@
 				const msg = res.msg as string;
 				console.log(msg);
 
-				if (msg.startsWith("/listings")) {
+				if (msg.startsWith("/listings") || msg.startsWith("/agents")) {
 					window.location.href = msg;
 					// goto(msg);
 				}
