@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Select from "$lib/components/ui/select/index";
+	import { cn } from "$lib/utils";
 	import { Clock } from "@lucide/svelte";
 
 	const experienceRanges = [
@@ -11,10 +12,18 @@
 	] as const;
 
 	let { experience = $bindable() }: { experience: string } = $props();
+
+	const isActive = $derived(experience !== "Any Experience");
 </script>
 
 <Select.Root type="single" bind:value={experience}>
-	<Select.Trigger class="h-10 w-full min-w-[120px] gap-2">
+	<Select.Trigger
+		class={cn(
+			"h-10 w-full min-w-45 gap-2",
+			isActive &&
+				"border-emerald-300 bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/30",
+		)}
+	>
 		<Clock class="h-4 w-4 flex-shrink-0" />
 		<span class="truncate">{experience}</span>
 	</Select.Trigger>

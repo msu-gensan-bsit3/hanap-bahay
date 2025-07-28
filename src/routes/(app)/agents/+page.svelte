@@ -13,7 +13,7 @@
 	import { replaceState } from "$app/navigation";
 	import { page } from "$app/state";
 	import { ChevronDown, ChevronUp, Funnel, RotateCcw, Search } from "@lucide/svelte";
-	import { tick } from "svelte";
+	import { tick, untrack } from "svelte";
 
 	// Filters - Initialize from URL params
 	let searchTerm = $state(page.url.searchParams.get("search") || "");
@@ -127,9 +127,11 @@
 		if (sortBy !== "Default") {
 			url.searchParams.set("sort", sortBy);
 		}
-		if (pageNum > 1) {
-			url.searchParams.set("page", pageNum.toString());
-		}
+		untrack(() => {
+			if (pageNum > 1) {
+				url.searchParams.set("page", pageNum.toString());
+			}
+		});
 
 		await tick();
 		replaceState(url, {});
@@ -163,14 +165,12 @@
 		return Math.floor(Math.random() * 15) + 5;
 	}
 
-	//
 	$effect(() => {
 		loading = true;
-		const _ = [sortBy, searchTerm, location, credential, experience];
 
+		// Artificial loading
 		clearTimeout(timeoutId);
 		timeoutId = setTimeout(() => {
-			// Reset to first page when filters change
 			loading = false;
 		}, 250);
 
@@ -322,7 +322,7 @@
 			<!-- Agents Grid -->
 			<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#if loading}
-					{#each { length: 8 } as _}
+					{#each { length: 12 } as _}
 						<div class="h-full">
 							<SkeletonAgentCard />
 						</div>

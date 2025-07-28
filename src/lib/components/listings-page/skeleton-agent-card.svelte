@@ -2,7 +2,7 @@
 	import * as Card from "$lib/components/ui/card/index";
 </script>
 
-<Card.Root class="flex h-full flex-col overflow-hidden p-0 shadow-sm">
+<Card.Root class="relative flex h-full flex-col gap-0 overflow-hidden p-0 shadow-sm">
 	<!-- Header with Profile Image and Basic Info -->
 	<div class="relative bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
 		<div class="flex items-start gap-4">
@@ -15,7 +15,11 @@
 			<div class="min-w-0 flex-1 space-y-2">
 				<div class="h-5 w-32 animate-pulse rounded bg-gray-300"></div>
 				<div class="h-4 w-24 animate-pulse rounded bg-gray-300"></div>
-				<div class="h-4 w-28 animate-pulse rounded bg-gray-300"></div>
+				<div class="mt-2 flex items-center gap-1">
+					<div class="h-4 w-4 animate-pulse rounded bg-gray-300"></div>
+					<div class="h-4 w-12 animate-pulse rounded bg-gray-300"></div>
+					<div class="h-4 w-20 animate-pulse rounded bg-gray-300"></div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -29,10 +33,11 @@
 		</div>
 
 		<!-- About Skeleton -->
-		<div class="mb-4 space-y-2">
-			<div class="h-4 w-full animate-pulse rounded bg-gray-300"></div>
-			<div class="h-4 w-full animate-pulse rounded bg-gray-300"></div>
-			<div class="h-4 w-3/4 animate-pulse rounded bg-gray-300"></div>
+		<div class="mb-4">
+			<div class="min-h-[3rem] space-y-2">
+				<div class="h-4 w-full animate-pulse rounded bg-gray-300"></div>
+				<div class="h-4 w-full animate-pulse rounded bg-gray-300"></div>
+			</div>
 		</div>
 
 		<!-- Stats Skeleton -->
