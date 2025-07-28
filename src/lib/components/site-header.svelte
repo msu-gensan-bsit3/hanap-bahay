@@ -157,9 +157,11 @@
 						</Avatar.Root>
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content align="end" class="w-56">
-						<DropdownMenu.Item class="flex items-center gap-2">
-							<User class="h-4 w-4" />
-							Profile
+						<DropdownMenu.Item class="w-full p-0">
+							<a href="/profile" class="flex w-full cursor-pointer items-center gap-2 p-2">
+								<User class="h-4 w-4" />
+								Profile
+							</a>
 						</DropdownMenu.Item>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item class="flex items-center gap-2" onSelect={handleLogout}>
