@@ -46,10 +46,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		} else {
 			role = "buyer";
 		}
+	}
 
-		if (role === "buyer" && !["up", "sold"].includes(curListing.status)) {
-			return error(400, { message: "Listing not found" });
-		}
+	if (curListing.status !== "up") {
+		return error(400, "Listing not available.");
 	}
 
 	return {
