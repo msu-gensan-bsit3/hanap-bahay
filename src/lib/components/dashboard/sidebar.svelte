@@ -5,10 +5,11 @@
 	import {
 		Building,
 		LayoutDashboard,
+		LogOut,
+		Menu,
 		MessageSquare,
 		Settings,
 		Users,
-		Menu,
 		type IconProps,
 	} from "@lucide/svelte";
 	import type { Component } from "svelte";
@@ -68,6 +69,12 @@
 		avatar: "/no-profile.jpg",
 		status: "Available",
 	});
+
+	function handleLogout() {
+		fetch("/logout", { method: "POST" }).then(() => {
+			window.location.href = "/login";
+		});
+	}
 </script>
 
 <div
@@ -81,12 +88,9 @@
 			transition:slide={{ delay: 0 }}
 		>
 			<div class="flex items-center">
-				<div
-					class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 font-bold text-white"
-				>
-					J
-				</div>
-				<span class="ml-2 text-xl font-semibold">JuanHome</span>
+				<a href="/" class="flex items-center space-x-2">
+					<img src="/juanhomes-logo-text.png" alt="juanhomes-logo" class="h-10 w-full" />
+				</a>
 			</div>
 			{#if !mobile && onToggle}
 				<button
@@ -151,18 +155,27 @@
 
 	<!-- Agent Profile -->
 	{#if sidebarOpen}
-		<div class="absolute bottom-0 w-full border-t p-6">
-			<div class="flex items-center">
-				<div class="relative">
-					<img class="h-10 w-10 rounded-full" src={agentInfo.avatar} alt={agentInfo.name} />
-					<div
-						class="absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-400"
-					></div>
+		<div class="absolute bottom-0 w-full border-t bg-white">
+			<div class="flex items-center justify-between p-6">
+				<div class="flex items-center">
+					<div class="relative">
+						<img class="h-10 w-10 rounded-full" src={agentInfo.avatar} alt={agentInfo.name} />
+						<div
+							class="absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-400"
+						></div>
+					</div>
+					<div class="ml-3">
+						<p class="text-sm font-medium text-gray-900">{agentInfo.name}</p>
+						<p class="text-xs text-gray-500">{agentInfo.license}</p>
+					</div>
 				</div>
-				<div class="ml-3">
-					<p class="text-sm font-medium text-gray-900">{agentInfo.name}</p>
-					<p class="text-xs text-gray-500">{agentInfo.license}</p>
-				</div>
+				<button
+					onclick={handleLogout}
+					class="rounded p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+					title="Logout"
+				>
+					<LogOut size={16} />
+				</button>
 			</div>
 		</div>
 	{:else}

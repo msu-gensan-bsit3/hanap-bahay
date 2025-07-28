@@ -168,6 +168,8 @@
 	$effect(() => {
 		loading = true;
 
+		pageNum = 1;
+
 		// Artificial loading
 		clearTimeout(timeoutId);
 		timeoutId = setTimeout(() => {

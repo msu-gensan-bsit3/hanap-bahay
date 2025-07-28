@@ -15,6 +15,9 @@
 	<title>Messages - JuanHome</title>
 </svelte:head>
 
-<div class="@container flex gap-6 p-4" style="height: calc(100dvh - {heights.header + 1}px);">
+<div
+	class="@container flex gap-6 p-4"
+	style="height: calc(100dvh - {heights.header + heights.breadcrumbs + 2}px);"
+>
 	<MessagePage {...data} role="user" convIdParam={convId} />
 </div>

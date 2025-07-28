@@ -237,6 +237,8 @@
 			exactBaths,
 		];
 
+		pageNum = 1;
+
 		clearTimeout(timeoutId);
 		timeoutId = setTimeout(() => {
 			// Reset to first page when filters change

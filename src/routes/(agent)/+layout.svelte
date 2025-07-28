@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { Sidebar } from "$lib/components/dashboard";
-	import AgentBreadcrumbs from "$lib/components/agent-breadcrumbs.svelte";
-	import { Menu, X } from "@lucide/svelte";
 	import { setAgentContext } from "$lib/contexts/agentContext";
+	import { Menu, X } from "@lucide/svelte";
 
 	let { children, data } = $props();
 	let sidebarOpen = $state(true);
@@ -22,24 +21,34 @@
 
 <div class="min-h-screen bg-gray-50">
 	<!-- Mobile Header (visible on small screens) -->
-	<div class="border-b bg-white p-4 shadow-sm lg:hidden">
-		<div class="flex items-center justify-between">
+	<div
+		class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85 lg:hidden"
+	>
+		<div class="flex h-16 items-center justify-between px-4">
 			<div class="flex items-center">
-				<button onclick={toggleMobileMenu} class="mr-3 rounded p-1 hover:bg-gray-100">
+				<button onclick={toggleMobileMenu} class="mr-3 rounded p-1 hover:bg-accent">
 					{#if mobileMenuOpen}
-						<X size={20} />
+						<X class="h-5 w-5" />
 					{:else}
-						<Menu size={20} />
+						<Menu class="h-5 w-5" />
 					{/if}
 				</button>
-				<div
-					class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 font-bold text-white"
-				>
-					J
-				</div>
-				<span class="ml-2 text-xl font-semibold">JuanHome</span>
+				<a href="/" class="flex items-center space-x-2">
+					<img src="/juanhomes-logo-text.png" alt="juanhomes-logo" class="h-10 w-full" />
+				</a>
 			</div>
-			<div class="text-sm text-gray-600">Marco Santos</div>
+			{#if data.userData.user}
+				<div class="flex items-center gap-2">
+					<div
+						class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground"
+					>
+						{data.userData.user.firstName.charAt(0)}{data.userData.user.lastName.charAt(0)}
+					</div>
+					<span class="text-sm font-medium"
+						>{data.userData.user.firstName} {data.userData.user.lastName}</span
+					>
+				</div>
+			{/if}
 		</div>
 	</div>
 

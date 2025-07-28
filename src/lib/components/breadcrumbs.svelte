@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import * as Breadcrumb from "$lib/components/ui/breadcrumb";
+	import { heights } from "$lib/states/heights.svelte";
 	import { breadcrumbContext } from "$lib/stores/breadcrumb";
 	import { Home } from "@lucide/svelte";
 
@@ -77,7 +78,7 @@
 </script>
 
 {#if shouldShowBreadcrumbs()}
-	<div class="border-b bg-muted/40 px-4 py-3">
+	<div class="border-b bg-muted/40 px-4 py-3" bind:clientHeight={heights.breadcrumbs}>
 		<div class="mx-auto max-w-screen-xl px-4 lg:px-6">
 			<Breadcrumb.Root>
 				<Breadcrumb.List>
