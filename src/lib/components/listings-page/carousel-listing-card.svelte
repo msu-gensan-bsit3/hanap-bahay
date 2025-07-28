@@ -2,7 +2,7 @@
 	import { Badge } from "$lib/components/ui/badge/index";
 	import * as Card from "$lib/components/ui/card/index";
 	import type { ClientListing } from "$lib/types";
-	import { formatPrice } from "$lib/utils";
+	import { formatPrice, getDetails } from "$lib/utils";
 	import { Heart, MapPin } from "@lucide/svelte";
 
 	let { agent, property, ...listing }: ClientListing = $props();
@@ -21,25 +21,7 @@
 		return url;
 	});
 
-	let details = $derived.by(() => {
-		const isLandProperty = ["commercial-lot", "residential-lot", "industrial-lot"].includes(
-			property.category,
-		);
-		const area = (isLandProperty ? property.landArea : property.floorArea) || property.landArea;
-
-		const details = [];
-		if (property.bedrooms && property.bedrooms > 0) {
-			details.push(`${property.bedrooms} BR`);
-		}
-		if (property.bathrooms && property.bathrooms > 0) {
-			details.push(`${property.bathrooms} BA`);
-		}
-		if (area && area > 0) {
-			details.push(`${area} sqm`);
-		}
-
-		return details.join(" • ");
-	});
+	let details = $derived(getDetails(property));
 
 	function getCategoryVariant(category: string) {
 		const lowerCategory = category.toLowerCase();

@@ -451,11 +451,11 @@
 							</h4>
 
 							<div class="grid gap-6 sm:grid-cols-2">
-								<div class="space-y-2">
+								<!-- <div class="space-y-2">
 									<Label class="text-sm font-medium">Account Status</Label>
 									<div class="flex items-center gap-2">
 										<Badge
-											variant={user.status === "ACTIVE" ? "default" : "secondary"}
+											variant={user.status === "ACTIVE" ? "sale" : "secondary"}
 											class="px-3 py-1 text-xs font-medium"
 										>
 											{user.status}
@@ -464,7 +464,7 @@
 											<span class="text-xs text-green-600">● All systems operational</span>
 										{/if}
 									</div>
-								</div>
+								</div> -->
 
 								<div class="space-y-2">
 									<Label class="text-sm font-medium">Member Since</Label>

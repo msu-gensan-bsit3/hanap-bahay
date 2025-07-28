@@ -7,6 +7,7 @@
 	import { heights } from "$lib/states/heights.svelte";
 	import {
 		Building2,
+		LayoutDashboard,
 		LogOut,
 		Menu,
 		MessageCircleMore,
@@ -67,12 +68,12 @@
 		<nav class="hidden items-center gap-8 md:flex">
 			<div class="flex items-center gap-6">
 				{#if curAgent}
-					<a
+					<!-- <Button href="/agent/dashboard" variant="default">Dashboard</Button> -->
+					<!-- <a
 						href="/agent/dashboard"
 						class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
 					>
-						Dashboard
-					</a>
+					</a> -->
 				{/if}
 				<a
 					href="/listings"
@@ -107,6 +108,15 @@
 							<span class="text-sm font-medium">{user.firstName} {user.lastName}</span>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content align="end" class="w-40">
+							<DropdownMenu.Item class="w-full p-0">
+								<a
+									href="{curAgent ? '/agent' : ''}/dashboard"
+									class="flex w-full cursor-pointer items-center gap-2 p-2"
+								>
+									<LayoutDashboard class="h-4 w-4" />
+									Dashboard
+								</a>
+							</DropdownMenu.Item>
 							<DropdownMenu.Item class="w-full p-0">
 								<a href="/profile" class="flex w-full cursor-pointer items-center gap-2 p-2">
 									<User class="h-4 w-4" />
