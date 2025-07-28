@@ -2,7 +2,7 @@
 	import { Badge } from "$lib/components/ui/badge/index";
 	import * as Card from "$lib/components/ui/card/index";
 	import type { ClientListing } from "$lib/types";
-	import { formatPrice, getDetails } from "$lib/utils";
+	import { formatPrice, getDetails, toTitleCase } from "$lib/utils";
 	import { Heart, MapPin } from "@lucide/svelte";
 
 	let { agent, property, ...listing }: ClientListing = $props();
@@ -63,7 +63,7 @@
 		<!-- Image with badge overlay -->
 		<div class="relative h-full overflow-hidden bg-muted">
 			<Badge variant={property.type} class="absolute top-3 left-3 z-10">
-				For {property.type}
+				For {toTitleCase(property.type)}
 			</Badge>
 			<button
 				class="absolute top-3 right-3 z-10 rounded-full bg-white/80 p-1 transition-colors hover:bg-white"

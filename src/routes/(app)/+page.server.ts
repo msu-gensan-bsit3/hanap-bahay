@@ -1,9 +1,10 @@
 import { askAiSchema } from "$lib/schema";
 import { db } from "$lib/server/db";
-import { agentQuery, listingQuery, propertyQuery } from "$lib/server/db/schema";
+import { agentQuery, listing, listingQuery, propertyQuery } from "$lib/server/db/schema";
 import { chatbotSendMessage } from "$lib/server/services/ai/chatbot";
 import { searchWithAi } from "$lib/server/services/ai/search";
 import { fail } from "@sveltejs/kit";
+import { inArray } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async () => {
@@ -14,6 +15,7 @@ export const load: PageServerLoad = async () => {
 			property: { ...propertyQuery, columns: { ...propertyQuery.columns, sellerId: false } },
 		},
 		limit: 8,
+		where: inArray(listing.status, ["up", "sold", "pending"]),
 	});
 
 	const agentsPromise = db.query.agent.findMany({

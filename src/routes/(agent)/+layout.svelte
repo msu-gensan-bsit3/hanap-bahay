@@ -5,7 +5,7 @@
 	import { Menu, X } from "@lucide/svelte";
 
 	let { children, data } = $props();
-	let sidebarOpen = $state(false);
+	let sidebarOpen = $state(true);
 	let mobileMenuOpen = $state(false);
 	let container: HTMLElement | undefined = $state();
 

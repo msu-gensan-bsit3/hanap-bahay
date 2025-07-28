@@ -17,6 +17,28 @@
 
 	let profileImageLoaded = $state(false);
 
+	// Array of gradient backgrounds for profile placeholders
+	const gradientBackgrounds = [
+		"bg-gradient-to-br from-blue-500 to-indigo-600",
+		"bg-gradient-to-br from-purple-500 to-pink-600",
+		"bg-gradient-to-br from-green-500 to-emerald-600",
+		"bg-gradient-to-br from-orange-500 to-red-600",
+		"bg-gradient-to-br from-teal-500 to-cyan-600",
+		"bg-gradient-to-br from-violet-500 to-purple-600",
+		"bg-gradient-to-br from-rose-500 to-pink-600",
+		"bg-gradient-to-br from-amber-500 to-orange-600",
+		"bg-gradient-to-br from-lime-500 to-green-600",
+		"bg-gradient-to-br from-sky-500 to-blue-600",
+		"bg-gradient-to-br from-fuchsia-500 to-violet-600",
+		"bg-gradient-to-br from-emerald-500 to-teal-600",
+	];
+
+	// Generate consistent random background based on agent ID
+	function getRandomBackground() {
+		const index = agent.user.id % gradientBackgrounds.length;
+		return gradientBackgrounds[index];
+	}
+
 	function getExperienceYears(dateCreated: Date) {
 		const years = new Date().getFullYear() - dateCreated.getFullYear();
 		return years;
@@ -60,7 +82,7 @@
 						/>
 					{:else}
 						<div
-							class="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-xl font-bold text-white"
+							class="flex h-full w-full items-center justify-center text-xl font-bold text-white {getRandomBackground()}"
 						>
 							{agent.user.firstName.charAt(0)}{agent.user.lastName.charAt(0)}
 						</div>
