@@ -174,7 +174,7 @@
 
 			{#if !sellerListings.totalCount}
 				<div
-					class="rounded-2xl border border-dashed border-muted-foreground/25 bg-muted/20 p-12 text-center"
+					class="min-w-4xl rounded-2xl border border-dashed border-muted-foreground/25 bg-muted/20 p-12 text-center"
 				>
 					<div class="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-muted">
 						<Building class="h-10 w-10 text-muted-foreground" />
@@ -383,8 +383,8 @@
 					<h2 class="text-3xl font-bold tracking-tight">My Offers</h2>
 					<p class="text-muted-foreground">Track your property offers and negotiations</p>
 				</div>
-				<Button href="/listings" class="shadow-sm">
-					<Heart class="mr-2 h-4 w-4" />
+				<Button href="/listings" class="mt-3 shadow-sm sm:mt-0">
+					<Heart class="mr-2 h-4 w-4 " />
 					Browse Properties
 				</Button>
 			</div>

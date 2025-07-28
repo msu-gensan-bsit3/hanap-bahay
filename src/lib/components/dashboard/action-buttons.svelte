@@ -2,7 +2,7 @@
 	import { goto } from "$app/navigation";
 	import type { ButtonVariant } from "$lib/components/ui/button";
 	import { Button } from "$lib/components/ui/button";
-	import { ClipboardCheck, MessageSquare, Plus, type IconProps } from "@lucide/svelte";
+	import { ClipboardCheck, MessageSquare, type IconProps } from "@lucide/svelte";
 	import type { Component } from "svelte";
 
 	interface ActionButton {
@@ -15,21 +15,17 @@
 
 	const actionButtons: ActionButton[] = [
 		{
-			label: "Create Listing",
-			icon: Plus,
+			label: "View Messages",
+			icon: MessageSquare,
 			variant: "default",
 			class: "bg-blue-600 hover:bg-blue-700",
+			onclick: () => goto("/agent/messages"),
 		},
 		{
 			label: "Review Submissions",
 			icon: ClipboardCheck,
 			variant: "outline",
-		},
-		{
-			label: "View Messages",
-			icon: MessageSquare,
-			variant: "outline",
-			onclick: () => goto("/agent/messages"),
+			onclick: () => goto("/agent/listings"),
 		},
 	];
 </script>
