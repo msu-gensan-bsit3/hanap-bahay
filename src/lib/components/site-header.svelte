@@ -50,6 +50,7 @@
 		<!-- Logo -->
 		<div class="flex items-center">
 			<a href="/" class="flex items-center space-x-2">
+				<img src="/juanhomes-logo-text.png" alt="juanhomes-logo" />
 				<span class="text-2xl font-bold text-primary sm:text-3xl">JuanHomes</span>
 			</a>
 		</div>

@@ -64,6 +64,7 @@ export const agent = pgTable("agent", {
 		.references(() => user.id),
 	about: text(),
 	credentials: text(),
+	prcLicenceNumber: varchar(),
 	// TODO:
 });
 export const agentQuery = {

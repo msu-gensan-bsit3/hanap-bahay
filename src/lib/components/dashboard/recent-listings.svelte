@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
 	import { Badge } from "$lib/components/ui/badge";
+	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
 
 	interface Listing {
 		id: number;
@@ -66,7 +66,7 @@
 					<!-- svelte-ignore hydration_attribute_changed -->
 					<img src={listing.image} alt={listing.title} class="size-14 rounded-lg object-cover" />
 					<div class="flex-1">
-						<h4 class="text-[14px] font-medium text-gray-900">{listing.title}</h4>
+						<h4 class="line-clamp-2 text-[14px] font-medium text-gray-900">{listing.title}</h4>
 						<p class="text-[12px] font-medium text-gray-500">{listing.details}</p>
 						<p class="text-[14px] font-semibold text-gray-900">{listing.price}</p>
 					</div>

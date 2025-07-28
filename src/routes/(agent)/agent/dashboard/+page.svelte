@@ -1,9 +1,9 @@
 <script lang="ts">
 	import {
-		StatsCards,
-		RecentListings,
-		RecentLeads,
 		ActionButtons,
+		RecentLeads,
+		RecentListings,
+		StatsCards,
 	} from "$lib/components/dashboard";
 	import { toTitleCase } from "$lib/utils";
 
