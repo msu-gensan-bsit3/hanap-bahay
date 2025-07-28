@@ -2,15 +2,17 @@
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Button } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+	import type { Agent } from "$lib/server/db/schema";
 	import type { SessionValidationResult } from "$lib/server/services/auth";
 	import { heights } from "$lib/states/heights.svelte";
 	import { LogOut, Menu, User, X } from "@lucide/svelte";
 
 	type Props = {
 		user: SessionValidationResult["user"];
+		curAgent?: Agent;
 	};
 
-	let { user }: Props = $props();
+	let { user, curAgent }: Props = $props();
 
 	let mobileMenuOpen = $state(false);
 
@@ -55,6 +57,14 @@
 		<!-- Desktop Navigation -->
 		<nav class="hidden items-center gap-8 md:flex">
 			<div class="flex items-center gap-6">
+				{#if curAgent}
+					<a
+						href="/agent/dashboard"
+						class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+					>
+						Dashboard
+					</a>
+				{/if}
 				<a
 					href="/listings"
 					class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -154,6 +164,11 @@
 					<span class="sr-only">Toggle menu</span>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end" class="w-56">
+					{#if curAgent}
+						<DropdownMenu.Item onSelect={handleItemSelect("/agent/dashboard")}
+							>Dashboard</DropdownMenu.Item
+						>
+					{/if}
 					<DropdownMenu.Item onSelect={handleItemSelect("/")}>Buy</DropdownMenu.Item>
 					<DropdownMenu.Item onSelect={handleItemSelect("/")}>Rent</DropdownMenu.Item>
 					<DropdownMenu.Item onSelect={handleItemSelect("/")}>Sell</DropdownMenu.Item>

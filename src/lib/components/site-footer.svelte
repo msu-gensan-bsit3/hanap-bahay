@@ -1,6 +1,12 @@
 <script lang="ts">
+	import { goto } from "$app/navigation";
 	import { heights } from "$lib/states/heights.svelte";
 	import { Facebook, Instagram, Mail, Phone, Twitter } from "@lucide/svelte";
+
+	function navigateToListings(params: Record<string, string>) {
+		const searchParams = new URLSearchParams(params);
+		goto(`/listings?${searchParams.toString()}`);
+	}
 </script>
 
 <footer class="border-t bg-muted/50 backdrop-blur-sm" bind:clientHeight={heights.footer}>
@@ -9,33 +15,111 @@
 			<div class="space-y-3">
 				<h3 class="mb-4 text-lg font-semibold text-foreground">Buy</h3>
 				<ul class="space-y-3 text-sm text-muted-foreground">
-					<li class="cursor-pointer transition-colors hover:text-foreground">
-						Single Family Homes
+					<li>
+						<button
+							class="cursor-pointer text-left transition-colors hover:text-foreground"
+							onclick={() =>
+								navigateToListings({ saleType: "For Sale", category: "house-and-lot" })}
+						>
+							Single Family Homes
+						</button>
 					</li>
-					<li class="cursor-pointer transition-colors hover:text-foreground">Condominiums</li>
-					<li class="cursor-pointer transition-colors hover:text-foreground">Townhouses</li>
-					<li class="cursor-pointer transition-colors hover:text-foreground">Luxury Properties</li>
+					<li>
+						<button
+							class="cursor-pointer text-left transition-colors hover:text-foreground"
+							onclick={() => navigateToListings({ saleType: "For Sale", category: "condominium" })}
+						>
+							Condominiums
+						</button>
+					</li>
+					<li>
+						<button
+							class="cursor-pointer text-left transition-colors hover:text-foreground"
+							onclick={() => navigateToListings({ saleType: "For Sale", category: "townhouse" })}
+						>
+							Townhouses
+						</button>
+					</li>
+					<li>
+						<button
+							class="cursor-pointer text-left transition-colors hover:text-foreground"
+							onclick={() => navigateToListings({ saleType: "For Sale", minPrice: "10000000" })}
+						>
+							Luxury Properties
+						</button>
+					</li>
 				</ul>
 			</div>
 			<div class="space-y-3">
 				<h3 class="mb-4 text-lg font-semibold text-foreground">Rent</h3>
 				<ul class="space-y-3 text-sm text-muted-foreground">
-					<li class="cursor-pointer transition-colors hover:text-foreground">Apartments</li>
-					<li class="cursor-pointer transition-colors hover:text-foreground">Houses</li>
-					<li class="cursor-pointer transition-colors hover:text-foreground">Studio Units</li>
-					<li class="cursor-pointer transition-colors hover:text-foreground">Commercial Spaces</li>
+					<li>
+						<button
+							class="cursor-pointer text-left transition-colors hover:text-foreground"
+							onclick={() => navigateToListings({ saleType: "For Rent", category: "apartment" })}
+						>
+							Apartments
+						</button>
+					</li>
+					<li>
+						<button
+							class="cursor-pointer text-left transition-colors hover:text-foreground"
+							onclick={() =>
+								navigateToListings({ saleType: "For Rent", category: "house-and-lot" })}
+						>
+							Houses
+						</button>
+					</li>
+					<li>
+						<button
+							class="cursor-pointer text-left transition-colors hover:text-foreground"
+							onclick={() =>
+								navigateToListings({
+									saleType: "For Rent",
+									category: "apartment",
+									maxPrice: "20000",
+								})}
+						>
+							Studio Units
+						</button>
+					</li>
+					<li>
+						<button
+							class="cursor-pointer text-left transition-colors hover:text-foreground"
+							onclick={() => navigateToListings({ saleType: "For Rent", category: "office" })}
+						>
+							Commercial Spaces
+						</button>
+					</li>
 				</ul>
 			</div>
 			<div class="space-y-3">
 				<h3 class="mb-4 text-lg font-semibold text-foreground">Services</h3>
 				<ul class="space-y-3 text-sm text-muted-foreground">
-					<li class="cursor-pointer transition-colors hover:text-foreground">
-						Property Management
+					<li>
+						<button
+							class="cursor-pointer text-left transition-colors hover:text-foreground"
+							onclick={() => navigateToListings({ saleType: "For Rent" })}
+						>
+							Property Management
+						</button>
 					</li>
-					<li class="cursor-pointer transition-colors hover:text-foreground">
-						Real Estate Consultation
+					<li>
+						<button
+							class="cursor-pointer text-left transition-colors hover:text-foreground"
+							onclick={() => navigateToListings({})}
+						>
+							Real Estate Consultation
+						</button>
 					</li>
-					<li class="cursor-pointer transition-colors hover:text-foreground">Market Analysis</li>
+					<li>
+						<button
+							class="cursor-pointer text-left transition-colors hover:text-foreground"
+							onclick={() => navigateToListings({})}
+						>
+							Market Analysis
+						</button>
+					</li>
 				</ul>
 			</div>
 			<div class="space-y-3">

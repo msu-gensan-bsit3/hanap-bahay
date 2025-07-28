@@ -3,15 +3,16 @@
 	import SiteFooter from "$lib/components/site-footer.svelte";
 	import SiteHeader from "$lib/components/site-header.svelte";
 	import TransitionOverlay from "$lib/components/transition-overlay.svelte";
+	import type { Snippet } from "svelte";
 	import type { LayoutServerData } from "./$types";
 
-	let { children, data }: { children: any; data: LayoutServerData } = $props();
+	let { children, data }: { children: Snippet; data: LayoutServerData } = $props();
 </script>
 
 <TransitionOverlay />
 
 <div class="flex min-h-screen flex-col">
-	<SiteHeader user={data.user} />
+	<SiteHeader {...data} />
 	<Breadcrumbs />
 	<main class="flex flex-1 flex-col">
 		{@render children()}

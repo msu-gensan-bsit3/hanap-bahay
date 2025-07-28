@@ -1,7 +1,4 @@
-import { error, fail, redirect } from "@sveltejs/kit";
-import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
-import { and, eq, exists, inArray, sql } from "drizzle-orm";
 import {
 	agent,
 	buyer,
@@ -12,9 +9,11 @@ import {
 	offer,
 	offerConversation,
 	user,
-	userQuery,
 } from "$lib/server/db/schema";
+import { error, fail, redirect } from "@sveltejs/kit";
+import { and, eq, exists } from "drizzle-orm";
 import z from "zod";
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const id = Number(params.id);
@@ -62,6 +61,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 export const actions: Actions = {
 	sendMessage: async ({ request, locals }) => {
+		if (!locals.user) {
+			return redirect(302, "/login");
+		}
+
 		const formData = await request.formData();
 		const res = z.object({ agentId: z.number(), listingId: z.number() }).safeParse({
 			agentId: Number(formData.get("agentId")),
