@@ -85,7 +85,7 @@
 
 <div class="flex h-full flex-1 flex-col">
 	{#if selectedConversation}
-		<Card class="flex h-full flex-col">
+		<Card class="flex h-full flex-col py-0 pt-4">
 			<!-- Chat Header -->
 			<CardHeader class="border-b pb-4">
 				<div class="flex w-full items-center gap-3">

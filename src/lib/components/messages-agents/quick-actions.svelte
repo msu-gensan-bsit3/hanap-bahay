@@ -377,27 +377,6 @@
 						</div>
 					</Button>
 
-					<!-- Request Virtual Tour -->
-					<Button
-						variant="outline"
-						size="sm"
-						class="h-auto w-full justify-start border-purple-200 p-3 text-left transition-all hover:bg-purple-50"
-						onclick={() =>
-							onQuickResponse(
-								"Is a virtual tour or video walkthrough available for this property? I'd love to see more before scheduling an in-person visit.",
-							)}
-					>
-						<div class="flex w-full items-start gap-3">
-							<div class="mt-0.5 rounded-full bg-purple-100 p-1.5">
-								<Eye class="h-3 w-3 text-purple-600" />
-							</div>
-							<div class="min-w-0 flex-1 text-xs">
-								<div class="font-medium text-gray-900">Virtual Tour</div>
-								<div class="mt-0.5 text-xs text-gray-500">Request online viewing options</div>
-							</div>
-						</div>
-					</Button>
-
 					<!-- Price Negotiation -->
 					<Button
 						variant="outline"

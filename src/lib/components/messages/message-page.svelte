@@ -9,12 +9,13 @@
 
 	interface props {
 		userConversations: PageServerData["userConversations"];
+		propertyDetails: PageServerData["propertyDetails"];
 		userId: number;
 		convIdParam?: number;
 		role: "user" | "agent";
 	}
 
-	let { userConversations, userId, convIdParam, role }: props = $props();
+	let { userConversations, propertyDetails, userId, convIdParam, role }: props = $props();
 
 	let sender = $derived(userConversations.at(0)?.participants.find((v) => v.user.id === userId));
 	let senderName = $derived(sender?.user.firstName + " " + sender?.user.lastName);
@@ -98,6 +99,48 @@
 				};
 			}) || [],
 	);
+
+	// Get property images for the selected conversation
+	let propertyImages = $derived.by(() => {
+		if (!selectedConversation || !propertyDetails) return {};
+
+		const imagesMap: Record<number, string[]> = {};
+
+		selectedConversation.properties.forEach((property) => {
+			const propertyDetail = propertyDetails.find((detail) => detail.property.id === property.id);
+
+			if (propertyDetail?.property.photosUrl?.length) {
+				imagesMap[property.id] = propertyDetail.property.photosUrl.map((photo) => photo.url);
+			}
+		});
+
+		return imagesMap;
+	});
+
+	// Get property locations for the selected conversation
+	let propertyLocations = $derived.by(() => {
+		if (!selectedConversation || !propertyDetails) return {};
+
+		const locationsMap: Record<number, string> = {};
+
+		selectedConversation.properties.forEach((property) => {
+			const propertyDetail = propertyDetails.find((detail) => detail.property.id === property.id);
+
+			if (propertyDetail?.property.address) {
+				const address = propertyDetail.property.address;
+				const locationParts = [
+					address.street,
+					address.barangay,
+					address.city,
+					address.province,
+				].filter(Boolean);
+
+				locationsMap[property.id] = locationParts.join(", ");
+			}
+		});
+
+		return locationsMap;
+	});
 
 	let showConversations = $state(true);
 	let showChat = $state(false);
@@ -216,6 +259,8 @@
 		properties={selectedConversation?.properties}
 		onQuickResponse={handleQuickResponse}
 		{role}
+		{propertyImages}
+		{propertyLocations}
 	/>
 </div>
 

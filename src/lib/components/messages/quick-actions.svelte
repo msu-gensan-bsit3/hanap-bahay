@@ -20,15 +20,31 @@
 		properties?: (Property & { listingId: number })[];
 		onQuickResponse: (message: string) => void;
 		role: "user" | "agent";
+		propertyImages?: Record<number, string[]>;
+		propertyLocations?: Record<number, string>;
 	}
 
-	let { onQuickResponse, properties, role }: props = $props();
+	let { onQuickResponse, properties, role, propertyImages, propertyLocations }: props = $props();
 
 	// Derived values for role-based UI
 	let isAgent = $derived(role === "agent");
 	let isUser = $derived(role === "user");
 
 	let property = $derived(properties?.at(0));
+
+	let propertyImage = $derived(() => {
+		if (!property?.id || !propertyImages?.[property.id]?.length) {
+			return null;
+		}
+		return propertyImages[property.id][0]; // Use the first image
+	});
+
+	let propertyLocation = $derived(() => {
+		if (!property?.id || !propertyLocations?.[property.id]) {
+			return "Property Location";
+		}
+		return propertyLocations[property.id];
+	});
 
 	let propertyType = $derived(() => {
 		if (!property?.category) return "Property";
@@ -73,16 +89,27 @@
 				: 'ring-1 ring-green-100'}"
 		>
 			<div class="relative flex h-full flex-col">
-				<!-- Property Image Placeholder -->
-				<div
-					class="h-full bg-gradient-to-br {isAgent
-						? 'from-blue-500 to-blue-600'
-						: 'from-green-500 to-green-600'}"
-				>
-					<div class="flex h-full items-center justify-center">
-						<Home class="h-8 w-8 text-white/80" />
+				<!-- Property Image -->
+				{#if propertyImage()}
+					<div class="aspect-7/6 w-full overflow-hidden">
+						<img
+							src={propertyImage()}
+							alt={property?.name || "Property"}
+							class="h-full w-full object-cover"
+						/>
 					</div>
-				</div>
+				{:else}
+					<!-- Property Image Placeholder -->
+					<div
+						class="h-full bg-gradient-to-br {isAgent
+							? 'from-blue-500 to-blue-600'
+							: 'from-green-500 to-green-600'}"
+					>
+						<div class="flex h-full items-center justify-center">
+							<Home class="h-8 w-8 text-white/80" />
+						</div>
+					</div>
+				{/if}
 				<!-- Role indicator -->
 				<div class="absolute top-2 left-2">
 					<Badge variant="secondary" class="bg-white/90 text-xs text-gray-600">
@@ -104,7 +131,7 @@
 						</h4>
 						<div class="mt-1 flex items-center gap-1">
 							<MapPin class="h-3 w-3 flex-shrink-0 text-gray-400" />
-							<p class="truncate text-xs text-gray-500">Property Location</p>
+							<p class="truncate text-xs text-gray-500">{propertyLocation()}</p>
 						</div>
 					</div>
 
@@ -308,27 +335,6 @@
 					</div>
 				</CardHeader>
 				<CardContent class="space-y-3">
-					<!-- Express Interest Button -->
-					<Button
-						variant="default"
-						size="sm"
-						class="h-auto w-full justify-start bg-green-600 p-3 text-white hover:bg-green-700"
-						onclick={() =>
-							onQuickResponse(
-								"Hi! I'm very interested in this property. Could you please provide more information and schedule a viewing?",
-							)}
-					>
-						<div class="flex w-full items-center gap-3">
-							<div class="rounded-full bg-white/20 p-1.5">
-								<Eye class="h-4 w-4" />
-							</div>
-							<div class="text-left">
-								<div class="font-medium">Express Interest</div>
-								<div class="text-xs text-green-100">Let the agent know you're interested</div>
-							</div>
-						</div>
-					</Button>
-
 					<!-- Ask Questions -->
 					<Button
 						variant="outline"
@@ -346,27 +352,6 @@
 							<div class="min-w-0 flex-1 text-xs">
 								<div class="font-medium text-gray-900">Ask Questions</div>
 								<div class="mt-0.5 text-xs text-gray-500">Get more details about the property</div>
-							</div>
-						</div>
-					</Button>
-
-					<!-- Request Virtual Tour -->
-					<Button
-						variant="outline"
-						size="sm"
-						class="h-auto w-full justify-start border-purple-200 p-3 text-left transition-all hover:bg-purple-50"
-						onclick={() =>
-							onQuickResponse(
-								"Is a virtual tour or video walkthrough available for this property? I'd love to see more before scheduling an in-person visit.",
-							)}
-					>
-						<div class="flex w-full items-start gap-3">
-							<div class="mt-0.5 rounded-full bg-purple-100 p-1.5">
-								<Eye class="h-3 w-3 text-purple-600" />
-							</div>
-							<div class="min-w-0 flex-1 text-xs">
-								<div class="font-medium text-gray-900">Virtual Tour</div>
-								<div class="mt-0.5 text-xs text-gray-500">Request online viewing options</div>
 							</div>
 						</div>
 					</Button>
