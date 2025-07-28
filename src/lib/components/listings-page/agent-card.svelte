@@ -3,7 +3,7 @@
 	import { Button } from "$lib/components/ui/button/index";
 	import * as Card from "$lib/components/ui/card/index";
 	import type { Agent } from "$lib/types";
-	import { Mail, MapPin, MessageCircle, Phone, Star } from "@lucide/svelte";
+	import { MapPin, MessageCircle, Star } from "@lucide/svelte";
 
 	let { agent }: { agent: Agent } = $props();
 
@@ -95,11 +95,11 @@
 						{agent.user.firstName}
 						{agent.user.lastName}
 					</h3>
-					<Badge
-						variant={getCredentialBadgeVariant(agent.credentials || "default")}
-						class="mt-1 text-xs"
-					>
-						{agent.credentials}
+					<!-- variant={getCredentialBadgeVariant(agent.credentials || "default")} -->
+					<Badge class="mt-1 text-xs" variant="outline">
+						{agent.prcLicenceNumber
+							? "PRC License #" + agent.prcLicenceNumber
+							: "Real Estate Agent"}
 					</Badge>
 					<div class="mt-2 flex items-center gap-1 text-sm text-gray-600">
 						<Star class="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -128,7 +128,7 @@
 			</div>
 
 			<!-- Stats -->
-			<div class="mb-4 grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4">
+			<div class="mb-4 grid grid-cols-2 gap-4 rounded-lg bg-gray-50 py-2">
 				<div class="text-center">
 					<p class="text-lg font-bold text-gray-900">{mockStats.activeListings}</p>
 					<p class="text-xs text-gray-600">Active Listings</p>
@@ -140,7 +140,7 @@
 			</div>
 
 			<!-- Experience -->
-			<div class="mb-4 flex items-center justify-between text-sm">
+			<div class="mb-0 flex items-center justify-between text-sm">
 				<span class="text-gray-600">Experience:</span>
 				<span class="font-medium text-gray-900"
 					>{getExperienceYears(agent.user.dateCreated)} years</span
@@ -148,7 +148,7 @@
 			</div>
 
 			<!-- Contact Info -->
-			<div class="space-y-2 border-t pt-4">
+			<!-- <div class="space-y-2 border-t pt-4">
 				{#if agent.user.mobileNumber}
 					<div class="flex items-center gap-2 text-sm">
 						<Phone class="h-4 w-4 text-gray-500" />
@@ -161,7 +161,7 @@
 						<span class="truncate text-gray-700">{agent.user.email}</span>
 					</div>
 				{/if}
-			</div>
+			</div> -->
 		</Card.Content>
 
 		<!-- Footer -->

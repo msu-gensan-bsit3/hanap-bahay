@@ -1,17 +1,18 @@
 <script lang="ts">
-	import { Button } from "$lib/components/ui/button";
 	import { Badge } from "$lib/components/ui/badge";
-	import { Edit, Share } from "@lucide/svelte";
+	import { Button } from "$lib/components/ui/button";
 	import { toTitleCase } from "$lib/utils";
+	import { Share } from "@lucide/svelte";
 
 	interface props {
 		propertyName: string;
 		price: number;
 		listingType: "sale" | "rent" | "lease";
 		category: string;
+		status?: "up" | "pending" | "sold" | "under-review" | "submitted";
 	}
 
-	let { propertyName, price, listingType, category }: props = $props();
+	let { propertyName, price, listingType, category, status }: props = $props();
 
 	function formatPrice(p: number) {
 		return new Intl.NumberFormat("en-PH", {
@@ -36,6 +37,38 @@
 			return "category-commercial";
 		return "category";
 	}
+
+	function getStatusVariant(status: string) {
+		switch (status) {
+			case "sold":
+				return "destructive";
+			case "pending":
+				return "secondary";
+			case "under-review":
+				return "outline";
+			case "submitted":
+				return "outline";
+			case "up":
+			default:
+				return "default";
+		}
+	}
+
+	function getStatusDisplay(status: string) {
+		switch (status) {
+			case "sold":
+				return "SOLD";
+			case "pending":
+				return "Pending";
+			case "under-review":
+				return "Under Review";
+			case "submitted":
+				return "Submitted";
+			case "up":
+			default:
+				return "Available";
+		}
+	}
 </script>
 
 <div class="mb-3 flex items-start justify-between gap-6">
@@ -47,10 +80,20 @@
 		</div>
 		<div class="mb-3 text-xl text-gray-600">
 			<h1>{propertyName}</h1>
-			<Badge variant={listingType}>
-				For {toTitleCase(listingType)}
-			</Badge>
-			<Badge variant={getCategoryVariant(category)}>{toTitleCase(category)}</Badge>
+			<div class="mt-2 flex flex-wrap items-center gap-2">
+				{#if status}
+					<Badge
+						variant={getStatusVariant(status)}
+						class={status === "sold" ? "font-bold text-white" : ""}
+					>
+						{getStatusDisplay(status)}
+					</Badge>
+				{/if}
+				<Badge variant={listingType}>
+					For {toTitleCase(listingType)}
+				</Badge>
+				<Badge variant={getCategoryVariant(category)}>{toTitleCase(category)}</Badge>
+			</div>
 		</div>
 	</div>
 	<div class="flex gap-2">

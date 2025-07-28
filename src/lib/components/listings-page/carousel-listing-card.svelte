@@ -54,17 +54,44 @@
 		// Default category variant
 		return "category";
 	}
+
+	function getStatusDisplay(status: string) {
+		switch (status) {
+			case "sold":
+				return "SOLD";
+			case "pending":
+				return "Pending";
+			case "under-review":
+				return "Under Review";
+			case "submitted":
+				return "Submitted";
+			case "up":
+			default:
+				return "Available";
+		}
+	}
 </script>
 
 <a href="/listings/{listing.id}" class="group block h-full">
 	<Card.Root
-		class="relative flex h-full flex-col gap-0 overflow-hidden p-0 shadow-sm transition-shadow hover:shadow-md"
+		class="relative flex h-full flex-col gap-0 overflow-hidden p-0 shadow-sm transition-shadow hover:shadow-md {listing.status ===
+		'sold'
+			? 'opacity-75'
+			: ''}"
 	>
 		<!-- Image with badge overlay -->
 		<div class="relative h-full overflow-hidden bg-muted">
 			<Badge variant={property.type} class="absolute top-3 left-3 z-10">
 				For {toTitleCase(property.type)}
 			</Badge>
+			{#if listing.status === "sold"}
+				<Badge
+					variant="destructive"
+					class="absolute top-3 left-1/2 z-10 -translate-x-1/2 font-bold text-white"
+				>
+					SOLD
+				</Badge>
+			{/if}
 			<button
 				class="absolute top-3 right-3 z-10 rounded-full bg-white/80 p-1 transition-colors hover:bg-white"
 			>

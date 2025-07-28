@@ -17,7 +17,7 @@
 		User,
 	} from "@lucide/svelte";
 
-	let { data } = $props();
+	let { data, form } = $props();
 
 	// Filter and sort state
 	let statusFilter = $state("All Status");
@@ -121,6 +121,22 @@
 </svelte:head>
 
 <div class="mx-auto max-w-5xl space-y-4 px-2 py-4 sm:px-4 lg:px-6">
+	<!-- Success/Error Messages -->
+	{#if form?.success}
+		<div
+			class="rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-900/10 dark:text-green-400"
+		>
+			<p class="font-medium">{form.message}</p>
+		</div>
+	{/if}
+
+	{#if form?.err}
+		<div
+			class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-900/10 dark:text-red-400"
+		>
+			<p class="font-medium">{form.err}</p>
+		</div>
+	{/if}
 	<!-- Agent Welcome Section -->
 	<!-- <div
 		class="rounded-2xl border bg-gradient-to-r from-slate-50 to-slate-100 p-8 shadow-sm dark:from-slate-900 dark:to-slate-800"
@@ -436,21 +452,71 @@
 								</div>
 
 								{#if lead.status === "new"}
+									{@const markAsSold = moreEnhance({
+										reset: false,
+										onSubmit: () => {
+											return confirm(
+												"Are you sure you want to mark this lead as sold? This action will close this lead and mark the property as successfully sold to this buyer.",
+											);
+										},
+									})}
+									{@const decline = moreEnhance({
+										reset: false,
+										onSubmit: () => {
+											return confirm(
+												"Are you sure you want to decline this lead? This action will reject the buyer's offer and close this lead. This action cannot be undone.",
+											);
+										},
+									})}
 									<div class="mt-5 flex w-full flex-row gap-2 md:flex-col">
-										<Button
-											variant="default"
-											size="sm"
-											class="flex-1 bg-green-600 hover:bg-green-700 md:w-full md:flex-none"
-										>
-											Mark As Sold
-										</Button>
-										<Button
-											variant="outline"
-											size="sm"
-											class="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700 md:w-full md:flex-none"
-										>
-											Decline
-										</Button>
+										<form method="POST" action="?/markAsSold" class="flex-1" use:markAsSold.enhance>
+											<input type="hidden" name="offerId" value={lead.id} />
+											<Button
+												variant="default"
+												size="sm"
+												type="submit"
+												class="w-full bg-green-600 hover:bg-green-700 md:flex-none"
+												disabled={markAsSold.submitting}
+											>
+												{#if markAsSold.submitting}
+													Marking...
+												{:else}
+													Mark As Sold
+												{/if}
+											</Button>
+										</form>
+										<form method="POST" action="?/decline" class="flex-1" use:decline.enhance>
+											<input type="hidden" name="offerId" value={lead.id} />
+											<Button
+												variant="outline"
+												size="sm"
+												type="submit"
+												class="w-full text-red-600 hover:bg-red-50 hover:text-red-700 md:flex-none"
+												disabled={decline.submitting}
+											>
+												{#if decline.submitting}
+													Declining...
+												{:else}
+													Decline
+												{/if}
+											</Button>
+										</form>
+									</div>
+								{:else if lead.status === "completed"}
+									<div class="mt-5 flex w-full justify-center">
+										<div class="rounded-lg bg-green-50 px-4 py-2 text-center">
+											<p class="text-sm font-medium text-green-800">✅ Lead Marked as Sold</p>
+											<p class="text-xs text-green-600">
+												This property was successfully sold to this buyer
+											</p>
+										</div>
+									</div>
+								{:else if lead.status === "rejected"}
+									<div class="mt-5 flex w-full justify-center">
+										<div class="rounded-lg bg-red-50 px-4 py-2 text-center">
+											<p class="text-sm font-medium text-red-800">❌ Lead Declined</p>
+											<p class="text-xs text-red-600">This lead was declined and closed</p>
+										</div>
 									</div>
 								{/if}
 							</div>

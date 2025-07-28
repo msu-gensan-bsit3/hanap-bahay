@@ -7,7 +7,6 @@
 	import { Separator } from "$lib/components/ui/separator/index";
 	import { moreEnhance } from "$lib/states/enhance.svelte";
 	import {
-		Award,
 		Building2,
 		Calendar,
 		LoaderCircle,
@@ -117,9 +116,12 @@
 									{data.agent.user.firstName}
 									{data.agent.user.lastName}
 								</h1>
+								<!-- variant={getCredentialBadgeVariant(data.agent.credentials)} -->
 								{#if data.agent.credentials}
-									<Badge variant={getCredentialBadgeVariant(data.agent.credentials)} class="mt-2">
-										{data.agent.credentials}
+									<Badge class="mt-2" variant="outline">
+										{data.agent.prcLicenceNumber
+											? "PRC License #" + data.agent.prcLicenceNumber
+											: "Real Estate Agent"}
 									</Badge>
 								{/if}
 								{#if data.agent.prcLicenceNumber}
@@ -161,12 +163,12 @@
 									<Calendar class="h-4 w-4" />
 									<span>{getExperienceYears(data.agent.user.dateCreated)} years of experience</span>
 								</div>
-								{#if data.agent.prcLicenceNumber}
+								<!-- {#if data.agent.prcLicenceNumber}
 									<div class="flex items-center justify-center gap-2 lg:justify-start">
 										<Award class="h-4 w-4" />
 										<span>PRC License: {data.agent.prcLicenceNumber}</span>
 									</div>
-								{/if}
+								{/if} -->
 							</div>
 						</div>
 
@@ -338,18 +340,18 @@
 								{getExperienceYears(data.agent.user.dateCreated)} years in real estate
 							</p>
 						</div>
-						{#if data.agent.credentials}
+						<!-- {#if data.agent.credentials}
 							<div>
 								<p class="font-medium text-gray-900">Credentials</p>
 								<Badge variant={getCredentialBadgeVariant(data.agent.credentials)} class="mt-1">
 									{data.agent.credentials}
 								</Badge>
 							</div>
-						{/if}
+						{/if} -->
 						{#if data.agent.prcLicenceNumber}
 							<div>
 								<p class="font-medium text-gray-900">PRC License</p>
-								<p class="text-sm text-gray-600">{data.agent.prcLicenceNumber}</p>
+								<p class="text-sm text-gray-600">#{data.agent.prcLicenceNumber}</p>
 							</div>
 						{/if}
 					</Card.Content>

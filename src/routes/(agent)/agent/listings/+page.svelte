@@ -375,7 +375,7 @@
 											</span>
 										</div>
 									</div>
-									<div class="flex items-center gap-2">
+									<div class="mt-1.5 flex items-center gap-2">
 										<StatusIcon class="h-4 w-4" />
 										<Badge class="{getStatusColor(listing.status)} border-0 font-medium">
 											{toTitleCase(listing.status === "up" ? "active" : listing.status)}
