@@ -48,7 +48,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		}
 	}
 
-	if (curListing.status !== "up") {
+	if (!["up", "sold", "pending"].includes(curListing.status)) {
 		return error(400, "Listing not available.");
 	}
 

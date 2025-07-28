@@ -1,5 +1,6 @@
 import { db } from "$lib/server/db";
-import { agentQuery, listingQuery, propertyQuery } from "$lib/server/db/schema";
+import { agentQuery, listing, listingQuery, propertyQuery } from "$lib/server/db/schema";
+import { inArray } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async () => {
@@ -9,6 +10,8 @@ export const load: PageServerLoad = async () => {
 			agent: agentQuery,
 			property: { ...propertyQuery, columns: { ...propertyQuery.columns, sellerId: false } },
 		},
+		// where: eq(listing.status, '')
+		where: inArray(listing.status, ["up", "sold", "pending"]),
 	});
 
 	return {
