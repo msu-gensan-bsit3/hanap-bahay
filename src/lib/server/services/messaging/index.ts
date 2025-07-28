@@ -1,10 +1,5 @@
 import { db } from "$lib/server/db";
-import {
-	buyer,
-	conversation,
-	conversationParticipant,
-	conversationQuery,
-} from "$lib/server/db/schema";
+import { conversation, conversationParticipant, conversationQuery } from "$lib/server/db/schema";
 import { eq, exists } from "drizzle-orm";
 
 export class Messaging {
@@ -43,6 +38,7 @@ export class Messaging {
 				},
 			},
 		});
+
 		return userConversations;
 	}
 }

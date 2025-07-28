@@ -213,6 +213,7 @@
 	<QuickActions
 		properties={selectedConversation?.properties}
 		onQuickResponse={handleQuickResponse}
+		{role}
 	/>
 </div>
 

@@ -1,15 +1,15 @@
 <script lang="ts">
-	import PropertyImageGallery from "$lib/components/property-image-gallery.svelte";
 	import {
-		Header,
-		Specs,
 		AddressCard,
+		AgentCard,
 		DescriptionCard,
 		FeaturesCard,
-		TagsCard,
+		Header,
 		InfoCard,
-		AgentCard,
+		Specs,
+		TagsCard,
 	} from "$lib/components/listing";
+	import PropertyImageGallery from "$lib/components/property-image-gallery.svelte";
 
 	let { data } = $props();
 
