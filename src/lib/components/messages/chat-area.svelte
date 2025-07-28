@@ -13,6 +13,7 @@
 			name: string;
 			avatar: string;
 			online: boolean;
+			agentId: number;
 			properties: (Property & { listingId: number })[];
 			timestamp: string;
 		};
@@ -132,7 +133,7 @@
 							<Phone />
 							<span class="ml-1 hidden lg:inline">Call</span>
 						</Button>
-						<Button variant="outline" size="sm">
+						<Button variant="outline" size="sm" href="/agents/{selectedConversation.agentId}">
 							<Info />
 							<span class="ml-1 hidden lg:inline">Info</span>
 						</Button>

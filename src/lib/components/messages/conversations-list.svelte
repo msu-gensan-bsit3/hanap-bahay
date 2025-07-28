@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { Badge } from "$lib/components/ui/badge";
 	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
 	import { Input } from "$lib/components/ui/input";
-	import { Badge } from "$lib/components/ui/badge";
 	import type { Property } from "$lib/server/db/schema";
 
 	interface props {
@@ -13,6 +13,7 @@
 			unread: number;
 			avatar: string;
 			online: boolean;
+			agentId: number;
 			properties: (Property & { listingId: number })[];
 		}[];
 	}

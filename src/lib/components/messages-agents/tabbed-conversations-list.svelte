@@ -13,6 +13,7 @@
 		unread: number;
 		avatar: string;
 		online: boolean;
+		agentId: number;
 		properties: (Property & { listingId: number })[];
 		receiverId: number;
 	}

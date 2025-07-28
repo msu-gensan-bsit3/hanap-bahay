@@ -46,9 +46,12 @@
 				listingId: o.offer.listing.id,
 			}));
 
+			const agentId = v.offerConversations.at(0)!.offer.listing.agentId;
+
 			return {
 				id,
 				name,
+				agentId,
 				lastMessage,
 				timestamp,
 				unread,

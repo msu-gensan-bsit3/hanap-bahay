@@ -33,7 +33,7 @@ export class Messaging {
 							columns: {},
 							with: {
 								listing: {
-									columns: { id: true },
+									columns: { id: true, agentId: true },
 									with: {
 										property: true,
 									},

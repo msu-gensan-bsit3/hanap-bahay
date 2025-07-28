@@ -45,9 +45,12 @@
 				listingId: o.offer.listing.id,
 			}));
 
+			const agentId = receiver.user.id;
+
 			return {
 				id,
 				name,
+				agentId,
 				lastMessage,
 				timestamp,
 				unread,
