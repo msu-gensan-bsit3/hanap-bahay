@@ -91,33 +91,5 @@ export const actions: Actions = {
 		if (queryResult) {
 			return redirect(302, `/agent/messages?convId=${queryResult.conversation.id}`);
 		}
-
-		return {};
-
-		// // Create new conversation
-		// const [newConversation] = await db.insert(conversation).values({}).returning();
-
-		// // Add both users to the conversation
-		// await db.insert(conversationParticipant).values([
-		// 	{ conversationId: newConversation.id, userId: locals.user.id },
-		// 	{ conversationId: newConversation.id, userId: buyerId },
-		// ]);
-
-		// // Find or create the offer
-		// let curOffer = await db.query.offer.findFirst({
-		// 	where: and(eq(offer.listingId, listingId), eq(offer.buyerId, buyerId)),
-		// });
-
-		// if (!curOffer) {
-		// 	const [newOffer] = await db.insert(offer).values({ buyerId: buyerId, listingId }).returning();
-		// 	curOffer = newOffer;
-		// }
-
-		// // Link the conversation to the offer
-		// await db
-		// 	.insert(offerConversation)
-		// 	.values({ offerId: curOffer.id, conversationId: newConversation.id });
-
-		// return redirect(302, `/agent/messages?conversation=${newConversation.id}`);
 	},
 };

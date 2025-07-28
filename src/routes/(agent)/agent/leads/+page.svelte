@@ -1,22 +1,83 @@
 <script lang="ts">
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
+	import * as Select from "$lib/components/ui/select";
 	import { moreEnhance } from "$lib/states/enhance.svelte";
 	import { getDetails, toTitleCase } from "$lib/utils";
-	import { Clock, Eye, Heart, MapPin, MessageCircle, User, UserCheck } from "@lucide/svelte";
+	import {
+		ChevronDown,
+		ChevronUp,
+		Clock,
+		Eye,
+		Filter,
+		Heart,
+		MapPin,
+		MessageCircle,
+		RotateCcw,
+		User,
+	} from "@lucide/svelte";
 
 	let { data } = $props();
+
+	// Filter and sort state
+	let statusFilter = $state("All Status");
+	let sortBy = $state("Newest First");
+
+	// Mobile filter visibility toggle
+	let showFilters = $state(false);
 
 	// Pagination state
 	const perPage = 6; // Number of items per page
 	let pageNum = $state(1);
 
-	// Derived values for pagination
+	// Derived values for filtering, sorting, and pagination
 	const paginatedLeads = $derived.by(() => {
 		const leads = data.leads || [];
-		const totalPages = Math.ceil(leads.length / perPage);
-		const paginatedData = leads.slice((pageNum - 1) * perPage, pageNum * perPage);
-		return { leads: paginatedData, totalPages, totalCount: leads.length };
+
+		// Apply filters
+		const filteredLeads = leads.filter((lead) => {
+			const matchesStatus =
+				statusFilter === "All Status" || toTitleCase(lead.status) === statusFilter;
+			return matchesStatus;
+		});
+
+		// Apply sorting
+		const sortedLeads = filteredLeads.sort((a, b) => {
+			switch (sortBy) {
+				case "Newest First":
+					return new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime();
+				case "Oldest First":
+					return new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime();
+				case "Highest Price":
+					return b.listing.property.price - a.listing.property.price;
+				case "Lowest Price":
+					return a.listing.property.price - b.listing.property.price;
+				case "Status":
+					return a.status.localeCompare(b.status);
+				default:
+					return 0;
+			}
+		});
+
+		const totalPages = Math.ceil(sortedLeads.length / perPage);
+		const paginatedData = sortedLeads.slice((pageNum - 1) * perPage, pageNum * perPage);
+		return { leads: paginatedData, totalPages, totalCount: sortedLeads.length };
+	});
+
+	// Reset filters
+	function resetFilters() {
+		statusFilter = "All Status";
+		sortBy = "Newest First";
+		pageNum = 1;
+	}
+
+	// Reset to page 1 when filters change
+	$effect(() => {
+		// Track filter changes
+		statusFilter;
+		sortBy;
+		// Reset to page 1 when any filter changes
+		pageNum = 1;
 	});
 
 	function formatPrice(price: number): string {
@@ -59,9 +120,9 @@
 	<title>My Leads - JuanHomes Agent</title>
 </svelte:head>
 
-<div class="mx-auto max-w-4xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
+<div class="mx-auto max-w-5xl space-y-4 px-2 py-4 sm:px-4 lg:px-6">
 	<!-- Agent Welcome Section -->
-	<div
+	<!-- <div
 		class="rounded-2xl border bg-gradient-to-r from-slate-50 to-slate-100 p-8 shadow-sm dark:from-slate-900 dark:to-slate-800"
 	>
 		<div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -82,7 +143,7 @@
 				</Badge>
 			</div>
 		</div>
-	</div>
+	</div> -->
 
 	<!-- Header Section -->
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -96,7 +157,145 @@
 		</Button>
 	</div>
 
-	{#if !paginatedLeads.totalCount}
+	<!-- Filter and Sort Controls -->
+	<div class="mb-6 rounded-xl border bg-card p-3 shadow-sm">
+		<!-- Mobile: Stacked layout -->
+		<div class="flex flex-col gap-3 lg:hidden">
+			<!-- Mobile Filter Toggle Button -->
+			<div class="flex items-center justify-between">
+				<div class="flex items-center gap-2">
+					<span class="text-sm font-medium">
+						{paginatedLeads.totalCount} lead{paginatedLeads.totalCount !== 1 ? "s" : ""}
+					</span>
+				</div>
+				<Button
+					variant="outline"
+					size="sm"
+					class="flex items-center gap-2"
+					onclick={() => (showFilters = !showFilters)}
+				>
+					<Filter class="h-4 w-4" />
+					<span class="hidden sm:inline">Filters</span>
+					{#if showFilters}
+						<ChevronUp class="h-4 w-4" />
+					{:else}
+						<ChevronDown class="h-4 w-4" />
+					{/if}
+				</Button>
+			</div>
+
+			<!-- Collapsible Filters -->
+			{#if showFilters}
+				<div class="flex flex-col gap-3">
+					<!-- Filter Row 1 -->
+					<div class="flex flex-wrap items-center gap-2">
+						<!-- Status Filter -->
+						<div class="flex items-center gap-2">
+							<span class="text-sm font-medium">Status:</span>
+							<Select.Root type="single" bind:value={statusFilter}>
+								<Select.Trigger class="w-full min-w-32 sm:w-40">
+									<span>{statusFilter}</span>
+								</Select.Trigger>
+								<Select.Content>
+									<Select.Group>
+										<Select.Item value="All Status">All Status</Select.Item>
+										<Select.Item value="New">New</Select.Item>
+										<Select.Item value="In Negotiation">In Negotiation</Select.Item>
+										<Select.Item value="Completed">Completed</Select.Item>
+										<Select.Item value="Rejected">Rejected</Select.Item>
+										<Select.Item value="Cancelled">Cancelled</Select.Item>
+									</Select.Group>
+								</Select.Content>
+							</Select.Root>
+						</div>
+
+						<!-- Sort By -->
+						<div class="flex items-center gap-2">
+							<span class="text-sm font-medium">Sort:</span>
+							<Select.Root type="single" bind:value={sortBy}>
+								<Select.Trigger class="w-full min-w-32 sm:w-36">
+									<span>{sortBy}</span>
+								</Select.Trigger>
+								<Select.Content>
+									<Select.Group>
+										<Select.Item value="Newest First">Newest First</Select.Item>
+										<Select.Item value="Oldest First">Oldest First</Select.Item>
+										<Select.Item value="Highest Price">Highest Price</Select.Item>
+										<Select.Item value="Lowest Price">Lowest Price</Select.Item>
+										<Select.Item value="Status">Status</Select.Item>
+									</Select.Group>
+								</Select.Content>
+							</Select.Root>
+						</div>
+
+						<!-- Reset Filters Button -->
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={resetFilters}
+							class="flex items-center gap-2"
+						>
+							<RotateCcw class="h-4 w-4" />
+							<span class="hidden sm:inline">Reset</span>
+						</Button>
+					</div>
+				</div>
+			{/if}
+		</div>
+
+		<!-- Desktop: Single row layout -->
+		<div class="hidden items-center gap-2 lg:flex lg:justify-between">
+			<div class="flex items-center gap-4">
+				<!-- Status Filter -->
+				<div class="flex items-center gap-2">
+					<Filter class="h-4 w-4 text-muted-foreground" />
+					<span class="text-sm font-medium">Filter:</span>
+					<Select.Root type="single" bind:value={statusFilter}>
+						<Select.Trigger class="w-full min-w-32 sm:w-40">
+							<span>{statusFilter}</span>
+						</Select.Trigger>
+						<Select.Content>
+							<Select.Group>
+								<Select.Item value="All Status">All Status</Select.Item>
+								<Select.Item value="New">New</Select.Item>
+								<Select.Item value="In Negotiation">In Negotiation</Select.Item>
+								<Select.Item value="Completed">Completed</Select.Item>
+								<Select.Item value="Rejected">Rejected</Select.Item>
+								<Select.Item value="Cancelled">Cancelled</Select.Item>
+							</Select.Group>
+						</Select.Content>
+					</Select.Root>
+				</div>
+
+				<!-- Sort By -->
+				<div class="flex items-center gap-2">
+					<span class="text-sm font-medium">Sort:</span>
+					<Select.Root type="single" bind:value={sortBy}>
+						<Select.Trigger class="w-full min-w-32 sm:w-36">
+							<span>{sortBy}</span>
+						</Select.Trigger>
+						<Select.Content>
+							<Select.Group>
+								<Select.Item value="Newest First">Newest First</Select.Item>
+								<Select.Item value="Oldest First">Oldest First</Select.Item>
+								<Select.Item value="Highest Price">Highest Price</Select.Item>
+								<Select.Item value="Lowest Price">Lowest Price</Select.Item>
+								<Select.Item value="Status">Status</Select.Item>
+							</Select.Group>
+						</Select.Content>
+					</Select.Root>
+				</div>
+			</div>
+
+			<!-- Reset Filters Button -->
+			<Button variant="outline" size="sm" onclick={resetFilters} class="flex items-center gap-2">
+				<RotateCcw class="h-4 w-4" />
+				Reset
+			</Button>
+		</div>
+	</div>
+
+	{#if !data.leads?.length}
 		<div
 			class="rounded-2xl border border-dashed border-muted-foreground/25 bg-muted/20 p-12 text-center"
 		>
@@ -109,12 +308,32 @@
 			</p>
 			<Button href="/agent/listings" class="mt-6">View My Listings</Button>
 		</div>
+	{:else if !paginatedLeads.totalCount}
+		<div
+			class="rounded-2xl border border-dashed border-muted-foreground/25 bg-muted/20 p-12 text-center"
+		>
+			<div class="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-muted">
+				<Filter class="h-10 w-10 text-muted-foreground" />
+			</div>
+			<h3 class="mt-6 text-xl font-semibold">No leads match your filters</h3>
+			<p class="mt-2 text-muted-foreground">Try adjusting your filters to see more results.</p>
+			<Button variant="outline" onclick={resetFilters} class="mt-6">
+				<RotateCcw class="mr-2 h-4 w-4" />
+				Reset Filters
+			</Button>
+		</div>
 	{:else}
 		<div class="space-y-6">
-			<!-- Results summary -->
-			<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+			<!-- Results summary - Only show on desktop -->
+			<div class="hidden flex-col gap-2 sm:flex-row sm:items-center sm:justify-between lg:flex">
 				<p class="text-sm text-muted-foreground">
-					{paginatedLeads.totalCount} leads
+					{paginatedLeads.totalCount} lead{paginatedLeads.totalCount !== 1 ? "s" : ""}
+					{#if statusFilter !== "All Status"}
+						• Filtered by {statusFilter}
+					{/if}
+					{#if sortBy !== "Newest First"}
+						• Sorted by {sortBy}
+					{/if}
 					{#if paginatedLeads.totalPages > 1}
 						• Page {pageNum} of {paginatedLeads.totalPages}
 					{/if}
@@ -128,7 +347,7 @@
 					<div
 						class="group rounded-2xl border bg-card p-6 shadow-sm transition-all duration-200 hover:shadow-md"
 					>
-						<div class="flex flex-col gap-6 md:flex-row">
+						<div class="flex flex-col gap-3 md:flex-row">
 							<!-- Property Image -->
 							<div class="flex-shrink-0">
 								<div class="relative overflow-hidden rounded-xl">
@@ -142,9 +361,9 @@
 
 							<!-- Lead Details -->
 							<div class="flex-1 space-y-4">
-								<div class="flex items-start justify-between">
+								<div class="flex items-start justify-between gap-2">
 									<div class="space-y-2">
-										<h3 class="text-xl font-semibold">{lead.listing.property.name}</h3>
+										<h3 class="line-clamp-2 text-xl font-semibold">{lead.listing.property.name}</h3>
 										<div class="flex items-center gap-2 text-muted-foreground">
 											<MapPin class="h-4 w-4" />
 											<span class="text-sm">
@@ -158,7 +377,7 @@
 									</Badge>
 								</div>
 
-								<div class="flex flex-wrap items-center gap-6 text-sm">
+								<div class="flex flex-wrap items-center gap-3 text-sm">
 									<div class="flex items-center gap-2 font-semibold text-foreground">
 										{formatPrice(lead.listing.property.price)}
 									</div>
@@ -168,9 +387,14 @@
 									</div>
 								</div>
 
+								<!-- Property Features -->
+								<p class="text-sm text-muted-foreground">
+									{getDetails(lead.listing.property)}
+								</p>
+
 								<!-- Buyer Info -->
-								<div class="rounded-lg bg-muted/50 p-3">
-									<div class="flex items-center gap-2 text-sm">
+								<div class="flex w-full">
+									<div class="flex items-center gap-2 rounded-lg bg-muted/80 p-3 text-sm md:mt-6">
 										<User class="h-4 w-4 text-primary" />
 										<span class="font-medium text-foreground">
 											{lead.buyer.user.firstName}
@@ -181,58 +405,49 @@
 										{/if}
 									</div>
 								</div>
-
-								{#if lead.listing.property.description}
-									<p class="line-clamp-2 text-sm text-muted-foreground">
-										{lead.listing.property.description}
-									</p>
-								{/if}
-
-								<!-- Property Features -->
-								<p class="text-sm text-muted-foreground">
-									{getDetails(lead.listing.property)}
-								</p>
 							</div>
 
 							<!-- Action Buttons -->
-							<div class="flex flex-col gap-3 lg:items-end">
-								<Button
-									variant="outline"
-									size="sm"
-									href="/listings/{lead.listing.id}"
-									class="flex w-full justify-start"
-								>
-									<Eye class="mr-2 h-4 w-4" />
-									View Property
-								</Button>
-								<form method="POST" action="?/sendMessage" use:enhance>
-									<input type="hidden" name="buyerId" value={lead.buyer.user.id} />
-									<input type="hidden" name="listingId" value={lead.listing.id} />
+							<div class="flex flex-col justify-between gap-3 lg:items-end">
+								<div class="flex flex-col gap-3">
 									<Button
 										variant="outline"
 										size="sm"
-										type="submit"
+										href="/listings/{lead.listing.id}"
 										class="flex w-full justify-start"
-										disabled={submitting}
 									>
-										<MessageCircle class="mr-2 h-4 w-4" />
-										Contact Buyer
+										<Eye class="mr-2 h-4 w-4" />
+										View Property
 									</Button>
-								</form>
+									<form method="POST" action="?/sendMessage" class="w-full" use:enhance>
+										<input type="hidden" name="buyerId" value={lead.buyer.user.id} />
+										<input type="hidden" name="listingId" value={lead.listing.id} />
+										<Button
+											variant="outline"
+											size="sm"
+											type="submit"
+											class="flex w-full justify-start"
+											disabled={submitting}
+										>
+											<MessageCircle class="mr-2 h-4 w-4" />
+											Contact Buyer
+										</Button>
+									</form>
+								</div>
 
 								{#if lead.status === "new"}
-									<div class="flex w-full gap-2">
+									<div class="mt-5 flex w-full flex-row gap-2 md:flex-col">
 										<Button
 											variant="default"
 											size="sm"
-											class="flex-1 bg-green-600 hover:bg-green-700"
+											class="flex-1 bg-green-600 hover:bg-green-700 md:w-full md:flex-none"
 										>
-											Accept
+											Mark As Sold
 										</Button>
 										<Button
 											variant="outline"
 											size="sm"
-											class="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700"
+											class="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700 md:w-full md:flex-none"
 										>
 											Decline
 										</Button>
@@ -297,15 +512,3 @@
 		</div>
 	{/if}
 </div>
-
-<style>
-	/* Smooth transitions for interactive elements */
-	.group:hover .group-hover\:scale-105 {
-		transform: scale(1.05);
-	}
-
-	/* Custom gradient backgrounds */
-	.bg-gradient-to-r {
-		background-image: linear-gradient(to right, var(--tw-gradient-stops));
-	}
-</style>
