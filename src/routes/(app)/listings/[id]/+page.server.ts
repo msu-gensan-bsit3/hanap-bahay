@@ -39,7 +39,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			where: eq(user.id, locals.user.id),
 		});
 
-		if (userData?.agent && userData.agent.id === curListing.agent.user.id) {
+		if (userData?.agent) {
 			role = "agent";
 		} else if (userData?.seller && curListing.property.sellerId === userData.seller.id) {
 			role = "seller";
@@ -85,6 +85,10 @@ export const actions: Actions = {
 		const curAgent = await db.query.agent.findFirst({ where: eq(agent.id, agentId) });
 		if (!curAgent) {
 			return fail(400, { err: "agent id not found" });
+		}
+
+		if (await db.query.agent.findFirst({ where: eq(agent.id, locals.user.id) })) {
+			return fail(400, { err: "agent can't make an offer" });
 		}
 
 		const subquery = db

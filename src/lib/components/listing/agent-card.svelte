@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
 	import { Button } from "$lib/components/ui/button";
-	import type { ClientListing } from "$lib/types";
-	import { Mail, Phone, MessageCircle, LoaderCircle } from "@lucide/svelte";
+	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
 	import { moreEnhance } from "$lib/states/enhance.svelte";
+	import type { ClientListing } from "$lib/types";
+	import { LoaderCircle, Mail, MessageCircle, Phone } from "@lucide/svelte";
 
 	interface props {
 		agent: ClientListing["agent"];
@@ -48,7 +48,7 @@
 						<p class="text-sm text-gray-500">{agent.credentials}</p>
 					</div>
 				</div>
-				<div class="flex flex-col gap-3">
+				<div class="flex flex-col gap-3 {role === 'anon' ? 'hidden' : ''}">
 					{#if agent.user.mobileNumber}
 						<div class="flex items-center gap-2">
 							<Phone class="size-4" />
@@ -67,7 +67,13 @@
 			<form method="POST" action="?/sendMessage" use:enhance>
 				<input type="hidden" name="agentId" value={agent.user.id} />
 				<input type="hidden" name="listingId" value={listingId} />
-				<Button variant="outline" size="sm" class="mt-5" disabled={submitting} type="submit">
+				<Button
+					variant="outline"
+					size="sm"
+					class="mt-5 {role === 'agent' ? 'hidden' : ''}"
+					disabled={submitting}
+					type="submit"
+				>
 					{#if submitting}
 						<LoaderCircle class="mr-2 size-4 animate-spin" />
 					{:else}

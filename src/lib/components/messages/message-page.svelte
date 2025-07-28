@@ -153,9 +153,7 @@
 
 		convId = conversation.id;
 		tick().then(() => {
-			if (selectedConversation?.unread) {
-				updateTimeBtn?.click();
-			}
+			updateTimeBtn?.click();
 		});
 
 		// Mark as read
