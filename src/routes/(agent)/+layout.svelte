@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { Sidebar } from "$lib/components/dashboard";
+	import TransitionOverlay from "$lib/components/transition-overlay.svelte";
 	import { setAgentContext } from "$lib/contexts/agentContext";
 	import { Menu, X } from "@lucide/svelte";
 
 	let { children, data } = $props();
-	let sidebarOpen = $state(true);
+	let sidebarOpen = $state(false);
 	let mobileMenuOpen = $state(false);
 	let container: HTMLElement | undefined = $state();
 
@@ -18,6 +19,8 @@
 		mobileMenuOpen = !mobileMenuOpen;
 	}
 </script>
+
+<TransitionOverlay />
 
 <div class="min-h-screen bg-gray-50">
 	<!-- Mobile Header (visible on small screens) -->

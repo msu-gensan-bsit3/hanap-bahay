@@ -115,7 +115,7 @@
 							</DropdownMenu.Item>
 							<DropdownMenu.Item class="w-full p-0">
 								<a
-									href="{curAgent ? '/agent/' : ''}/messages"
+									href="{curAgent ? '/agent' : ''}/messages"
 									class="flex w-full cursor-pointer items-center gap-2 p-2"
 									title="Messages"
 								>

@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { Card, CardContent, CardHeader } from "$lib/components/ui/card";
 	import { Button } from "$lib/components/ui/button";
+	import { Card, CardContent, CardHeader } from "$lib/components/ui/card";
 	import { Input } from "$lib/components/ui/input";
-	import { MobileQuickActions } from ".";
+	import type { Property } from "$lib/server/db/schema";
 	import { Info, LoaderCircle, Paperclip, Phone, Send } from "@lucide/svelte";
 	import { tick } from "svelte";
-	import type { Property } from "$lib/server/db/schema";
+	import { MobileQuickActions } from ".";
 
 	interface props {
 		selectedConversation?: {
@@ -13,7 +13,7 @@
 			name: string;
 			avatar: string;
 			online: boolean;
-			properties: (Property&{listingId: number})[];
+			properties: (Property & { listingId: number })[];
 			timestamp: string;
 		};
 		messages: Array<{
@@ -29,6 +29,7 @@
 		isMobile?: boolean;
 		messagesContainer?: HTMLElement;
 		sending?: boolean;
+		role: "agent" | "user";
 	}
 
 	let {
@@ -40,6 +41,7 @@
 		isMobile = false,
 		messagesContainer = $bindable(),
 		sending,
+		role,
 	}: props = $props();
 
 	let newMessage = $state("");
@@ -174,6 +176,7 @@
 				</div>
 				<div class="relative {isMobile ? '@4xl:hidden' : '@7xl:hidden'}">
 					<MobileQuickActions
+						{role}
 						properties={selectedConversation.properties}
 						onQuickResponse={handleQuickResponse}
 					/>

@@ -177,6 +177,7 @@
 	{:else if showChat}
 		<ChatArea
 			{userId}
+			{role}
 			{selectedConversation}
 			{messages}
 			onSendMessage={sendMessage}
@@ -201,6 +202,7 @@
 	<!-- Chat Area -->
 	<ChatArea
 		{userId}
+		{role}
 		{selectedConversation}
 		{messages}
 		sending={sendMessageForm.submitting}

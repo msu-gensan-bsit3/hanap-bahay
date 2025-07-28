@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from "$app/navigation";
 	import type { ButtonVariant } from "$lib/components/ui/button";
 	import { Button } from "$lib/components/ui/button";
 	import { ClipboardCheck, MessageSquare, Plus, type IconProps } from "@lucide/svelte";
@@ -9,6 +10,7 @@
 		icon: Component<IconProps>;
 		variant: ButtonVariant;
 		class?: string;
+		onclick?: () => void;
 	}
 
 	const actionButtons: ActionButton[] = [
@@ -27,13 +29,14 @@
 			label: "View Messages",
 			icon: MessageSquare,
 			variant: "outline",
+			onclick: () => goto("/agent/messages"),
 		},
 	];
 </script>
 
 <div class="flex flex-wrap gap-4">
 	{#each actionButtons as button}
-		<Button variant={button.variant} class={button.class || ""}>
+		<Button variant={button.variant} class={button.class || ""} onclick={button.onclick}>
 			<div class="flex items-center gap-2">
 				<button.icon />
 				<span>{button.label}</span>
