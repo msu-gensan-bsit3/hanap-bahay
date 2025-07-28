@@ -1,9 +1,9 @@
 import { db } from "$lib/server/db";
-import { agentQuery, listingQuery, propertyQuery, userQuery } from "$lib/server/db/schema";
+import { agentQuery, listingQuery, propertyQuery } from "$lib/server/db/schema";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async () => {
-	const listings = await db.query.listing.findMany({
+	const listingsPromise = db.query.listing.findMany({
 		...listingQuery,
 		with: {
 			agent: agentQuery,
@@ -12,6 +12,6 @@ export const load: PageServerLoad = async () => {
 	});
 
 	return {
-		listings,
+		listings: listingsPromise,
 	};
 };

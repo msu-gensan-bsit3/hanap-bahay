@@ -1,19 +1,44 @@
 <script lang="ts">
+	import { goto } from "$app/navigation";
 	import { Button } from "$lib/components/ui/button";
 	import { Card, CardContent } from "$lib/components/ui/card";
+	import type { Property } from "$lib/server/db/schema";
 	import { CalendarCheck, Eye, FileText, X, type IconProps } from "@lucide/svelte";
 	import type { Component } from "svelte";
 
 	interface props {
-		selectedConversation?: {
-			property?: string;
-		};
+		properties: (Property & { listingId: number })[];
 		onQuickResponse: (message: string) => void;
 	}
 
-	let { selectedConversation, onQuickResponse }: props = $props();
+	let { onQuickResponse, properties }: props = $props();
 
 	let showQuickActions = $state(false);
+	let property = $derived(properties?.at(0)); // TODO: temp
+
+	let details = $derived.by(() => {
+		if (!property) {
+			return;
+		}
+
+		const details: string[] = [];
+
+		const isLandProperty = ["commercial-lot", "residential-lot", "industrial-lot"].includes(
+			property?.category,
+		);
+		const area = (isLandProperty ? property.landArea : property.floorArea) || property.landArea;
+		if (property?.bedrooms && property?.bedrooms > 0) {
+			details.push(`${property.bedrooms} BR`);
+		}
+		if (property?.bathrooms && property?.bathrooms > 0) {
+			details.push(`${property.bathrooms} BA`);
+		}
+		if (area && area > 0) {
+			details.push(`${area} sqm`);
+		}
+
+		return details.join(" • ");
+	});
 
 	function toggleQuickActions() {
 		showQuickActions = !showQuickActions;
@@ -28,26 +53,31 @@
 			<Card class="w-72 py-0 shadow-lg">
 				<CardContent class="space-y-3 p-4">
 					<div class="border-b pb-3">
-						<h4 class="text-sm font-medium text-gray-900">{selectedConversation?.property}</h4>
-						<p class="text-xs text-gray-600">3 BR • 2 BA • 140 sqm</p>
-						<p class="mt-1 text-sm font-semibold text-blue-600">₱5,500,000</p>
+						<h4 class="text-sm font-medium text-gray-900">
+							{property?.name}
+						</h4>
+						<p class="text-xs text-gray-600">{details}</p>
+						<p class="mt-1 text-sm font-semibold text-blue-600">
+							₱{property?.price.toLocaleString()}
+						</p>
 					</div>
 
 					<div class="space-y-2">
-						{#snippet btn(name: string, Icon: Component<IconProps>)}
+						{#snippet btn(name: string, Icon: Component<IconProps>, onclick?: () => void)}
 							<Button
 								variant="outline"
 								size="sm"
 								class="flex w-full items-center justify-start gap-3 text-xs"
+								{onclick}
 							>
 								<Icon />
 								{name}
 							</Button>
 						{/snippet}
 
-						{@render btn("View Property", Eye)}
-						{@render btn("Schedule Viewing", CalendarCheck)}
-						{@render btn("Send Brochure", FileText)}
+						{@render btn("View Property", Eye, () => {
+							goto("/listing/" + property?.listingId);
+						})}
 					</div>
 
 					<div class="space-y-2 border-t pt-3">

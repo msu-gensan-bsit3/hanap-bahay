@@ -3,10 +3,12 @@
 	import { Separator } from "$lib/components/ui/separator/index";
 
 	import * as Card from "$lib/components/ui/card/index";
-	import type { ClientListing, Listing } from "$lib/types";
+	import type { ClientListing } from "$lib/types";
 
 	let { agent, property, ...listing }: ClientListing = $props();
 
+	// Loading state for image
+	let imageLoaded = $state(false);
 
 	const toTagType = (t: typeof property.type) => {
 		return "For " + t.replace(/^\w/, (t) => t.toUpperCase());
@@ -27,8 +29,24 @@
 
 <a href="/listing/{listing.id}">
 	<Card.Root class="relative w-sm gap-0 overflow-hidden py-0">
-		<Badge variant={property.type} class="absolute top-2 left-2">{listingType}</Badge>
-		<img src={featuredPhoto} class="h-48 w-full object-cover" alt="listing" />
+		<Badge variant={property.type} class="absolute top-2 left-2 z-10">{listingType}</Badge>
+		
+		<div class="relative h-48 overflow-hidden bg-muted">
+			<!-- Loading skeleton -->
+			{#if !imageLoaded}
+				<div class="absolute inset-0 animate-pulse bg-muted">
+					<div class="h-full w-full bg-gradient-to-r from-muted via-muted/50 to-muted bg-[length:200%_100%] animate-shimmer"></div>
+				</div>
+			{/if}
+			
+			<img 
+				src={featuredPhoto} 
+				class="h-full w-full object-cover transition-opacity duration-300 {imageLoaded ? 'opacity-100' : 'opacity-0'}" 
+				alt="listing"
+				onload={() => imageLoaded = true}
+				onerror={() => imageLoaded = true}
+			/>
+		</div>
 
 		<Card.Content class="bg-background px-2 pb-2">
 			<h2 class="text-xl font-bold tracking-tight">₱1,000</h2>

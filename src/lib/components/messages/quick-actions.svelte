@@ -4,26 +4,52 @@
 	import type { Property } from "$lib/server/db/schema";
 
 	interface props {
-		selectedConversation?: {
-			properties: Property[];
-		};
+		properties?: (Property & { listingId: number })[];
 		onQuickResponse: (message: string) => void;
 	}
 
-	let { selectedConversation, onQuickResponse }: props = $props();
+	let { onQuickResponse, properties }: props = $props();
+
+	let property = $derived(properties?.at(0));
+
+	let details = $derived.by(() => {
+		if (!property) {
+			return;
+		}
+
+		const details: string[] = [];
+
+		const isLandProperty = ["commercial-lot", "residential-lot", "industrial-lot"].includes(
+			property?.category,
+		);
+		const area = (isLandProperty ? property.landArea : property.floorArea) || property.landArea;
+		if (property?.bedrooms && property?.bedrooms > 0) {
+			details.push(`${property.bedrooms} BR`);
+		}
+		if (property?.bathrooms && property?.bathrooms > 0) {
+			details.push(`${property.bathrooms} BA`);
+		}
+		if (area && area > 0) {
+			details.push(`${area} sqm`);
+		}
+
+		return details.join(" • ");
+	});
 </script>
 
 <div class="hidden w-80 flex-col gap-4 @7xl:flex">
-	{#if selectedConversation}
+	{#if property}
 		<Card>
 			<CardHeader>
 				<CardTitle class="text-sm">Property Details</CardTitle>
 			</CardHeader>
 			<CardContent class="space-y-3">
 				<div>
-					<h4 class="font-medium text-gray-900">{selectedConversation.properties.at(0)?.name}</h4>
-					<p class="text-sm text-gray-600">3 BR • 2 BA • 140 sqm</p>
-					<p class="mt-1 text-lg font-semibold text-blue-600">₱5,500,000</p>
+					<h4 class="font-medium text-gray-900">{property.name}</h4>
+					<p class="text-sm text-gray-600">
+						{details}
+					</p>
+					<p class="mt-1 text-lg font-semibold text-blue-600">₱{property.price.toLocaleString()}</p>
 				</div>
 				<div class="flex flex-col gap-2">
 					<Button variant="outline" size="sm" class="w-full justify-start">
@@ -43,7 +69,7 @@
 						</svg>
 						View Property
 					</Button>
-					<Button variant="outline" size="sm" class="w-full justify-start">
+					<!-- <Button variant="outline" size="sm" class="w-full justify-start">
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
@@ -70,7 +96,7 @@
 							/>
 						</svg>
 						Send Brochure
-					</Button>
+					</Button> -->
 				</div>
 			</CardContent>
 		</Card>

@@ -1,54 +1,35 @@
 <script lang="ts">
-	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index"
-	import * as RadioGroup from "$lib/components/ui/radio-group/index"
+	import * as Select from "$lib/components/ui/select/index";
 
-	import { Button } from "$lib/components/ui/button/index"
-	import { Label } from "$lib/components/ui/label/index"
+	const categories = [
+		{ value: "all", label: "All Categories" },
+		{ value: "house-and-lot", label: "House and Lot" },
+		{ value: "apartment", label: "Apartment" },
+		{ value: "boarding-house", label: "Boarding House" },
+		{ value: "townhouse", label: "Townhouse" },
+		{ value: "condominium", label: "Condominium" },
+		{ value: "building", label: "Building" },
+		{ value: "office", label: "Office" },
+		{ value: "commercial-lot", label: "Commercial Lot" },
+		{ value: "residential-lot", label: "Residential Lot" },
+		{ value: "industrial-lot", label: "Industrial Lot" },
+	];
 
-	import { ChevronDown, ChevronUp } from "@lucide/svelte"
-
-	let isOpen = $state(false)
-	let tempType = $state("For Sale")
-
-	let { saleType } = $props()
-
-	const applyChanges = () => {
-		isOpen = false
-		saleType = tempType
-	}
+	let { category = $bindable() }: { category: string } = $props();
 </script>
 
-<DropdownMenu.Root bind:open={isOpen}>
-	<DropdownMenu.Trigger class="flex-1">
-		<Button variant="outline" class="w-full">
-			Category
-			{#if isOpen}
-				<ChevronUp />
-			{:else}
-				<ChevronDown />
-			{/if}
-		</Button>
-	</DropdownMenu.Trigger>
-	<DropdownMenu.Content align="start">
-		<RadioGroup.Root value={tempType}>
-			<div class="flex items-center gap-2">
-				<RadioGroup.Item value="sale" />
-				<Label>For Sale</Label>
-			</div>
-			<div class="flex items-center gap-2">
-				<RadioGroup.Item value="rent" />
-				<Label>For Rent</Label>
-			</div>
-			<div class="flex items-center gap-2">
-				<RadioGroup.Item value="lease" />
-				<Label>For Lease</Label>
-			</div>
-		</RadioGroup.Root>
-		<Button
-			onclick={applyChanges}
-			class="w-full"
+<Select.Root type="single" bind:value={category}>
+	<Select.Trigger class="h-10 w-full min-w-37">
+		<span class="truncate">{categories.find((c) => c.value === category)?.label || "Category"}</span
 		>
-			Apply
-		</Button>
-	</DropdownMenu.Content>
-</DropdownMenu.Root>
+	</Select.Trigger>
+	<Select.Content>
+		<Select.Group>
+			{#each categories as cat (cat.value)}
+				<Select.Item value={cat.value}>
+					{cat.label}
+				</Select.Item>
+			{/each}
+		</Select.Group>
+	</Select.Content>
+</Select.Root>

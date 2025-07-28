@@ -14,5 +14,10 @@ const clientListing = async () => {
 	}))!;
 };
 
+const agent = async () => {
+	return (await db.query.agent.findFirst(agentQuery))!;
+};
+
 export type Listing = Awaited<ReturnType<typeof listing>>;
 export type ClientListing = Awaited<ReturnType<typeof clientListing>>;
+export type Agent = Awaited<ReturnType<typeof agent>>;

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import AskAi from "$lib/components/ask-ai.svelte";
-	import ListingCard from "$lib/components/listing-card.svelte";
+	import AgentCard from "$lib/components/listings-page/agent-card.svelte";
+	import CarouselListingCard from "$lib/components/listings-page/carousel-listing-card.svelte";
 
 	import { Button } from "$lib/components/ui/button/index";
 	import { Input } from "$lib/components/ui/input/index";
@@ -11,55 +12,52 @@
 	import { ChevronLast, Search } from "@lucide/svelte";
 
 	let { data } = $props();
-	let { listings } = $derived(data);
 </script>
 
 <div
-	class="w-full bg-[url(https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iU07NrehBC9I/v0/-1x-1.webp)] bg-no-repeat mb-4"
+	class="relative w-full bg-[url(https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iU07NrehBC9I/v0/-1x-1.webp)] bg-cover bg-center bg-no-repeat pb-5"
 >
-	<div class="mx-auto max-h-screen max-w-xl">
-		<div class="container mx-auto py-12">
-			<div class="mx-auto max-w-4xl gap-4 text-center">
-				<h1 class="mb-4 text-5xl leading-tight font-bold tracking-tight text-background">
+	<!-- Overlay for better text readability -->
+	<div class="absolute inset-0 bg-black/40"></div>
+
+	<div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+		<div class="container mx-auto py-16 lg:py-24">
+			<div class="mx-auto max-w-4xl text-center">
+				<h1
+					class="mb-8 text-4xl leading-tight font-bold tracking-tight text-white sm:text-5xl lg:text-6xl"
+				>
 					In
-					<span class="bg-gradient-to-r from-amber-300 to-red-500 bg-clip-text text-transparent"
-						>JuanHomes</span
-					>
+					<span class="bg-gradient-to-r from-amber-300 to-red-500 bg-clip-text text-transparent">
+						JuanHomes
+					</span>
 					you can find the
-					<span class="bg-gradient-to-r from-amber-500 to-amber-300 bg-clip-text text-transparent"
-						>one</span
-					>
+					<span class="bg-gradient-to-r from-amber-500 to-amber-300 bg-clip-text text-transparent">
+						one
+					</span>
 					which feels like
-					<span class="bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent"
-						>home</span
-					>
+					<span class="bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
+						home
+					</span>
 				</h1>
-				<div class="mx-auto max-w-6xl">
-					<div class="mx-auto rounded-2xl border bg-background">
-						<div class="flex w-full items-center justify-between">
-							<div class="flex flex-1 justify-start"></div>
-							<div class="flex items-center justify-center">
-								<div class="inline-flex">
-									<!-- himo lang kog mga button variants unya -->
-									<Button class="rounded-none border-b-1 border-red-700" variant="ghost"
-										>For Rent</Button
-									>
-									<Button variant="ghost">For Sale</Button>
-									<Button variant="ghost">For Lease</Button>
-								</div>
+
+				<div class="mx-auto mt-25 mb-10 max-w-2xl">
+					<div class="rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-xs">
+						<form action="/listings" method="get" class="space-y-4">
+							<div class="text-center">
+								<Label class="text-lg font-medium text-gray-900">What are you looking for?</Label>
 							</div>
-							<div class="flex flex-1 justify-end"></div>
-						</div>
-						<!-- i think iconvert man ni into a form, apparently wrapper sa superform ang form sa shadcn -->
-						<div class="space-y-2 border-t p-4">
-							<Label>What are you looking for?</Label>
-							<div class="inline-flex w-full gap-2">
-								<Input />
-								<Button>
-									<Search /> Search
+
+							<div class="flex gap-2">
+								<Input
+									name="search"
+									placeholder="Search by location, property type, or keywords..."
+									class="h-11 flex-1 border-gray-200 text-base focus:border-primary focus:ring-1 focus:ring-primary"
+								/>
+								<Button type="submit" size="lg" class="h-11 px-6">
+									<Search class="h-4 w-4" />
 								</Button>
 							</div>
-						</div>
+						</form>
 					</div>
 				</div>
 			</div>
@@ -67,50 +65,155 @@
 	</div>
 </div>
 
-<!-- convert lang nako ning carousel to component l8r-->
-<div class="w-full bg-background">
-	<Carousel.Root class="mx-auto max-w-screen-xl space-y-2 py-8">
-		<div class="flex w-full items-center justify-between">
-			<div>
-				<h2 class="text-xl font-bold tracking-tight">Featured Listings</h2>
-				<p class="text-sm text-muted-foreground">10+ new listings</p>
+<!-- Featured Listings Carousel -->
+<div class="w-full bg-background px-4">
+	{#await data.listings}
+		<!-- Loading state for listings -->
+		<div class="mx-auto my-8 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
+					<p class="text-sm text-muted-foreground">Loading premium properties...</p>
+				</div>
 			</div>
-			<div class="mx-3 inline-flex gap-6">
-				<Carousel.Previous />
-				<Carousel.Next />
+			<div class="flex gap-4 overflow-hidden">
+				{#each Array(4) as _}
+					<div class="h-128 w-80 flex-shrink-0 animate-pulse rounded-lg bg-muted"></div>
+				{/each}
 			</div>
 		</div>
-		<Carousel.Content>
-			<Carousel.Item class="basis-auto">
-				<ListingCard {...listings[0]} />
-			</Carousel.Item>
-			<Carousel.Item class="flex basis-auto items-center justify-center">
-				<a href="/" class="inline-flex rounded-lg border-2 px-10 py-4 text-muted-foreground">
-					See More <ChevronLast strokeWidth={1} />
-				</a>
-			</Carousel.Item>
-		</Carousel.Content>
-	</Carousel.Root>
+	{:then featuredListings}
+		<!-- Listings loaded successfully -->
+		<Carousel.Root class="mx-auto my-8 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
+					<p class="text-sm text-muted-foreground">{featuredListings.length} premium properties</p>
+				</div>
+				<div class="mx-3 inline-flex gap-6">
+					<Carousel.Previous />
+					<Carousel.Next />
+				</div>
+			</div>
+			<Carousel.Content class="-ml-2 md:-ml-4">
+				{#each featuredListings as listing}
+					<Carousel.Item class="pl-2 md:basis-1/2 md:pl-4 lg:basis-1/3">
+						<div class="h-128">
+							<CarouselListingCard {...listing} />
+						</div>
+					</Carousel.Item>
+				{/each}
+				<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
+					<a
+						href="/listings"
+						class="inline-flex rounded-lg border-2 border-dashed border-muted-foreground/25 px-8 py-4 text-muted-foreground transition-colors hover:border-muted-foreground/50"
+					>
+						See All Listings <ChevronLast strokeWidth={1} class="ml-2" />
+					</a>
+				</Carousel.Item>
+			</Carousel.Content>
+		</Carousel.Root>
+	{:catch error}
+		<!-- Error state for listings -->
+		<div class="mx-auto my-8 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
+					<p class="text-sm text-red-500">Failed to load properties</p>
+				</div>
+			</div>
+			<div
+				class="flex items-center justify-center rounded-lg border-2 border-dashed border-red-200 py-12"
+			>
+				<div class="text-center">
+					<p class="text-sm text-muted-foreground">{error.message}</p>
+					<Button onclick={() => window.location.reload()} variant="outline" class="mt-2">
+						Try again
+					</Button>
+				</div>
+			</div>
+		</div>
+	{/await}
 </div>
 
-<div class="w-full bg-background">
-	<Carousel.Root class="mx-auto max-w-screen-xl space-y-2 py-8">
-		<div class="flex w-full items-center justify-between">
-			<div>
-				<h2 class="text-xl font-bold tracking-tight">Listings Nearby</h2>
-				<p class="text-sm text-muted-foreground">10+ new listings</p>
+<!-- Featured Agents Carousel -->
+<div class="w-full bg-muted/30 px-4">
+	{#await data.agents}
+		<!-- Loading state for agents -->
+		<div class="mx-auto my-4 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
+					<p class="text-sm text-muted-foreground">Loading expert real estate professionals...</p>
+				</div>
 			</div>
-			<div class="mx-3 inline-flex gap-6">
-				<Carousel.Previous />
-				<Carousel.Next />
+			<div class="flex gap-4 overflow-hidden">
+				{#each Array(4) as _}
+					<div class="h-64 w-80 flex-shrink-0 animate-pulse rounded-lg bg-muted"></div>
+				{/each}
 			</div>
 		</div>
-		<Carousel.Content>
-			<Carousel.Item class="basis-auto">
-				<ListingCard {...listings[1]} />
-			</Carousel.Item>
-		</Carousel.Content>
-	</Carousel.Root>
+	{:then featuredAgents}
+		<!-- Agents loaded successfully -->
+		<Carousel.Root class="mx-auto my-4 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
+					<p class="text-sm text-muted-foreground">
+						{featuredAgents.length} expert real estate professionals
+					</p>
+				</div>
+				<div class="mx-3 inline-flex gap-6">
+					<Carousel.Previous />
+					<Carousel.Next />
+				</div>
+			</div>
+			<Carousel.Content class="-ml-2 md:-ml-4">
+				{#each featuredAgents as agent}
+					<Carousel.Item class="pl-2 md:basis-1/2 md:pl-4 lg:basis-1/3">
+						<div class="h-full">
+							<AgentCard {agent} />
+						</div>
+					</Carousel.Item>
+				{/each}
+				{#if featuredAgents.length === 0}
+					<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
+						<div class="py-8 text-center text-muted-foreground">
+							<p>No agents available</p>
+						</div>
+					</Carousel.Item>
+				{/if}
+				<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
+					<a
+						href="/agents"
+						class="inline-flex rounded-lg border-2 border-dashed border-muted-foreground/25 px-8 py-4 text-muted-foreground transition-colors hover:border-muted-foreground/50"
+					>
+						See All Agents <ChevronLast strokeWidth={1} class="ml-2" />
+					</a>
+				</Carousel.Item>
+			</Carousel.Content>
+		</Carousel.Root>
+	{:catch error}
+		<!-- Error state for agents -->
+		<div class="mx-auto my-4 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
+					<p class="text-sm text-red-500">Failed to load agents</p>
+				</div>
+			</div>
+			<div
+				class="flex items-center justify-center rounded-lg border-2 border-dashed border-red-200 py-12"
+			>
+				<div class="text-center">
+					<p class="text-sm text-muted-foreground">{error.message}</p>
+					<Button onclick={() => window.location.reload()} variant="outline" class="mt-2">
+						Try again
+					</Button>
+				</div>
+			</div>
+		</div>
+	{/await}
 </div>
 
 <AskAi />

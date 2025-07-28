@@ -208,7 +208,7 @@ export const offer = pgTable("offer", {
 		.notNull()
 		.references(() => listing.id),
 	dateCreated: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
-	status: varchar({ enum: ["completed", "rejected", "in negotiation", "new"] })
+	status: varchar({ enum: ["completed", "rejected", "in negotiation", "new", "cancelled"] })
 		.notNull()
 		.default("new"),
 });
