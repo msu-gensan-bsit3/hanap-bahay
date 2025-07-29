@@ -66,7 +66,7 @@ export const actions: Actions = {
 		});
 
 		if (conv) {
-			messageSubscription.emitEvent(String(conv.id));
+			messageSubscription?.emitEvent(String(conv.id));
 		}
 	},
 	updateReadTime: async ({ locals, request }) => {
