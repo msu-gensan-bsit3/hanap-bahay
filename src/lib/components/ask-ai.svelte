@@ -3,14 +3,15 @@
 	import * as Card from "$lib/components/ui/card";
 	import { Input } from "$lib/components/ui/input";
 	import { moreEnhance } from "$lib/states/enhance.svelte";
-	import { MessageCircle, Send, X } from "@lucide/svelte";
+	import { Bot, Send, X } from "@lucide/svelte";
+	import { marked } from "marked";
 	import { onMount } from "svelte";
 	import { fade, fly } from "svelte/transition";
-	import { marked } from "marked";
 
 	let open = $state(false);
 	let msg = $state("");
 	let container: HTMLElement | undefined = $state();
+	let chatContainer: HTMLElement | undefined = $state();
 
 	function toggleChat() {
 		open = !open;
@@ -55,46 +56,109 @@
 			open = false;
 		}
 	};
+
+	const handleOutsideClick = (e: MouseEvent) => {
+		if (chatContainer && !chatContainer.contains(e.target as Node) && open) {
+			open = false;
+		}
+	};
+
 	onMount(() => {
 		document.addEventListener("keydown", closeEvent);
+		document.addEventListener("mousedown", handleOutsideClick);
 		return () => {
 			document.removeEventListener("keydown", closeEvent);
+			document.removeEventListener("mousedown", handleOutsideClick);
 		};
 	});
 </script>
 
-<div class="fixed right-4 bottom-4 z-50" onblur={() => (open = false)}>
+<div class="fixed right-4 bottom-4 z-50 sm:right-6 sm:bottom-6">
 	{#if !open}
 		<div in:fade={{ delay: 200, duration: 100 }}>
-			<Button onclick={toggleChat} class="h-16 w-16 cursor-pointer rounded-full">
-				<MessageCircle />
+			<Button
+				onclick={toggleChat}
+				class="group relative h-14 w-14 cursor-pointer rounded-full bg-gradient-to-r from-blue-600 to-purple-600 shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl sm:h-16 sm:w-16"
+			>
+				<!-- Pulse animation background -->
+				<div
+					class="absolute inset-0 animate-ping rounded-full bg-gradient-to-r from-blue-600 to-purple-600 opacity-75"
+				></div>
+
+				<!-- Main icon -->
+				<div class="relative flex items-center justify-center">
+					<Bot
+						class="h-6 w-6 text-white transition-transform duration-300 group-hover:scale-110 sm:h-7 sm:w-7"
+					/>
+				</div>
+
+				<!-- Notification badge -->
+				<div
+					class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"
+				>
+					<span class="animate-pulse">AI</span>
+				</div>
+
 				<span class="sr-only">Ask JuanBot</span>
 			</Button>
+
+			<!-- Tooltip -->
+			<div class="absolute right-0 bottom-full mb-2 hidden sm:block">
+				<div
+					class="rounded-lg bg-gray-900 px-3 py-2 text-sm whitespace-nowrap text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100"
+				>
+					Ask JuanBot for help
+					<div
+						class="absolute top-full right-4 border-4 border-transparent border-t-gray-900"
+					></div>
+				</div>
+			</div>
 		</div>
 	{/if}
 
 	{#if open}
-		<div transition:fly={{ y: 20, duration: 200 }}>
-			<Card.Root class="w-96">
-				<Card.Header class="flex flex-row items-center justify-between">
-					<Card.Title>Ask AI</Card.Title>
-					<Button variant="ghost" size="icon" onclick={toggleChat}>
+		<div transition:fly={{ y: 20, duration: 200 }} bind:this={chatContainer}>
+			<Card.Root
+				class="flex max-h-[80vh] w-80 flex-col border-0 bg-white pt-0 shadow-2xl sm:w-96 dark:bg-gray-900"
+			>
+				<Card.Header
+					class="flex flex-row items-center justify-between rounded-t-lg bg-gradient-to-r from-blue-50 to-purple-50 p-3 dark:from-gray-800 dark:to-gray-800"
+				>
+					<div class="flex items-center gap-2">
+						<div
+							class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-purple-600"
+						>
+							<Bot class="h-4 w-4 text-white" />
+						</div>
+						<Card.Title class="text-gray-900 dark:text-white">JuanBot Assistant</Card.Title>
+					</div>
+					<Button
+						variant="ghost"
+						size="icon"
+						onclick={toggleChat}
+						class="hover:bg-gray-100 dark:hover:bg-gray-700"
+					>
 						<X class="h-4 w-4" />
 					</Button>
 				</Card.Header>
-				<Card.Content>
-					<div class="h-100 space-y-4 overflow-y-auto p-2" bind:this={container}>
+				<Card.Content class="flex-1 overflow-hidden p-0">
+					<div class="h-80 space-y-4 overflow-y-auto p-4 sm:h-96" bind:this={container}>
 						{#each conversations as conversation, i (i)}
 							{#if conversation.type === "JuanBot"}
 								<div class="flex items-start gap-2.5">
-									<div class="flex max-w-[320px] flex-col gap-1">
+									<div
+										class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-purple-600"
+									>
+										<Bot class="h-3 w-3 text-white" />
+									</div>
+									<div class="flex max-w-[85%] flex-col gap-1">
 										<div class="flex items-center space-x-2 rtl:space-x-reverse">
-											<span class="text-sm font-semibold text-gray-900 dark:text-white">
+											<span class="text-xs font-semibold text-gray-700 dark:text-gray-300">
 												JuanBot
 											</span>
 										</div>
 										<div
-											class="flex flex-col rounded-e-xl rounded-es-xl border-gray-200 bg-gray-100 p-4 leading-1.5 dark:bg-gray-700"
+											class="flex flex-col rounded-r-xl rounded-bl-xl border border-gray-200 bg-gray-50 p-3 leading-1.5 dark:border-gray-600 dark:bg-gray-700"
 										>
 											<div
 												class="markdown-content text-sm font-normal text-gray-900 dark:text-white"
@@ -106,17 +170,23 @@
 								</div>
 							{:else}
 								<div class="flex items-start justify-end gap-2.5">
-									<div class="flex max-w-[320px] flex-col gap-1">
+									<div class="flex max-w-[85%] flex-col gap-1">
 										<div class="flex items-center justify-end space-x-2 rtl:space-x-reverse">
-											<span class="text-sm font-semibold text-gray-900 dark:text-white">You</span>
+											<span class="text-xs font-semibold text-gray-700 dark:text-gray-300">You</span
+											>
 										</div>
 										<div
-											class="flex flex-col rounded-s-xl rounded-ee-xl bg-blue-600 p-4 leading-1.5"
+											class="flex flex-col rounded-l-xl rounded-br-xl bg-gradient-to-r from-blue-600 to-purple-600 p-3 leading-1.5"
 										>
 											<p class="text-sm font-normal text-white">
 												{conversation.msg}
 											</p>
 										</div>
+									</div>
+									<div
+										class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600"
+									>
+										<span class="text-xs font-medium text-gray-700 dark:text-gray-300">U</span>
 									</div>
 								</div>
 							{/if}
@@ -125,25 +195,35 @@
 						<!-- JuanBot Thinking Animation -->
 						{#if submitting}
 							<div class="flex items-start gap-2.5" transition:fade={{ duration: 200 }}>
-								<div class="flex max-w-[320px] flex-col gap-1">
+								<div
+									class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-purple-600"
+								>
+									<Bot class="h-3 w-3 text-white" />
+								</div>
+								<div class="flex max-w-[85%] flex-col gap-1">
 									<div class="flex items-center space-x-2 rtl:space-x-reverse">
-										<span class="text-sm font-semibold text-gray-900 dark:text-white">JuanBot</span>
+										<span class="text-xs font-semibold text-gray-700 dark:text-gray-300"
+											>JuanBot</span
+										>
 									</div>
 									<div
-										class="flex flex-col rounded-e-xl rounded-es-xl border-gray-200 bg-gray-100 p-4 leading-1.5 dark:bg-gray-700"
+										class="flex flex-col rounded-r-xl rounded-bl-xl border border-gray-200 bg-gray-50 p-3 leading-1.5 dark:border-gray-600 dark:bg-gray-700"
 									>
 										<p
 											class="flex items-center gap-2 text-sm font-normal text-gray-900 dark:text-white"
 										>
 											Thinking
 											<span class="flex space-x-1">
-												<span class="h-1 w-1 animate-pulse rounded-full bg-gray-600"></span>
 												<span
-													class="h-1 w-1 animate-pulse rounded-full bg-gray-600"
+													class="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
+													style="animation-delay: 0s;"
+												></span>
+												<span
+													class="h-1.5 w-1.5 animate-bounce rounded-full bg-purple-600"
 													style="animation-delay: 0.2s;"
 												></span>
 												<span
-													class="h-1 w-1 animate-pulse rounded-full bg-gray-600"
+													class="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-600"
 													style="animation-delay: 0.4s;"
 												></span>
 											</span>
@@ -154,11 +234,11 @@
 						{/if}
 					</div>
 				</Card.Content>
-				<Card.Footer>
+				<Card.Footer class="rounded-b-lg border-t bg-gray-50 dark:bg-gray-800">
 					<form class="relative w-full" action="?/askAi" use:enhance method="POST">
 						<Input
 							placeholder="Type your message..."
-							class="pr-12"
+							class="border-gray-300 pr-12 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
 							name="chatInput"
 							required
 							bind:value={msg}
@@ -167,7 +247,7 @@
 						<Button
 							size="icon"
 							type="submit"
-							class="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 cursor-pointer"
+							class="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
 							disabled={submitting}
 						>
 							<Send class="h-4 w-4" />

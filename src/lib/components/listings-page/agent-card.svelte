@@ -2,10 +2,12 @@
 	import { Badge } from "$lib/components/ui/badge/index";
 	import { Button } from "$lib/components/ui/button/index";
 	import * as Card from "$lib/components/ui/card/index";
+	import type { User } from "$lib/server/db/schema";
+	import { moreEnhance } from "$lib/states/enhance.svelte";
 	import type { Agent } from "$lib/types";
-	import { MapPin, MessageCircle, Star } from "@lucide/svelte";
+	import { LoaderCircle, MapPin, MessageCircle, Star } from "@lucide/svelte";
 
-	let { agent }: { agent: Agent } = $props();
+	let { agent, user }: { agent: Agent; user?: Omit<User, "passwordHash"> | null } = $props();
 
 	// Mock data for demo - in real app this would come from database
 	const mockStats = {
@@ -16,6 +18,9 @@
 	};
 
 	let profileImageLoaded = $state(false);
+
+	const sendMessage = moreEnhance({ reset: false });
+	const { enhance, submitting } = $derived(sendMessage);
 
 	// Array of gradient backgrounds for profile placeholders
 	const gradientBackgrounds = [
@@ -55,10 +60,10 @@
 	}
 </script>
 
-<a href="/agents/{agent.user.id}" class="group block h-full">
-	<Card.Root
-		class="relative flex h-full flex-col gap-0 overflow-hidden p-0 shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg"
-	>
+<Card.Root
+	class="relative flex h-full flex-col gap-0 overflow-hidden p-0 shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg"
+>
+	<a href="/agents/{agent.user.id}" class="group block h-full">
 		<!-- Header with Profile Image and Basic Info -->
 		<div class="relative bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
 			<div class="flex items-start gap-4">
@@ -163,13 +168,27 @@
 				{/if}
 			</div> -->
 		</Card.Content>
+	</a>
 
-		<!-- Footer -->
-		<div class="border-t bg-gray-50 p-4">
-			<Button class="w-full" size="sm">
+	<!-- Footer -->
+	<div class="border-t bg-gray-50 p-4">
+		{#if user}
+			<form method="POST" action="/agents/{agent.user.id}?/sendMessage" use:enhance>
+				<input type="hidden" name="agentId" value={agent.user.id} />
+				<Button class="w-full" size="sm" disabled={submitting} type="submit">
+					{#if submitting}
+						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+					{:else}
+						<MessageCircle class="mr-2 h-4 w-4" />
+					{/if}
+					Contact Agent
+				</Button>
+			</form>
+		{:else}
+			<Button class="w-full" size="sm" href="/login">
 				<MessageCircle class="mr-2 h-4 w-4" />
 				Contact Agent
 			</Button>
-		</div>
-	</Card.Root>
-</a>
+		{/if}
+	</div>
+</Card.Root>

@@ -72,14 +72,14 @@
 	}
 </script>
 
-<a href="/listings/{listing.id}" class="group block h-full">
-	<Card.Root
-		class="relative flex h-full flex-col gap-0 overflow-hidden p-0 shadow-sm transition-shadow hover:shadow-md {listing.status ===
-		'sold'
-			? 'opacity-75'
-			: ''}"
-	>
-		<!-- Image with badge overlay -->
+<Card.Root
+	class="relative flex h-full flex-col gap-0 overflow-hidden p-0 shadow-sm transition-shadow hover:shadow-md {listing.status ===
+	'sold'
+		? 'opacity-75'
+		: ''}"
+>
+	<!-- Image with badge overlay -->
+	<a href="/listings/{listing.id}" class="group relative block h-full overflow-hidden">
 		<div class="relative h-full overflow-hidden bg-muted">
 			<Badge variant={property.type} class="absolute top-3 left-3 z-10">
 				For {toTitleCase(property.type)}
@@ -121,9 +121,11 @@
 				}}
 			/>
 		</div>
+	</a>
 
-		<!-- Content -->
-		<Card.Content class="flex flex-1 flex-col justify-between p-4">
+	<!-- Content -->
+	<Card.Content class="flex flex-1 flex-col justify-between p-4">
+		<a href="/listings/{listing.id}" class="group block h-full">
 			<div class="space-y-2">
 				<!-- Price -->
 				<h3 class="text-xl font-bold tracking-tight">
@@ -182,7 +184,9 @@
 					</div>
 				</div>
 			</div>
+		</a>
 
+		<a href="/agents/{agent.user.id}" class="group block h-full">
 			<!-- Agent info -->
 			<div class="mt-3 border-t pt-3">
 				<div class="flex items-center gap-3">
@@ -221,6 +225,6 @@
 					</div>
 				</div>
 			</div>
-		</Card.Content>
-	</Card.Root>
-</a>
+		</a>
+	</Card.Content>
+</Card.Root>
