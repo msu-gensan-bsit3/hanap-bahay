@@ -15,9 +15,11 @@ import { listingHelp } from "$lib/server/services/ai-listing-tools";
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	// For agents, they can only assign themselves
 	const agents = await db.query.agent.findMany({
 		...agentQuery,
+		where: (agent, { eq }) => eq(agent.id, locals.user!.id),
 	});
 
 	return {
@@ -44,7 +46,8 @@ export const actions: Actions = {
 			bedrooms: rawData.bedrooms ? parseInt(rawData.bedrooms.toString()) : undefined,
 			bathrooms: rawData.bathrooms ? parseInt(rawData.bathrooms.toString()) : undefined,
 			carSpace: rawData.carSpace ? parseInt(rawData.carSpace.toString()) : undefined,
-			agentId: parseInt(rawData.agentId?.toString() ?? "0"),
+			// For agents, both agentId and sellerId should be their own user ID
+			agentId: locals.user!.id,
 			// Convert comma-separated strings to arrays
 			features: rawData.features
 				? rawData.features
@@ -89,7 +92,7 @@ export const actions: Actions = {
 					bedrooms: parseInt(formData.get("bedrooms")?.toString() ?? "0"),
 					bathrooms: parseInt(formData.get("bathrooms")?.toString() ?? "0"),
 					carSpace: parseInt(formData.get("carSpace")?.toString() ?? "0"),
-					agentId: parseInt(formData.get("agentId")?.toString() ?? "0"),
+					agentId: locals.user!.id, // Agent assigns themselves
 					street: formData.get("street")?.toString() ?? "",
 					barangay: formData.get("barangay")?.toString() ?? "",
 					city: formData.get("city")?.toString() ?? "",
@@ -134,6 +137,7 @@ export const actions: Actions = {
 						longitude: parseFloat(result.data.longitude),
 					},
 					addressId: addressRecord.id,
+					// For agents creating their own listings, they are also the seller
 					sellerId: locals.user!.id,
 				})
 				.returning({ id: property.id });
@@ -165,14 +169,14 @@ export const actions: Actions = {
 				await db.insert(photosUrl).values(photoValues).onConflictDoNothing();
 			}
 
-			// Create listing record
+			// Create listing record - agent creates listing with verified status since they're the agent
 			await db.insert(listing).values({
 				propertyId: propertyRecord.id,
-				agentId: result.data.agentId,
-				status: "submitted",
+				agentId: locals.user!.id,
+				status: "up", // Agents can directly verify their own listings
 			});
 
-			// Redirect to success page or listings page
+			// Redirect to agent dashboard
 		} catch (error) {
 			console.error("Database error:", error);
 			return fail(500, {
@@ -180,7 +184,7 @@ export const actions: Actions = {
 				message: "Failed to create listing. Please try again.",
 			});
 		}
-		return redirect(302, "/dashboard");
+		return redirect(302, "/agent");
 	},
 
 	"generate-ai-description": async ({ request }) => {

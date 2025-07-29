@@ -469,7 +469,7 @@
 									<Button
 										variant="outline"
 										size="sm"
-										href="/listings/{lead.listing.id}"
+										href="/listings/{lead.listing.property.id}"
 										class="flex w-full justify-start"
 									>
 										<Eye class="mr-2 h-4 w-4" />

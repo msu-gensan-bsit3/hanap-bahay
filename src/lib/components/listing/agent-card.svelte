@@ -27,6 +27,7 @@
 								src={agent.user.profilePicture}
 								alt={`${agent.user.firstName} ${agent.user.lastName}`}
 								class="h-full w-full object-cover"
+								referrerpolicy="no-referrer"
 							/>
 						{:else}
 							<div

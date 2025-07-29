@@ -116,7 +116,7 @@
 
 							{#if isAgent}
 								{@render btn("View Property", Eye, () => {
-									goto("/listings/" + property?.listingId);
+									goto("/listings/" + property?.id);
 									showQuickActions = false;
 								})}
 							{:else}

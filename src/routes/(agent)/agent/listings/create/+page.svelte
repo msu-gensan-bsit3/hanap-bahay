@@ -16,7 +16,6 @@
 	import { Input } from "$lib/components/ui/input";
 	import { Label } from "$lib/components/ui/label";
 	import { Select, SelectContent, SelectItem, SelectTrigger } from "$lib/components/ui/select";
-	import AgentSelectionGrid from "$lib/components/listings-page/agent-selection-grid.svelte";
 
 	let { data, form } = $props();
 
@@ -27,7 +26,6 @@
 		description: form?.data?.description || "",
 		type: form?.data?.type || "",
 		category: form?.data?.category || "",
-		agentId: form?.data?.agentId?.toString() || "",
 		price: form?.data?.price || "",
 		landArea: form?.data?.landArea || "",
 		floorArea: form?.data?.floorArea || "",
@@ -263,7 +261,6 @@
 			marker.setLatLng([lat, lng]);
 		}
 	}
-	// $inspect(formData);
 
 	// ai tools
 	let aiDescriptionButton: HTMLElement | undefined = $state();
@@ -285,15 +282,6 @@
 			}
 		},
 	});
-  
-	const agents = $derived(
-		data.agents.sort((a) => {
-			if (a.user.address.city.toLowerCase().includes(formData.city.toLowerCase())) {
-				return -1;
-			}
-			return 0;
-		}),
-	);
 
 	// Parse photo URLs for preview
 	const photoUrls = $derived(() => {
@@ -306,14 +294,14 @@
 </script>
 
 <svelte:head>
-	<title>Create Listing - JuanHome</title>
+	<title>Create Listing - Agent Dashboard</title>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8">
 	<div class="mx-auto max-w-4xl space-y-8">
 		<div class="text-center">
 			<h1 class="text-3xl font-bold text-gray-900">Create New Listing</h1>
-			<p class="mt-2 text-sm text-gray-600">Add a new property to the market</p>
+			<p class="mt-2 text-sm text-gray-600">Add a new property to your listings as an agent</p>
 		</div>
 
 		<form
@@ -358,11 +346,14 @@
 							<Label for="type">Property Type *</Label>
 							<Select type="single" name="type" bind:value={formData.type}>
 								<SelectTrigger class={form?.errors?.type ? "border-red-500" : ""}>
-									{propertyTypes.find((pt) => pt.value === formData.type)?.label ||
-									"Select property type"}
+									{#if formData.type}
+										{propertyTypes.find((pt) => pt.value === formData.type)?.label || "Select type"}
+									{:else}
+										Select property type
+									{/if}
 								</SelectTrigger>
 								<SelectContent>
-									{#each propertyTypes as propertyType (propertyType)}
+									{#each propertyTypes as propertyType}
 										<SelectItem value={propertyType.value}>{propertyType.label}</SelectItem>
 									{/each}
 								</SelectContent>
@@ -376,12 +367,16 @@
 							<Label for="category">Property Category *</Label>
 							<Select type="single" name="category" bind:value={formData.category}>
 								<SelectTrigger class={form?.errors?.category ? "border-red-500" : ""}>
-									{propertyCategories.find((pc) => pc.value === formData.category)?.label ||
-									"Select property category"}
+									{#if formData.category}
+										{propertyCategories.find((pc) => pc.value === formData.category)?.label ||
+											"Select category"}
+									{:else}
+										Select property category
+									{/if}
 								</SelectTrigger>
 								<SelectContent>
-									{#each propertyCategories as propertyCategory (propertyCategory)}
-										<SelectItem value={propertyCategory.value}>{propertyCategory.label}</SelectItem>
+									{#each propertyCategories as category}
+										<SelectItem value={category.value}>{category.label}</SelectItem>
 									{/each}
 								</SelectContent>
 							</Select>
@@ -488,25 +483,26 @@
 								class="text-xs"
 								disabled={analyzePriceForm.submitting}
 								onclick={() => {
-									if (aiAppraisalButton) {
-										aiAppraisalButton.click();
-									}
+									aiAppraisalButton?.click();
 								}}
 							>
 								<svg
-									class="mr-1.5 h-3.5 w-3.5"
+									class="mr-1 h-3 w-3"
+									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"
-									viewBox="0 0 24 24"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
 								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.849-1.53l-.547-.547z"
-									></path>
+									<circle cx="12" cy="12" r="3"></circle>
+									<path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
 								</svg>
-								AI Price Appraisal
+								{#if analyzePriceForm.submitting}
+									Analyzing...
+								{:else}
+									AI Price Appraisal
+								{/if}
 							</Button>
 						</div>
 						<div class="relative">
@@ -540,40 +536,24 @@
 								class="text-xs"
 								disabled={createDescForm.submitting}
 								onclick={() => {
-									if (aiDescriptionButton) {
-										aiDescriptionButton.click();
-									}
+									aiDescriptionButton?.click();
 								}}
 							>
+								<svg
+									class="mr-1 h-3 w-3"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<circle cx="12" cy="12" r="3"></circle>
+									<path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+								</svg>
 								{#if createDescForm.submitting}
-									<svg
-										class="mr-1.5 h-3.5 w-3.5 animate-spin"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-										></path>
-									</svg>
 									Generating...
 								{:else}
-									<svg
-										class="mr-1.5 h-3.5 w-3.5"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M13 10V3L4 14h7v7l9-11h-7z"
-										></path>
-									</svg>
 									Generate with AI
 								{/if}
 							</Button>
@@ -654,11 +634,15 @@
 							<Label for="province">Province *</Label>
 							<Select type="single" name="province" bind:value={formData.province}>
 								<SelectTrigger class={form?.errors?.province ? "border-red-500" : ""}>
-									{philippineProvinces.find((p) => p.value === formData.province)?.label ||
-									"Select province"}
+									{#if formData.province}
+										{philippineProvinces.find((pp) => pp.value === formData.province)?.label ||
+											"Select province"}
+									{:else}
+										Select province
+									{/if}
 								</SelectTrigger>
 								<SelectContent>
-									{#each philippineProvinces as province (province.value)}
+									{#each philippineProvinces as province}
 										<SelectItem value={province.value}>{province.label}</SelectItem>
 									{/each}
 								</SelectContent>
@@ -671,37 +655,12 @@
 				</CardContent>
 			</Card>
 
-			<!-- Agent Selection -->
-			<Card>
-				<CardHeader>
-					<CardTitle>Agent Assignment</CardTitle>
-					<CardDescription>Select an agent to handle this property listing</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<div class="space-y-4">
-						<!-- Agent Grid -->
-						<AgentSelectionGrid
-							agents={data.agents}
-							bind:selectedAgentId={formData.agentId}
-							propertyCity={formData.city}
-						/>
-
-						<!-- Hidden input for form submission -->
-						<input type="hidden" name="agentId" value={formData.agentId} />
-
-						{#if form?.errors?.agentId}
-							<p class="text-sm text-red-600">{form.errors.agentId[0]}</p>
-						{/if}
-					</div>
-				</CardContent>
-			</Card>
-
 			<!-- Property Location -->
 			<Card>
 				<CardHeader>
 					<CardTitle>Property Location</CardTitle>
 					<CardDescription
-					>Search for the property location or click on the map to set the exact coordinates</CardDescription
+						>Search for the property location or click on the map to set the exact coordinates</CardDescription
 					>
 				</CardHeader>
 				<CardContent>
@@ -714,47 +673,19 @@
 									id="location-search"
 									type="text"
 									bind:value={searchQuery}
-									placeholder="Enter address or edit auto-generated query"
+									placeholder="Search for location..."
 									class="flex-1"
-									onkeydown={(e) => {
-										if (e.key === "Enter") {
-											e.preventDefault();
-											searchLocation();
-										}
-									}}
 								/>
 								<Button
 									type="button"
-									variant="outline"
 									onclick={searchLocation}
 									disabled={searchLoading || !searchQuery.trim()}
 								>
 									{#if searchLoading}
-										<svg
-											class="h-4 w-4 animate-spin"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-											></path>
-										</svg>
+										Searching...
 									{:else}
-										<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-											>
-											</path>
-										</svg>
+										Search
 									{/if}
-									Search
 								</Button>
 							</div>
 							<p class="text-xs text-gray-500">
@@ -771,12 +702,11 @@
 								<Input
 									id="latitude"
 									name="latitude"
-									type="text"
+									type="number"
+									step="any"
 									bind:value={formData.latitude}
-									placeholder="Auto-filled from address"
+									placeholder="14.5995"
 									class={form?.errors?.latitude ? "border-red-500" : ""}
-									required
-									readonly
 									onchange={() => updateMapFromCoordinates()}
 								/>
 								{#if form?.errors?.latitude}
@@ -789,12 +719,11 @@
 								<Input
 									id="longitude"
 									name="longitude"
-									type="text"
+									type="number"
+									step="any"
 									bind:value={formData.longitude}
-									placeholder="Auto-filled from address"
+									placeholder="120.9842"
 									class={form?.errors?.longitude ? "border-red-500" : ""}
-									readonly
-									required
 									onchange={() => updateMapFromCoordinates()}
 								/>
 								{#if form?.errors?.longitude}
@@ -877,12 +806,11 @@
 								commas or one per line.
 							</p>
 							<p class="text-xs text-gray-500">
-								💡 <strong>Tips:</strong> Use image hosting services like Google Drive, Imgur, or Cloudinary
-								for reliable image hosting.
+								💡 For Google Drive images: Share the file publicly and use this format:
+								https://drive.google.com/uc?id=YOUR_FILE_ID
 							</p>
 							<p class="text-xs text-gray-500">
-								📷 <strong>Recommended:</strong> Add 3-10 high-quality photos showing different angles,
-								rooms, and features.
+								The first image will be used as the main listing photo.
 							</p>
 						</div>
 					</div>
@@ -895,14 +823,27 @@
 								{photoUrls().length === 1 ? "photo" : "photos"})</Label
 							>
 							<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-								{#each photoUrls() as url, index (url)}
-									<div class="relative aspect-square overflow-hidden rounded-lg border bg-gray-50">
+								{#each photoUrls() as photoUrl, index}
+									<div class="relative aspect-video overflow-hidden rounded-lg border">
 										<img
-											src={url}
+											src={photoUrl}
 											alt="Property photo {index + 1}"
-											class="h-full w-full object-cover transition-transform hover:scale-105"
+											class="h-full w-full object-cover"
 											loading="lazy"
+											onerror={(e) => {
+												if (e.currentTarget) {
+													e.currentTarget.setAttribute("src", "/no-image.jpg");
+													e.currentTarget.setAttribute("alt", "Failed to load image");
+												}
+											}}
 										/>
+										{#if index === 0}
+											<div
+												class="absolute top-2 left-2 rounded bg-blue-600 px-2 py-1 text-xs font-medium text-white"
+											>
+												Main
+											</div>
+										{/if}
 									</div>
 								{/each}
 							</div>
@@ -926,7 +867,7 @@
 							<svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
 								<path
 									fill-rule="evenodd"
-									d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+									d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
 									clip-rule="evenodd"
 								/>
 							</svg>
@@ -944,11 +885,11 @@
 	</div>
 </div>
 
+<!-- Hidden forms for AI features -->
 <form class="hidden" method="POST" action="?/generate-ai-price" use:analyzePriceForm.enhance>
 	<input type="hidden" name="name" value={formData.name} />
 	<input type="hidden" name="type" value={formData.type} />
 	<input type="hidden" name="category" value={formData.category} />
-	<!-- <input type="hidden" name="agentId" value={formData.agentId} /> -->
 	<input type="hidden" name="price" value={formData.price} />
 	<input type="hidden" name="landArea" value={formData.landArea} />
 	<input type="hidden" name="floorArea" value={formData.floorArea} />
@@ -964,15 +905,13 @@
 	<input type="hidden" name="features" value={formData.features} />
 	<input type="hidden" name="tags" value={formData.tags} />
 	<input type="hidden" name="photosUrls" value={formData.photosUrls} />
-	<button type="submit" class="hidden" bind:this={aiAppraisalButton}>Generate AI Description</button
-	>
+	<button type="submit" class="hidden" bind:this={aiAppraisalButton}>Generate AI Price</button>
 </form>
 
 <form class="hidden" method="POST" action="?/generate-ai-description" use:createDescForm.enhance>
 	<input type="hidden" name="name" value={formData.name} />
 	<input type="hidden" name="type" value={formData.type} />
 	<input type="hidden" name="category" value={formData.category} />
-	<!-- <input type="hidden" name="agentId" value={formData.agentId} /> -->
 	<input type="hidden" name="landArea" value={formData.landArea} />
 	<input type="hidden" name="floorArea" value={formData.floorArea} />
 	<input type="hidden" name="bedrooms" value={formData.bedrooms} />
@@ -988,6 +927,6 @@
 	<input type="hidden" name="tags" value={formData.tags} />
 	<input type="hidden" name="photosUrls" value={formData.photosUrls} />
 	<button type="submit" class="hidden" bind:this={aiDescriptionButton}
-	>Generate AI Description</button
+		>Generate AI Description</button
 	>
 </form>

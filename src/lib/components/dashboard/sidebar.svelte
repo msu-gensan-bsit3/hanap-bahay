@@ -63,30 +63,29 @@
 	onMount(() => {
 		fetchUnreadMessageCount();
 		// Poll for updates every 30 seconds
-		const interval = setInterval(fetchUnreadMessageCount, 30000);
-		return () => clearInterval(interval);
+		// const interval = setInterval(fetchUnreadMessageCount, 30000);
+		// return () => clearInterval(interval);
 	});
 
 	// Update unread count when leaving messages page
 	$effect(() => {
 		if (page.url.pathname === "/agent/messages") {
 			// If user is on messages page, reset count after a short delay to allow time for read status to update
-			setTimeout(() => {
-				fetchUnreadMessageCount();
-			}, 2000);
+			// setTimeout(() => {
+			// 	fetchUnreadMessageCount();
+			// }, 2000);
 		}
 	});
 
 	// Also listen for storage events to sync between tabs
 	onMount(() => {
-		const handleStorageChange = (e: StorageEvent) => {
-			if (e.key === "unread-messages-updated") {
-				fetchUnreadMessageCount();
-			}
-		};
-
-		window.addEventListener("storage", handleStorageChange);
-		return () => window.removeEventListener("storage", handleStorageChange);
+		// const handleStorageChange = (e: StorageEvent) => {
+		// 	if (e.key === "unread-messages-updated") {
+		// 		// fetchUnreadMessageCount();
+		// 	}
+		// };
+		// window.addEventListener("storage", handleStorageChange);
+		// return () => window.removeEventListener("storage", handleStorageChange);
 	});
 
 	const navigationItems = $derived([
@@ -142,7 +141,7 @@
 			// Reset unread count immediately when clicking messages and trigger storage event
 			setTimeout(() => {
 				fetchUnreadMessageCount();
-				localStorage.setItem("unread-messages-updated", Date.now().toString());
+				// localStorage.setItem("unread-messages-updated", Date.now().toString());
 			}, 500);
 		}
 	}
