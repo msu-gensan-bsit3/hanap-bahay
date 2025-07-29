@@ -16,6 +16,12 @@
 	import { Input } from "$lib/components/ui/input";
 	import { Label } from "$lib/components/ui/label";
 	import { Select, SelectContent, SelectItem, SelectTrigger } from "$lib/components/ui/select";
+	// Agent grid imports
+	import CredentialsFilter from "$lib/components/listings-page/filter-agent-credentials.svelte";
+	import ExperienceFilter from "$lib/components/listings-page/filter-agent-experience.svelte";
+	import LocationFilter from "$lib/components/listings-page/filter-location.svelte";
+	import SortAgents from "$lib/components/listings-page/sort-agents.svelte";
+	import { Check, ChevronDown, ChevronUp, Funnel, RotateCcw, Search } from "@lucide/svelte";
 
 	let { data, form } = $props();
 
@@ -47,6 +53,15 @@
 		// Photo URLs (as comma-separated strings for the UI)
 		photosUrls: form?.data?.photosUrls?.join(", ") || "",
 	});
+
+	// Agent selection filters
+	let agentSearchTerm = $state("");
+	let agentLocation = $state("All Locations");
+	let agentCredential = $state("All Credentials");
+	let agentExperience = $state("Any Experience");
+	let agentSortBy = $state("Relevance");
+	let showAgentFilters = $state(false);
+	let selectedAgentId = $state(formData.agentId);
 
 	const propertyTypes = [
 		{ value: "rent", label: "For Rent" },
@@ -294,6 +309,107 @@
 		}),
 	);
 
+	// Agent filtering functions
+	function filterAgents(agents: typeof data.agents) {
+		return agents
+			.filter((agent) => {
+				// Search term filter
+				const fullName = `${agent.user.firstName} ${agent.user.lastName}`.toLowerCase();
+				const agentLocationStr = Object.values(agent.user.address).join(",");
+
+				const matchesSearch =
+					agentSearchTerm.trim() === "" ||
+					fullName.includes(agentSearchTerm.toLowerCase()) ||
+					agent.user.email.toLowerCase().includes(agentSearchTerm.toLowerCase()) ||
+					agent.about?.toLowerCase().includes(agentSearchTerm.toLowerCase()) ||
+					agentLocationStr.toLowerCase().includes(agentSearchTerm.toLowerCase());
+
+				// Location filter
+				const matchesLocation =
+					agentLocation === "All Locations" || agentLocationStr.includes(agentLocation);
+
+				// Credential filter
+				const matchesCredential =
+					agentCredential === "All Credentials" || agent.credentials === agentCredential;
+
+				// Experience filter
+				const agentExperienceYears = getExperienceYears(agent.user.dateCreated);
+				const matchesExp = matchesExperience(agentExperienceYears, agentExperience);
+
+				return matchesSearch && matchesLocation && matchesCredential && matchesExp;
+			})
+			.sort((a, b) => {
+				switch (agentSortBy) {
+					case "Relevance":
+						// Sort by city match first, then alphabetically
+						const aMatchesCity = a.user.address.city
+							.toLowerCase()
+							.includes(formData.city.toLowerCase());
+						const bMatchesCity = b.user.address.city
+							.toLowerCase()
+							.includes(formData.city.toLowerCase());
+						if (aMatchesCity && !bMatchesCity) return -1;
+						if (!aMatchesCity && bMatchesCity) return 1;
+						return `${a.user.firstName} ${a.user.lastName}`.localeCompare(
+							`${b.user.firstName} ${b.user.lastName}`,
+						);
+					case "Most Experienced":
+						return getExperienceYears(b.user.dateCreated) - getExperienceYears(a.user.dateCreated);
+					case "Name A-Z":
+						return `${a.user.firstName} ${a.user.lastName}`.localeCompare(
+							`${b.user.firstName} ${b.user.lastName}`,
+						);
+					case "Name Z-A":
+						return `${b.user.firstName} ${b.user.lastName}`.localeCompare(
+							`${a.user.firstName} ${a.user.lastName}`,
+						);
+					default:
+						return 0;
+				}
+			});
+	}
+
+	function getExperienceYears(dateCreated: Date) {
+		return new Date().getFullYear() - dateCreated.getFullYear();
+	}
+
+	function matchesExperience(agentExperience: number, filter: string) {
+		switch (filter) {
+			case "0-2 years":
+				return agentExperience <= 2;
+			case "3-5 years":
+				return agentExperience >= 3 && agentExperience <= 5;
+			case "6-10 years":
+				return agentExperience >= 6 && agentExperience <= 10;
+			case "10+ years":
+				return agentExperience >= 10;
+			default:
+				return true;
+		}
+	}
+
+	function resetAgentFilters() {
+		agentSearchTerm = "";
+		agentLocation = "All Locations";
+		agentCredential = "All Credentials";
+		agentExperience = "Any Experience";
+		agentSortBy = "Relevance";
+	}
+
+	function selectAgent(agentId: string) {
+		selectedAgentId = agentId;
+		formData.agentId = agentId;
+	}
+
+	const filteredAgents = $derived(filterAgents(agents));
+
+	// Keep selectedAgentId and formData.agentId in sync
+	$effect(() => {
+		if (formData.agentId && !selectedAgentId) {
+			selectedAgentId = formData.agentId;
+		}
+	});
+
 	// Parse photo URLs for preview
 	const photoUrls = $derived(() => {
 		if (!formData.photosUrls.trim()) return [];
@@ -475,122 +591,6 @@
 							{/if}
 						</div>
 					</div>
-
-					<!-- Price Section -->
-					<div class="space-y-2">
-						<div class="flex items-center justify-between">
-							<Label for="price">Price *</Label>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								class="text-xs"
-								disabled={analyzePriceForm.submitting}
-								onclick={() => {
-									if (aiAppraisalButton) {
-										aiAppraisalButton.click();
-									}
-								}}
-							>
-								<svg
-									class="mr-1.5 h-3.5 w-3.5"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.849-1.53l-.547-.547z"
-									></path>
-								</svg>
-								AI Price Appraisal
-							</Button>
-						</div>
-						<div class="relative">
-							<span class="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-gray-500">₱</span>
-							<Input
-								id="price"
-								name="price"
-								type="number"
-								step="0.01"
-								min="0"
-								bind:value={formData.price}
-								placeholder="0.00"
-								class="pl-8 {form?.errors?.price ? 'border-red-500' : ''}"
-								required
-							/>
-						</div>
-						{#if form?.errors?.price}
-							<p class="text-sm text-red-600">{form.errors.price[0]}</p>
-						{/if}
-						<p class="text-xs text-gray-500">Enter the property price in Philippine Peso (₱)</p>
-					</div>
-
-					<!-- Description Section -->
-					<div class="space-y-2">
-						<div class="flex items-center justify-between">
-							<Label for="description">Property Description</Label>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								class="text-xs"
-								disabled={createDescForm.submitting}
-								onclick={() => {
-									if (aiDescriptionButton) {
-										aiDescriptionButton.click();
-									}
-								}}
-							>
-								{#if createDescForm.submitting}
-									<svg
-										class="mr-1.5 h-3.5 w-3.5 animate-spin"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-										></path>
-									</svg>
-									Generating...
-								{:else}
-									<svg
-										class="mr-1.5 h-3.5 w-3.5"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M13 10V3L4 14h7v7l9-11h-7z"
-										></path>
-									</svg>
-									Generate with AI
-								{/if}
-							</Button>
-						</div>
-						<textarea
-							id="description"
-							name="description"
-							bind:value={formData.description}
-							placeholder="Describe the property features, amenities, and unique selling points..."
-							class="flex min-h-[120px] w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 {form
-								?.errors?.description
-								? 'border-red-500'
-								: ''}"
-						></textarea>
-						{#if form?.errors?.description}
-							<p class="text-sm text-red-600">{form.errors.description[0]}</p>
-						{/if}
-					</div>
 				</CardContent>
 			</Card>
 
@@ -676,57 +676,244 @@
 					<CardTitle>Agent Assignment</CardTitle>
 					<CardDescription>Select an agent to handle this property listing</CardDescription>
 				</CardHeader>
-				<CardContent>
-					<div class="space-y-2">
-						<Label for="agentId">Select Agent *</Label>
-						<Select type="single" name="agentId" bind:value={formData.agentId}>
-							<SelectTrigger class={form?.errors?.agentId ? "border-red-500" : ""}>
-								{#if formData.agentId}
-									{data.agents.find((agent) => agent.user.id.toString() === formData.agentId)?.user
-										.firstName}
-									{data.agents.find((agent) => agent.user.id.toString() === formData.agentId)?.user
-										.lastName}
-								{:else}
-									Select an agent
-								{/if}
-							</SelectTrigger>
-							<SelectContent>
-								{#if data.agents && data.agents.length > 0}
-									{#each agents as agent (agent.user.id)}
-										<SelectItem value={agent.user.id.toString()} class="cursor-pointer">
-											<div class="flex flex-col">
-												<span class="font-medium">
-													{agent.user.firstName}
-													{agent.user.lastName}
-												</span>
-												{#if agent.prcLicenceNumber}
-													<span class="text-xs text-gray-500"
-														>PRC License: {agent.prcLicenceNumber}</span
-													>
-												{/if}
-												{#if agent.user.address}
-													<span class="text-xs text-gray-400"
-														>{Object.values(agent.user.address)
-															.slice(1)
-															.filter(Boolean)
-															.join(", ")}</span
-													>
-												{/if}
-											</div>
-										</SelectItem>
-									{/each}
-								{:else}
-									<SelectItem value="" disabled>No agents available</SelectItem>
-								{/if}
-							</SelectContent>
-						</Select>
-						{#if form?.errors?.agentId}
-							<p class="text-sm text-red-600">{form.errors.agentId[0]}</p>
+				<CardContent class="space-y-4">
+					<!-- Selected Agent Display -->
+					{#if selectedAgentId}
+						{@const selectedAgent = data.agents.find(
+							(agent) => agent.user.id.toString() === selectedAgentId,
+						)}
+						{#if selectedAgent}
+							<div class="rounded-lg border border-green-200 bg-green-50 p-4">
+								<div class="flex items-center justify-between">
+									<div class="flex items-center gap-3">
+										<div
+											class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100"
+										>
+											<Check class="h-5 w-5 text-green-600" />
+										</div>
+										<div>
+											<p class="font-medium text-green-900">
+												{selectedAgent.user.firstName}
+												{selectedAgent.user.lastName}
+											</p>
+											<p class="text-sm text-green-700">Selected as listing agent</p>
+										</div>
+									</div>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onclick={() => {
+											selectedAgentId = "";
+											formData.agentId = "";
+										}}
+									>
+										Change Agent
+									</Button>
+								</div>
+							</div>
 						{/if}
-						<p class="text-xs text-gray-500">
-							Choose an agent to handle this listing based on the property location
-						</p>
+					{/if}
+
+					<!-- Hidden input for form submission -->
+					<input type="hidden" name="agentId" bind:value={formData.agentId} />
+					{#if form?.errors?.agentId}
+						<p class="text-sm text-red-600">{form.errors.agentId[0]}</p>
+					{/if}
+
+					<!-- Search Bar -->
+					<div class="space-y-2">
+						<Label for="agent-search">Search Agents</Label>
+						<div class="relative">
+							<Search
+								class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+							/>
+							<Input
+								id="agent-search"
+								bind:value={agentSearchTerm}
+								placeholder="Search agents by name, email, or location..."
+								class="h-10 pl-9"
+							/>
+						</div>
 					</div>
+
+					<!-- Agent Filters -->
+					<div class="space-y-4">
+						<!-- Mobile: Collapsible filters -->
+						<div class="lg:hidden">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								class="flex w-full items-center justify-between gap-2"
+								onclick={() => (showAgentFilters = !showAgentFilters)}
+							>
+								<div class="flex items-center gap-2">
+									<Funnel class="h-4 w-4" />
+									<span>Advanced Filters</span>
+								</div>
+								{#if showAgentFilters}
+									<ChevronUp class="h-4 w-4" />
+								{:else}
+									<ChevronDown class="h-4 w-4" />
+								{/if}
+							</Button>
+
+							<!-- Collapsible Filters -->
+							{#if showAgentFilters}
+								<div class="mt-3 flex flex-col gap-3">
+									<!-- Filter Row -->
+									<div class="flex flex-wrap items-center gap-2">
+										<div class="min-w-0 flex-1">
+											<LocationFilter bind:location={agentLocation} />
+										</div>
+										<div class="min-w-0 flex-1">
+											<CredentialsFilter bind:credential={agentCredential} />
+										</div>
+									</div>
+									<!-- Filter Row 2 -->
+									<div class="flex flex-wrap items-center gap-2">
+										<div class="min-w-0 flex-1">
+											<ExperienceFilter bind:experience={agentExperience} />
+										</div>
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											class="flex items-center gap-1 px-3"
+											onclick={resetAgentFilters}
+										>
+											<RotateCcw class="h-4 w-4" />
+											Reset
+										</Button>
+									</div>
+								</div>
+							{/if}
+						</div>
+
+						<!-- Desktop: Single row layout -->
+						<div class="hidden items-center gap-3 lg:flex">
+							<LocationFilter bind:location={agentLocation} />
+							<CredentialsFilter bind:credential={agentCredential} />
+							<ExperienceFilter bind:experience={agentExperience} />
+							<SortAgents bind:sortBy={agentSortBy} />
+							<Button
+								type="button"
+								variant="outline"
+								class="flex items-center gap-2"
+								onclick={resetAgentFilters}
+							>
+								<RotateCcw class="h-4 w-4" />
+								Reset
+							</Button>
+						</div>
+					</div>
+
+					<!-- Agent Grid -->
+					<div class="space-y-4">
+						<div class="flex items-center justify-between">
+							<p class="text-sm text-muted-foreground">
+								{filteredAgents.length} agents available
+								{#if selectedAgentId}• 1 selected{/if}
+							</p>
+							<div class="lg:hidden">
+								<SortAgents bind:sortBy={agentSortBy} />
+							</div>
+						</div>
+
+						{#if filteredAgents.length > 0}
+							<div class="max-h-96 w-full overflow-y-auto p-2">
+								<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+									{#each filteredAgents as agent (agent.user.id)}
+										<div class="relative">
+											<button
+												type="button"
+												class="w-full text-left transition-all {selectedAgentId ===
+												agent.user.id.toString()
+													? 'ring-2 ring-green-500 ring-offset-2'
+													: 'hover:scale-[1.02]'}"
+												onclick={() => selectAgent(agent.user.id.toString())}
+											>
+												<div
+													class="relative overflow-hidden rounded-lg border bg-white p-4 shadow-sm transition-all hover:shadow-md"
+												>
+													{#if selectedAgentId === agent.user.id.toString()}
+														<div
+															class="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-500"
+														>
+															<Check class="h-4 w-4 text-white" />
+														</div>
+													{/if}
+
+													<div class="flex items-start gap-3">
+														<!-- Profile Image Placeholder -->
+														<div
+															class="mt-1 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600"
+														>
+															<span class="font-medium text-white">
+																{agent.user.firstName.charAt(0)}{agent.user.lastName.charAt(0)}
+															</span>
+														</div>
+
+														<div class="min-w-0 flex-1">
+															<h4 class="truncate font-medium text-gray-900">
+																{agent.user.firstName}
+																{agent.user.lastName}
+															</h4>
+															{#if agent.prcLicenceNumber}
+																<p class="text-xs text-gray-500">
+																	PRC License: {agent.prcLicenceNumber}
+																</p>
+															{/if}
+															{#if agent.user.address}
+																<p class="truncate text-xs text-gray-400">
+																	{Object.values(agent.user.address)
+																		.slice(1)
+																		.filter(Boolean)
+																		.join(", ")}
+																</p>
+															{/if}
+														</div>
+													</div>
+												</div>
+											</button>
+										</div>
+									{/each}
+								</div>
+							</div>
+						{:else}
+							<div class="flex flex-col items-center justify-center py-8 text-center">
+								<div class="mb-4 text-muted-foreground">
+									<svg
+										class="mx-auto mb-4 h-12 w-12"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="1"
+											d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+										/>
+									</svg>
+									<h3 class="mb-2 text-lg font-medium">No agents found</h3>
+									<p class="text-sm text-muted-foreground">
+										Try adjusting your search criteria or filters
+									</p>
+								</div>
+								<Button type="button" onclick={resetAgentFilters} variant="outline">
+									<RotateCcw class="mr-2 h-4 w-4" />
+									Clear all filters
+								</Button>
+							</div>
+						{/if}
+					</div>
+
+					<p class="text-xs text-gray-500">
+						Choose an agent to handle this listing. Agents from the same city as your property are
+						shown first.
+					</p>
 				</CardContent>
 			</Card>
 
@@ -941,6 +1128,132 @@
 							</div>
 						</div>
 					{/if}
+				</CardContent>
+			</Card>
+
+			<!-- Price and Description -->
+			<Card>
+				<CardHeader>
+					<CardTitle>Pricing and Description</CardTitle>
+					<CardDescription>Set the price and generate property description using AI</CardDescription
+					>
+				</CardHeader>
+				<CardContent class="space-y-6">
+					<!-- Price Section -->
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<Label for="price">Price *</Label>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								class="text-xs"
+								disabled={analyzePriceForm.submitting}
+								onclick={() => {
+									if (aiAppraisalButton) {
+										aiAppraisalButton.click();
+									}
+								}}
+							>
+								<svg
+									class="mr-1.5 h-3.5 w-3.5"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.849-1.53l-.547-.547z"
+									></path>
+								</svg>
+								AI Price Appraisal
+							</Button>
+						</div>
+						<div class="relative">
+							<span class="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-gray-500">₱</span>
+							<Input
+								id="price"
+								name="price"
+								type="number"
+								step="0.01"
+								min="0"
+								bind:value={formData.price}
+								placeholder="0.00"
+								class="pl-8 {form?.errors?.price ? 'border-red-500' : ''}"
+								required
+							/>
+						</div>
+						{#if form?.errors?.price}
+							<p class="text-sm text-red-600">{form.errors.price[0]}</p>
+						{/if}
+						<p class="text-xs text-gray-500">Enter the property price in Philippine Peso (₱)</p>
+					</div>
+
+					<!-- Description Section -->
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<Label for="description">Property Description</Label>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								class="text-xs"
+								disabled={createDescForm.submitting}
+								onclick={() => {
+									if (aiDescriptionButton) {
+										aiDescriptionButton.click();
+									}
+								}}
+							>
+								{#if createDescForm.submitting}
+									<svg
+										class="mr-1.5 h-3.5 w-3.5 animate-spin"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+										></path>
+									</svg>
+									Generating...
+								{:else}
+									<svg
+										class="mr-1.5 h-3.5 w-3.5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M13 10V3L4 14h7v7l9-11h-7z"
+										></path>
+									</svg>
+									Generate with AI
+								{/if}
+							</Button>
+						</div>
+						<textarea
+							id="description"
+							name="description"
+							bind:value={formData.description}
+							placeholder="Describe the property features, amenities, and unique selling points..."
+							class="flex min-h-[120px] w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 {form
+								?.errors?.description
+								? 'border-red-500'
+								: ''}"
+						></textarea>
+						{#if form?.errors?.description}
+							<p class="text-sm text-red-600">{form.errors.description[0]}</p>
+						{/if}
+					</div>
 				</CardContent>
 			</Card>
 
