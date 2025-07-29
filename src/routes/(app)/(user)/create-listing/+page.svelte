@@ -44,6 +44,8 @@
 		// Features and tags (as comma-separated strings for the UI)
 		features: form?.data?.features?.join(", ") || "",
 		tags: form?.data?.tags?.join(", ") || "",
+		// Photo URLs (as comma-separated strings for the UI)
+		photosUrls: form?.data?.photosUrls?.join(", ") || "",
 	});
 
 	const propertyTypes = [
@@ -291,6 +293,15 @@
 			return 0;
 		}),
 	);
+
+	// Parse photo URLs for preview
+	const photoUrls = $derived(() => {
+		if (!formData.photosUrls.trim()) return [];
+		return formData.photosUrls
+			.split(/[,\n]/)
+			.map((url: string) => url.trim())
+			.filter((url: string) => url.length > 0);
+	});
 </script>
 
 <svelte:head>
@@ -871,6 +882,68 @@
 				</CardContent>
 			</Card>
 
+			<!-- Property Photos -->
+			<Card>
+				<CardHeader>
+					<CardTitle>Property Photos</CardTitle>
+					<CardDescription>Add photo URLs to showcase your property</CardDescription>
+				</CardHeader>
+				<CardContent class="space-y-4">
+					<div class="space-y-2">
+						<Label for="photosUrls">Photo URLs</Label>
+						<textarea
+							id="photosUrls"
+							name="photosUrls"
+							bind:value={formData.photosUrls}
+							placeholder="Enter image URLs, one per line or separated by commas&#10;Example:&#10;https://example.com/image1.jpg&#10;https://example.com/image2.jpg&#10;https://drive.google.com/uc?id=your-file-id"
+							class="flex min-h-[120px] w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 {form
+								?.errors?.photosUrls
+								? 'border-red-500'
+								: ''}"
+						></textarea>
+						{#if form?.errors?.photosUrls}
+							<p class="text-sm text-red-600">{form.errors.photosUrls[0]}</p>
+						{/if}
+						<div class="space-y-1">
+							<p class="text-xs text-gray-500">
+								Enter valid image URLs (JPG, PNG, WEBP). You can add multiple URLs separated by
+								commas or one per line.
+							</p>
+							<p class="text-xs text-gray-500">
+								💡 <strong>Tips:</strong> Use image hosting services like Google Drive, Imgur, or Cloudinary
+								for reliable image hosting.
+							</p>
+							<p class="text-xs text-gray-500">
+								📷 <strong>Recommended:</strong> Add 3-10 high-quality photos showing different angles,
+								rooms, and features.
+							</p>
+						</div>
+					</div>
+
+					<!-- Photo Preview -->
+					{#if photoUrls().length > 0}
+						<div class="space-y-2">
+							<Label
+								>Photo Preview ({photoUrls().length}
+								{photoUrls().length === 1 ? "photo" : "photos"})</Label
+							>
+							<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+								{#each photoUrls() as url, index (url)}
+									<div class="relative aspect-square overflow-hidden rounded-lg border bg-gray-50">
+										<img
+											src={url}
+											alt="Property photo {index + 1}"
+											class="h-full w-full object-cover transition-transform hover:scale-105"
+											loading="lazy"
+										/>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				</CardContent>
+			</Card>
+
 			<!-- Form Actions -->
 			<div class="flex justify-end space-x-4">
 				<Button type="button" variant="outline" onclick={() => history.back()}>Cancel</Button>
@@ -923,6 +996,7 @@
 	<input type="hidden" name="longitude" value={formData.longitude} />
 	<input type="hidden" name="features" value={formData.features} />
 	<input type="hidden" name="tags" value={formData.tags} />
+	<input type="hidden" name="photosUrls" value={formData.photosUrls} />
 	<button type="submit" class="hidden" bind:this={aiAppraisalButton}>Generate AI Description</button
 	>
 </form>
@@ -945,6 +1019,7 @@
 	<input type="hidden" name="longitude" value={formData.longitude} />
 	<input type="hidden" name="features" value={formData.features} />
 	<input type="hidden" name="tags" value={formData.tags} />
+	<input type="hidden" name="photosUrls" value={formData.photosUrls} />
 	<button type="submit" class="hidden" bind:this={aiDescriptionButton}
 		>Generate AI Description</button
 	>

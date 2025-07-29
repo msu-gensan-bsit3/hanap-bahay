@@ -4,6 +4,7 @@ import {
 	address,
 	agentQuery,
 	listing,
+	photosUrl,
 	property,
 	propertyFeature,
 	propertyTag,
@@ -59,6 +60,13 @@ export const actions: Actions = {
 						.map((t) => t.trim())
 						.filter((t) => t.length > 0)
 				: undefined,
+			photosUrls: rawData.photosUrls
+				? rawData.photosUrls
+						.toString()
+						.split(/[,\n]/)
+						.map((url) => url.trim())
+						.filter((url) => url.length > 0)
+				: undefined,
 			// Keep coordinates as strings for validation
 			latitude: rawData.latitude?.toString() ?? "",
 			longitude: rawData.longitude?.toString() ?? "",
@@ -90,6 +98,7 @@ export const actions: Actions = {
 					longitude: formData.get("longitude")?.toString() ?? "",
 					features: formData.get("features")?.toString() ?? "",
 					tags: formData.get("tags")?.toString() ?? "",
+					photosUrls: formData.get("photosUrls")?.toString() ?? "",
 				},
 			});
 		}
@@ -145,6 +154,15 @@ export const actions: Actions = {
 					name: tag,
 				}));
 				await db.insert(propertyTag).values(tagValues);
+			}
+
+			// Insert photo URLs if provided
+			if (result.data.photosUrls && result.data.photosUrls.length > 0) {
+				const photoValues = result.data.photosUrls.map((url) => ({
+					propertyId: propertyRecord.id,
+					url: url,
+				}));
+				await db.insert(photosUrl).values(photoValues);
 			}
 
 			// Create listing record
