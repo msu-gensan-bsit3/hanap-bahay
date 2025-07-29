@@ -1,0 +1,1 @@
+ALTER TABLE "agent" ADD COLUMN "prc_licence_number" varchar;

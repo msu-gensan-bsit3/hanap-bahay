@@ -76,15 +76,18 @@
 </script>
 
 <DropdownMenu.Root bind:open={isOpen}>
-	<DropdownMenu.Trigger class="flex-1">
-		<Button variant={minPrice > 0 || maxPrice > 0 ? "default" : "outline"} class="w-full">
-			{triggerContent}
-			{#if isOpen}
-				<ChevronUp />
-			{:else}
-				<ChevronDown />
-			{/if}
-		</Button>
+	<DropdownMenu.Trigger
+		class="flex h-10 w-full min-w-35 flex-1 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 {minPrice >
+			0 || maxPrice > 0
+			? 'border-secondary bg-secondary/80'
+			: ''}"
+	>
+		{triggerContent}
+		{#if isOpen}
+			<ChevronUp size={16} />
+		{:else}
+			<ChevronDown size={16} />
+		{/if}
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content align="start" class="w-80">
 		<div class="space-y-4 p-4">
@@ -93,7 +96,11 @@
 			<div class="grid grid-cols-2 gap-4">
 				<div class="space-y-2">
 					<label for="min-price" class="text-xs font-medium text-muted-foreground">Minimum</label>
-					<Select.Root type="single" value={tempMin.toString()} onValueChange={(value) => tempMin = parseInt(value || "0")}>
+					<Select.Root
+						type="single"
+						value={tempMin.toString()}
+						onValueChange={(value) => (tempMin = parseInt(value || "0"))}
+					>
 						<Select.Trigger id="min-price" class="w-full">
 							{triggerMin}
 						</Select.Trigger>
@@ -111,7 +118,11 @@
 
 				<div class="space-y-2">
 					<label for="max-price" class="text-xs font-medium text-muted-foreground">Maximum</label>
-					<Select.Root type="single" value={tempMax.toString()} onValueChange={(value) => tempMax = parseInt(value || "0")}>
+					<Select.Root
+						type="single"
+						value={tempMax.toString()}
+						onValueChange={(value) => (tempMax = parseInt(value || "0"))}
+					>
 						<Select.Trigger id="max-price" class="w-full">
 							{triggerMax}
 						</Select.Trigger>

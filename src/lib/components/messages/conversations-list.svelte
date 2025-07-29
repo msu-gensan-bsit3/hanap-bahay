@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { Badge } from "$lib/components/ui/badge";
 	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
 	import { Input } from "$lib/components/ui/input";
-	import { Badge } from "$lib/components/ui/badge";
 	import type { Property } from "$lib/server/db/schema";
 
 	interface props {
@@ -13,6 +13,7 @@
 			unread: number;
 			avatar: string;
 			online: boolean;
+			agentId: number;
 			properties: (Property & { listingId: number })[];
 		}[];
 	}
@@ -66,7 +67,7 @@
 			<div class="divide-y {!isMobile ? 'border-b' : ''}">
 				{#each filteredConversations as conversation (conversation.id)}
 					<button
-						class="w-full p-4 text-left transition-colors hover:bg-gray-50 {selectedConversation?.id ===
+						class="w-full cursor-pointer p-4 text-left transition-colors hover:bg-gray-50 {selectedConversation?.id ===
 							conversation.id && !isMobile
 							? 'border-r-2 border-blue-500 bg-blue-50'
 							: ''} active:bg-gray-100"

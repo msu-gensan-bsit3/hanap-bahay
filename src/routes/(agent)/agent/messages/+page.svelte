@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { MessagePage } from "$lib/components/messages";
+	import { MessagePage } from "$lib/components/messages-agents";
 
 	let { data } = $props();
 </script>

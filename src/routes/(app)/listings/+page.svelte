@@ -16,7 +16,7 @@
 	import { replaceState } from "$app/navigation";
 	import { page } from "$app/state";
 	import { ChevronDown, ChevronUp, Funnel, RotateCcw, Search } from "@lucide/svelte";
-	import { tick } from "svelte";
+	import { tick, untrack } from "svelte";
 
 	// Filters - Initialize from URL params
 	let searchTerm = $state(page.url.searchParams.get("search") || "");
@@ -211,9 +211,11 @@
 		if (sortBy !== "Default") {
 			url.searchParams.set("sort", sortBy);
 		}
-		if (pageNum > 1) {
-			url.searchParams.set("page", pageNum.toString());
-		}
+		untrack(() => {
+			if (pageNum > 1) {
+				url.searchParams.set("page", pageNum.toString());
+			}
+		});
 
 		await tick();
 		replaceState(url, {});
@@ -234,6 +236,8 @@
 			exactBeds,
 			exactBaths,
 		];
+
+		pageNum = 1;
 
 		clearTimeout(timeoutId);
 		timeoutId = setTimeout(() => {

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Select from "$lib/components/ui/select/index";
+	import { cn } from "$lib/utils";
 
 	const categories = [
 		{ value: "all", label: "All Categories" },
@@ -16,10 +17,14 @@
 	];
 
 	let { category = $bindable() }: { category: string } = $props();
+
+	const isActive = $derived(category !== "all");
 </script>
 
 <Select.Root type="single" bind:value={category}>
-	<Select.Trigger class="h-10 w-full min-w-37">
+	<Select.Trigger
+		class={cn("h-10 w-full min-w-37", isActive && "border-secondary bg-secondary/80")}
+	>
 		<span class="truncate">{categories.find((c) => c.value === category)?.label || "Category"}</span
 		>
 	</Select.Trigger>

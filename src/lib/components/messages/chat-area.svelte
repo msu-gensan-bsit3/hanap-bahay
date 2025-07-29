@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { Card, CardContent, CardHeader } from "$lib/components/ui/card";
 	import { Button } from "$lib/components/ui/button";
+	import { Card, CardContent, CardHeader } from "$lib/components/ui/card";
 	import { Input } from "$lib/components/ui/input";
-	import { MobileQuickActions } from ".";
+	import type { Property } from "$lib/server/db/schema";
 	import { Info, LoaderCircle, Paperclip, Phone, Send } from "@lucide/svelte";
 	import { tick } from "svelte";
-	import type { Property } from "$lib/server/db/schema";
+	import { MobileQuickActions } from ".";
 
 	interface props {
 		selectedConversation?: {
@@ -13,7 +13,8 @@
 			name: string;
 			avatar: string;
 			online: boolean;
-			properties: (Property&{listingId: number})[];
+			agentId: number;
+			properties: (Property & { listingId: number })[];
 			timestamp: string;
 		};
 		messages: Array<{
@@ -29,6 +30,7 @@
 		isMobile?: boolean;
 		messagesContainer?: HTMLElement;
 		sending?: boolean;
+		role: "agent" | "user";
 	}
 
 	let {
@@ -40,6 +42,7 @@
 		isMobile = false,
 		messagesContainer = $bindable(),
 		sending,
+		role,
 	}: props = $props();
 
 	let newMessage = $state("");
@@ -83,7 +86,7 @@
 
 <div class="flex h-full flex-1 flex-col">
 	{#if selectedConversation}
-		<Card class="flex h-full flex-col">
+		<Card class="flex h-full flex-col py-0 pt-4">
 			<!-- Chat Header -->
 			<CardHeader class="border-b pb-4">
 				<div class="flex w-full items-center gap-3">
@@ -130,7 +133,7 @@
 							<Phone />
 							<span class="ml-1 hidden lg:inline">Call</span>
 						</Button>
-						<Button variant="outline" size="sm">
+						<Button variant="outline" size="sm" href="/agents/{selectedConversation.agentId}">
 							<Info />
 							<span class="ml-1 hidden lg:inline">Info</span>
 						</Button>
@@ -174,6 +177,7 @@
 				</div>
 				<div class="relative {isMobile ? '@4xl:hidden' : '@7xl:hidden'}">
 					<MobileQuickActions
+						{role}
 						properties={selectedConversation.properties}
 						onQuickResponse={handleQuickResponse}
 					/>

@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { onMount } from "svelte";
 import { twMerge } from "tailwind-merge";
+import type { Property } from "./server/db/schema";
 
 export type MakeOptional<T, TOptional extends keyof T = keyof T> = Pick<
 	T,
@@ -40,16 +41,16 @@ export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?:
 export function formatPrice(num: number, useCompactNotation: boolean = true): string {
 	if (useCompactNotation) {
 		return (
-			'₱' +
-			new Intl.NumberFormat('en-US', {
-				notation: 'compact',
-				compactDisplay: 'short',
+			"₱" +
+			new Intl.NumberFormat("en-US", {
+				notation: "compact",
+				compactDisplay: "short",
 			}).format(num)
 		);
 	} else {
 		return (
-			'₱' +
-			new Intl.NumberFormat('en-US', {
+			"₱" +
+			new Intl.NumberFormat("en-US", {
 				useGrouping: true,
 			}).format(num)
 		);
@@ -83,4 +84,26 @@ export function formatTimeAgo(date: Date): string {
 	if (diffMins < 60) return `${diffMins} min ago`;
 	if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
 	return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+}
+
+export function getDetails(
+	property: Pick<Property, "category" | "landArea" | "floorArea" | "bedrooms" | "bathrooms">,
+) {
+	const isLandProperty = ["commercial-lot", "residential-lot", "industrial-lot"].includes(
+		property.category,
+	);
+	const area = (isLandProperty ? property.landArea : property.floorArea) || property.landArea;
+
+	const details = [];
+	if (property.bedrooms && property.bedrooms > 0) {
+		details.push(`${property.bedrooms} BR`);
+	}
+	if (property.bathrooms && property.bathrooms > 0) {
+		details.push(`${property.bathrooms} BA`);
+	}
+	if (area && area > 0) {
+		details.push(`${area} sqm`);
+	}
+
+	return details.join(" • ");
 }

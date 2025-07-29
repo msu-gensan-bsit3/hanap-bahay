@@ -2,15 +2,26 @@
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { Button } from "$lib/components/ui/button";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+	import type { Agent } from "$lib/server/db/schema";
 	import type { SessionValidationResult } from "$lib/server/services/auth";
 	import { heights } from "$lib/states/heights.svelte";
-	import { LogOut, Menu, User, X } from "@lucide/svelte";
+	import {
+		Building2,
+		LayoutDashboard,
+		LogOut,
+		Menu,
+		MessageCircleMore,
+		SquareUserRound,
+		User,
+		X,
+	} from "@lucide/svelte";
 
 	type Props = {
 		user: SessionValidationResult["user"];
+		curAgent?: Agent;
 	};
 
-	let { user }: Props = $props();
+	let { user, curAgent }: Props = $props();
 
 	let mobileMenuOpen = $state(false);
 
@@ -48,23 +59,34 @@
 		<!-- Logo -->
 		<div class="flex items-center">
 			<a href="/" class="flex items-center space-x-2">
-				<span class="text-2xl font-bold text-primary sm:text-3xl">JuanHomes</span>
+				<img src="/juanhomes-logo-text.png" alt="juanhomes-logo" class="h-14 w-full" />
+				<!-- <span class="text-2xl font-bold text-primary sm:text-2xl">JuanHomes</span> -->
 			</a>
 		</div>
 
 		<!-- Desktop Navigation -->
 		<nav class="hidden items-center gap-8 md:flex">
 			<div class="flex items-center gap-6">
+				{#if curAgent}
+					<!-- <Button href="/agent/dashboard" variant="default">Dashboard</Button> -->
+					<!-- <a
+						href="/agent/dashboard"
+						class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+					>
+					</a> -->
+				{/if}
 				<a
 					href="/listings"
-					class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+					class="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
 				>
+					<Building2 size={20} />
 					Listings
 				</a>
 				<a
 					href="/agents"
-					class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+					class="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
 				>
+					<SquareUserRound size={20} />
 					Agents
 				</a>
 			</div>
@@ -87,9 +109,28 @@
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content align="end" class="w-40">
 							<DropdownMenu.Item class="w-full p-0">
+								<a
+									href="{curAgent ? '/agent' : ''}/dashboard"
+									class="flex w-full cursor-pointer items-center gap-2 p-2"
+								>
+									<LayoutDashboard class="h-4 w-4" />
+									Dashboard
+								</a>
+							</DropdownMenu.Item>
+							<DropdownMenu.Item class="w-full p-0">
 								<a href="/profile" class="flex w-full cursor-pointer items-center gap-2 p-2">
 									<User class="h-4 w-4" />
 									Profile
+								</a>
+							</DropdownMenu.Item>
+							<DropdownMenu.Item class="w-full p-0">
+								<a
+									href="{curAgent ? '/agent' : ''}/messages"
+									class="flex w-full cursor-pointer items-center gap-2 p-2"
+									title="Messages"
+								>
+									<MessageCircleMore class="size-4" />
+									Messages
 								</a>
 							</DropdownMenu.Item>
 							<DropdownMenu.Separator />
@@ -126,9 +167,11 @@
 						</Avatar.Root>
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content align="end" class="w-56">
-						<DropdownMenu.Item class="flex items-center gap-2">
-							<User class="h-4 w-4" />
-							Profile
+						<DropdownMenu.Item class="w-full p-0">
+							<a href="/profile" class="flex w-full cursor-pointer items-center gap-2 p-2">
+								<User class="h-4 w-4" />
+								Profile
+							</a>
 						</DropdownMenu.Item>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item class="flex items-center gap-2" onSelect={handleLogout}>
@@ -154,10 +197,29 @@
 					<span class="sr-only">Toggle menu</span>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end" class="w-56">
-					<DropdownMenu.Item onSelect={handleItemSelect("/")}>Buy</DropdownMenu.Item>
-					<DropdownMenu.Item onSelect={handleItemSelect("/")}>Rent</DropdownMenu.Item>
-					<DropdownMenu.Item onSelect={handleItemSelect("/")}>Sell</DropdownMenu.Item>
-					<DropdownMenu.Item onSelect={handleItemSelect("/")}>Agents</DropdownMenu.Item>
+					{#if curAgent}
+						<DropdownMenu.Item onSelect={handleItemSelect("/agent/dashboard")}>
+							Dashboard
+						</DropdownMenu.Item>
+					{/if}
+					<DropdownMenu.Item>
+						<a href="/messages" class="flex w-full items-center gap-2">
+							<MessageCircleMore />
+							Messages
+						</a>
+					</DropdownMenu.Item>
+					<DropdownMenu.Item>
+						<a href="/listings" class="flex w-full items-center gap-2">
+							<Building2 />
+							Listings
+						</a>
+					</DropdownMenu.Item>
+					<DropdownMenu.Item>
+						<a href="/agents" class="flex w-full items-center gap-2">
+							<SquareUserRound />
+							Agents
+						</a>
+					</DropdownMenu.Item>
 					{#if !user}
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item onSelect={handleItemSelect("/register")}>Sign Up</DropdownMenu.Item>

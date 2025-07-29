@@ -1,11 +1,11 @@
-import { fail, redirect } from "@sveltejs/kit";
-import type { Actions, PageServerLoad } from "./$types";
-import { Messaging } from "$lib/server/services/messaging";
 import { db } from "$lib/server/db";
-import { and, eq, sql } from "drizzle-orm";
 import { agent, conversation, conversationParticipant, message } from "$lib/server/db/schema";
-import z from "zod";
 import { messageSubscription } from "$lib/server/services/event";
+import { Messaging } from "$lib/server/services/messaging";
+import { fail, redirect } from "@sveltejs/kit";
+import { and, eq, sql } from "drizzle-orm";
+import z from "zod";
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals, depends }) => {
 	depends("message");
@@ -18,10 +18,11 @@ export const load: PageServerLoad = async ({ locals, depends }) => {
 		return redirect(302, "/agent/messages");
 	}
 
-	const userConversations = await Messaging.getConversations(locals.user.id);
+	const { userConversations, propertyDetails } = await Messaging.getConversations(locals.user.id);
 
 	return {
 		userConversations,
+		propertyDetails,
 		userId: locals.user.id,
 	};
 };

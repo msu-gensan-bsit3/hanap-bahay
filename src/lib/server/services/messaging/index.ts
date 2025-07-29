@@ -1,11 +1,12 @@
 import { db } from "$lib/server/db";
 import {
-	buyer,
 	conversation,
 	conversationParticipant,
 	conversationQuery,
+	listing,
+	propertyQuery,
 } from "$lib/server/db/schema";
-import { eq, exists } from "drizzle-orm";
+import { eq, exists, inArray } from "drizzle-orm";
 
 export class Messaging {
 	constructor(
@@ -29,10 +30,10 @@ export class Messaging {
 					columns: {},
 					with: {
 						offer: {
-							columns: {},
+							columns: { id: true },
 							with: {
 								listing: {
-									columns: { id: true },
+									columns: { id: true, agentId: true, status: true },
 									with: {
 										property: true,
 									},
@@ -43,6 +44,25 @@ export class Messaging {
 				},
 			},
 		});
-		return userConversations;
+
+		const listingsRecord: Record<string, {}> = {};
+		userConversations.forEach((v) => {
+			v.offerConversations.forEach((y) => {
+				listingsRecord[y.offer.listing.id] = {};
+			});
+		});
+		const listings = Object.keys(listingsRecord).map(Number);
+
+		const propertyDetails = await db.query.listing.findMany({
+			where: inArray(listing.id, listings),
+			columns: {},
+			with: { property: propertyQuery },
+		});
+
+		return { userConversations, propertyDetails };
+	}
+
+	static async getPropertyDetails(offerId: number) {
+		// await db.query.property.findFirst({where: })
 	}
 }

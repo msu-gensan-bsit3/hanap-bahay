@@ -9,10 +9,33 @@
 
 	import * as Carousel from "$lib/components/ui/carousel/index.js";
 
+	import { moreEnhance } from "$lib/states/enhance.svelte";
 	import { ChevronLast, Search } from "@lucide/svelte";
 
 	let { data } = $props();
+
+	let searchQuery = $state("");
+
+	const searchWithAi = moreEnhance({
+		reset: false,
+		onSubmitted: (res) => {
+			if (res?.msg) {
+				const msg = res.msg as string;
+				console.log(msg);
+
+				if (msg.startsWith("/listings") || msg.startsWith("/agents")) {
+					window.location.href = msg;
+					// goto(msg);
+				}
+			}
+		},
+	});
+	const { enhance: searchEnhance, submitting: searchSubmitting } = $derived(searchWithAi);
 </script>
+
+<svelte:head>
+	<title>JuanHome</title>
+</svelte:head>
 
 <div
 	class="relative w-full bg-[url(https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iU07NrehBC9I/v0/-1x-1.webp)] bg-cover bg-center bg-no-repeat pb-5"
@@ -42,21 +65,60 @@
 
 				<div class="mx-auto mt-25 mb-10 max-w-2xl">
 					<div class="rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-xs">
-						<form action="/listings" method="get" class="space-y-4">
+						<form action="?/searchWithAi" method="post" use:searchEnhance class="space-y-4">
 							<div class="text-center">
 								<Label class="text-lg font-medium text-gray-900">What are you looking for?</Label>
 							</div>
 
 							<div class="flex gap-2">
 								<Input
-									name="search"
+									name="chatInput"
 									placeholder="Search by location, property type, or keywords..."
 									class="h-11 flex-1 border-gray-200 text-base focus:border-primary focus:ring-1 focus:ring-primary"
+									bind:value={searchQuery}
+									required
+									disabled={searchSubmitting}
 								/>
-								<Button type="submit" size="lg" class="h-11 px-6">
-									<Search class="h-4 w-4" />
+								<input type="hidden" name="sessionId" value={crypto.randomUUID()} />
+								<Button type="submit" size="lg" class="h-11 px-6" disabled={searchSubmitting}>
+									{#if searchSubmitting}
+										<div class="flex items-center gap-2">
+											<div class="flex space-x-1">
+												<div class="h-1 w-1 animate-pulse rounded-full bg-current"></div>
+												<div
+													class="h-1 w-1 animate-pulse rounded-full bg-current"
+													style="animation-delay: 0.2s;"
+												></div>
+												<div
+													class="h-1 w-1 animate-pulse rounded-full bg-current"
+													style="animation-delay: 0.4s;"
+												></div>
+											</div>
+										</div>
+									{:else}
+										<Search class="h-4 w-4" />
+									{/if}
 								</Button>
 							</div>
+
+							{#if searchSubmitting}
+								<div class="text-center text-sm text-gray-600">
+									<div class="flex items-center justify-center gap-2">
+										<div class="flex space-x-1">
+											<div class="h-2 w-2 animate-bounce rounded-full bg-primary"></div>
+											<div
+												class="h-2 w-2 animate-bounce rounded-full bg-primary"
+												style="animation-delay: 0.1s;"
+											></div>
+											<div
+												class="h-2 w-2 animate-bounce rounded-full bg-primary"
+												style="animation-delay: 0.2s;"
+											></div>
+										</div>
+										<span>AI is processing your search...</span>
+									</div>
+								</div>
+							{/if}
 						</form>
 					</div>
 				</div>

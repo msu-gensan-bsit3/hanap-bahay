@@ -1,7 +1,4 @@
-import { error, fail, redirect } from "@sveltejs/kit";
-import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
-import { and, eq, exists, inArray, sql } from "drizzle-orm";
 import {
 	agent,
 	buyer,
@@ -12,9 +9,11 @@ import {
 	offer,
 	offerConversation,
 	user,
-	userQuery,
 } from "$lib/server/db/schema";
+import { error, fail, redirect } from "@sveltejs/kit";
+import { and, eq, exists } from "drizzle-orm";
 import z from "zod";
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const id = Number(params.id);
@@ -40,17 +39,20 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			where: eq(user.id, locals.user.id),
 		});
 
-		if (userData?.agent && userData.agent.id === curListing.agent.user.id) {
+		if (userData?.agent) {
 			role = "agent";
 		} else if (userData?.seller && curListing.property.sellerId === userData.seller.id) {
 			role = "seller";
 		} else {
 			role = "buyer";
 		}
+	}
 
-		if (role === "buyer" && !["up", "sold"].includes(curListing.status)) {
-			return error(400, { message: "Listing not found" });
-		}
+	if (
+		!["up", "sold", "pending"].includes(curListing.status) &&
+		curListing.agent.user.id !== locals.user?.id
+	) {
+		return error(400, "Listing not available.");
 	}
 
 	return {
@@ -62,6 +64,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 export const actions: Actions = {
 	sendMessage: async ({ request, locals }) => {
+		if (!locals.user) {
+			return redirect(302, "/login");
+		}
+
 		const formData = await request.formData();
 		const res = z.object({ agentId: z.number(), listingId: z.number() }).safeParse({
 			agentId: Number(formData.get("agentId")),
@@ -82,6 +88,10 @@ export const actions: Actions = {
 		const curAgent = await db.query.agent.findFirst({ where: eq(agent.id, agentId) });
 		if (!curAgent) {
 			return fail(400, { err: "agent id not found" });
+		}
+
+		if (await db.query.agent.findFirst({ where: eq(agent.id, locals.user.id) })) {
+			return fail(400, { err: "agent can't make an offer" });
 		}
 
 		const subquery = db
@@ -126,17 +136,27 @@ export const actions: Actions = {
 		}
 
 		await db.transaction(async (db) => {
+			const curListing = await db.query.listing.findFirst({
+				where: eq(listing.id, listingId),
+				with: {
+					property: true,
+				},
+			});
+
+			if (locals.user?.id === curListing?.property.sellerId) {
+				return;
+			}
+
 			let b = await db.query.buyer.findFirst({ where: eq(buyer.id, locals.user!.id) });
 			if (!b) {
 				const [res] = await db.insert(buyer).values({ id: locals.user!.id }).returning();
 				b = res;
 			}
-
 			let o = await db.query.offer.findFirst({
 				where: and(eq(offer.listingId, listingId), eq(offer.buyerId, b.id)),
 			});
 			if (!o) {
-				const [res] = await db.insert(offer).values({ buyerId: b.id, listingId }).returning();
+				const [res] = await db.insert(offer).values({ buyerId: b!.id, listingId }).returning();
 				o = res;
 			}
 			let res = await db.query.offerConversation.findFirst({

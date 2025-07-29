@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from "$app/navigation";
 	import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
 	import { Building, CircleCheck, Clock4, MessageSquare, type IconProps } from "@lucide/svelte";
 	import type { Component } from "svelte";
@@ -9,6 +10,7 @@
 		change: string;
 		changeMsg: string;
 		action: string;
+		onclick?: () => void;
 		icon: Component<IconProps>;
 		color: string;
 		bgColor: string;
@@ -21,7 +23,7 @@
 			totalListings: number;
 			approvedListings: number;
 			pendingReview: number;
-			newMessages: number;
+			totalLeads: number;
 		};
 	}
 
@@ -31,9 +33,10 @@
 		{
 			title: "Total Listings",
 			value: stats.totalListings,
-			change: "+3%",
+			change: stats.totalListings > 0 ? "+2%" : "0%",
 			changeMsg: "from last month",
 			action: "View all",
+			onclick: () => goto("/agent/listings"),
 			icon: Building,
 			color: "text-blue-100",
 			bgColor: "bg-blue-500/20",
@@ -41,9 +44,10 @@
 		{
 			title: "Approved Listings",
 			value: stats.approvedListings,
-			change: "+12%",
+			change: stats.approvedListings > 0 ? "+8%" : "0%",
 			changeMsg: "from last month",
-			action: "View all",
+			action: "View approved",
+			onclick: () => goto("/agent/listings?status=up"),
 			icon: CircleCheck,
 			color: "text-green-200",
 			bgColor: "bg-green-500/20",
@@ -52,23 +56,25 @@
 		{
 			title: "Pending Review",
 			value: stats.pendingReview,
-			change: "+4",
-			changeMsg: "new submissions",
+			change: stats.pendingReview > 0 ? `+${stats.pendingReview}` : "0",
+			changeMsg: "awaiting review",
 			action: "Review now",
+			onclick: () => goto("/agent/listings?status=under-review"),
 			icon: Clock4,
 			color: "text-yellow-100",
 			bgColor: "bg-yellow-500/20",
 			fill: "#B8820F",
 		},
 		{
-			title: "New Messages",
-			value: stats.newMessages,
-			change: "5",
-			changeMsg: "urgent inquiries",
-			action: "Reply all",
+			title: "Total Leads",
+			value: stats.totalLeads,
+			change: stats.totalLeads > 0 ? `+${Math.min(stats.totalLeads, 15)}%` : "0%",
+			changeMsg: "interested buyers",
+			action: "View leads",
+			onclick: () => goto("/agent/offers"),
 			icon: MessageSquare,
-			color: "text-red-100",
-			bgColor: "bg-red-500/20",
+			color: "text-purple-100",
+			bgColor: "bg-purple-500/20",
 		},
 	];
 </script>
@@ -94,7 +100,7 @@
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<div class="flex justify-between items-center">
+				<div class="flex items-center justify-between">
 					<p class="text-xs text-muted-foreground">
 						<span class={stat.change.includes("+") ? "text-green-500" : "text-red-500"}>
 							{stat.change}
@@ -103,6 +109,7 @@
 					</p>
 					<button
 						class="cursor-pointer text-xs text-blue-600 transition-colors hover:text-blue-800"
+						onclick={stat.onclick}
 					>
 						{stat.action}
 					</button>

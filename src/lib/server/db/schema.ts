@@ -64,6 +64,7 @@ export const agent = pgTable("agent", {
 		.references(() => user.id),
 	about: text(),
 	credentials: text(),
+	prcLicenceNumber: varchar(),
 	// TODO:
 });
 export const agentQuery = {
@@ -549,6 +550,7 @@ export const UserSessionRelation = relations(session, ({ one }) => ({
 }));
 
 export type User = typeof user.$inferSelect;
+export type Agent = typeof agent.$inferSelect;
 export type Session = typeof session.$inferSelect;
 export type Address = typeof address.$inferSelect;
 export type Property = typeof property.$inferSelect;
