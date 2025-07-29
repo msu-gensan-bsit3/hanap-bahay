@@ -7,7 +7,7 @@ import {
 	listingQuery,
 } from "$lib/server/db/schema";
 import { error, fail, redirect, type Actions } from "@sveltejs/kit";
-import { and, eq, exists } from "drizzle-orm";
+import { and, eq, exists, inArray } from "drizzle-orm";
 import z from "zod";
 import type { PageServerLoad } from "./$types";
 
@@ -41,7 +41,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			},
 			agent: listingQuery.with.agent,
 		},
-		where: (listings, { eq, and }) => and(eq(listings.agentId, agentId)),
+		where: (listings, { eq, and }) =>
+			and(eq(listings.agentId, agentId), inArray(listings.status, ["up", "sold", "pending"])),
 		orderBy: (listings, { desc }) => [desc(listings.dateCreated)],
 	});
 

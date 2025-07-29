@@ -10,10 +10,64 @@ import {
 	offerConversation,
 	user,
 } from "$lib/server/db/schema";
+import { sendNewOfferNotification } from "$lib/server/services/mail";
 import { error, fail, redirect } from "@sveltejs/kit";
 import { and, eq, exists } from "drizzle-orm";
 import z from "zod";
 import type { Actions, PageServerLoad } from "./$types";
+
+// Async function to send offer notification email
+async function sendOfferNotificationEmail(offerId: number, listingId: number, buyerId: number) {
+	try {
+		// Get the offer, listing, agent, and buyer details
+		const offerData = await db.query.offer.findFirst({
+			where: eq(offer.id, offerId),
+			with: {
+				listing: {
+					with: {
+						property: true,
+						agent: {
+							with: {
+								user: {
+									with: {
+										address: true,
+									},
+								},
+							},
+						},
+					},
+				},
+				buyer: {
+					with: {
+						user: {
+							with: {
+								address: true,
+							},
+						},
+					},
+				},
+			},
+		});
+
+		if (offerData && offerData.listing && offerData.listing.agent && offerData.buyer) {
+			const agent = offerData.listing.agent;
+			const buyer = offerData.buyer;
+			const property = offerData.listing.property;
+
+			await sendNewOfferNotification(
+				agent.user.email,
+				`${agent.user.firstName} ${agent.user.lastName}`,
+				property.name,
+				`${buyer.user.firstName} ${buyer.user.lastName}`,
+				offerId,
+				listingId,
+			);
+		}
+	} catch (error) {
+		console.error("Failed to send offer notification email:", error);
+		// Don't throw error to avoid affecting the main flow
+	}
+}
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const id = Number(params.id);
@@ -136,6 +190,9 @@ export const actions: Actions = {
 			});
 		}
 
+		let isNewOffer = false;
+		let createdOfferId: number | null = null;
+
 		await db.transaction(async (db) => {
 			const curListing = await db.query.listing.findFirst({
 				where: eq(listing.id, listingId),
@@ -159,6 +216,8 @@ export const actions: Actions = {
 			if (!o) {
 				const [res] = await db.insert(offer).values({ buyerId: b!.id, listingId }).returning();
 				o = res;
+				isNewOffer = true;
+				createdOfferId = o.id;
 			}
 			let res = await db.query.offerConversation.findFirst({
 				where: and(
@@ -173,6 +232,12 @@ export const actions: Actions = {
 					.values({ offerId: o.id, conversationId: queryResult.conversation.id });
 			}
 		});
+
+		// Send email notification asynchronously for new offers
+		if (isNewOffer && createdOfferId) {
+			// Don't await this - let it run in the background
+			sendOfferNotificationEmail(createdOfferId, listingId, locals.user.id);
+		}
 
 		return redirect(302, "/messages?convId=" + queryResult.conversation.id);
 	},

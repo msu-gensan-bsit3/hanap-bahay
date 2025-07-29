@@ -471,107 +471,6 @@
 							{/if}
 						</div>
 					</div>
-
-					<!-- Price Section -->
-					<div class="space-y-2">
-						<div class="flex items-center justify-between">
-							<Label for="price">Price *</Label>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								class="text-xs"
-								disabled={analyzePriceForm.submitting}
-								onclick={() => {
-									aiAppraisalButton?.click();
-								}}
-							>
-								<svg
-									class="mr-1 h-3 w-3"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<circle cx="12" cy="12" r="3"></circle>
-									<path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
-								</svg>
-								{#if analyzePriceForm.submitting}
-									Analyzing...
-								{:else}
-									AI Price Appraisal
-								{/if}
-							</Button>
-						</div>
-						<div class="relative">
-							<span class="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-gray-500">₱</span>
-							<Input
-								id="price"
-								name="price"
-								type="number"
-								step="0.01"
-								min="0"
-								bind:value={formData.price}
-								placeholder="0.00"
-								class="pl-8 {form?.errors?.price ? 'border-red-500' : ''}"
-								required
-							/>
-						</div>
-						{#if form?.errors?.price}
-							<p class="text-sm text-red-600">{form.errors.price[0]}</p>
-						{/if}
-						<p class="text-xs text-gray-500">Enter the property price in Philippine Peso (₱)</p>
-					</div>
-
-					<!-- Description Section -->
-					<div class="space-y-2">
-						<div class="flex items-center justify-between">
-							<Label for="description">Property Description</Label>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								class="text-xs"
-								disabled={createDescForm.submitting}
-								onclick={() => {
-									aiDescriptionButton?.click();
-								}}
-							>
-								<svg
-									class="mr-1 h-3 w-3"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<circle cx="12" cy="12" r="3"></circle>
-									<path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
-								</svg>
-								{#if createDescForm.submitting}
-									Generating...
-								{:else}
-									Generate with AI
-								{/if}
-							</Button>
-						</div>
-						<textarea
-							id="description"
-							name="description"
-							bind:value={formData.description}
-							placeholder="Describe the property features, amenities, and unique selling points..."
-							class="flex min-h-[120px] w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 {form
-								?.errors?.description
-								? 'border-red-500'
-								: ''}"
-						></textarea>
-						{#if form?.errors?.description}
-							<p class="text-sm text-red-600">{form.errors.description[0]}</p>
-						{/if}
-					</div>
 				</CardContent>
 			</Card>
 
@@ -849,6 +748,132 @@
 							</div>
 						</div>
 					{/if}
+				</CardContent>
+			</Card>
+
+			<!-- Pricing and Description -->
+			<Card>
+				<CardHeader>
+					<CardTitle>Pricing and Description</CardTitle>
+					<CardDescription>Set the price and generate property description using AI</CardDescription
+					>
+				</CardHeader>
+				<CardContent class="space-y-6">
+					<!-- Price Section -->
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<Label for="price">Price *</Label>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								class="text-xs"
+								disabled={analyzePriceForm.submitting}
+								onclick={() => {
+									aiAppraisalButton?.click();
+								}}
+							>
+								<svg
+									class="mr-1.5 h-3.5 w-3.5"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.849-1.53l-.547-.547z"
+									></path>
+								</svg>
+								{#if analyzePriceForm.submitting}
+									Analyzing...
+								{:else}
+									AI Price Appraisal
+								{/if}
+							</Button>
+						</div>
+						<div class="relative">
+							<span class="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-gray-500">₱</span>
+							<Input
+								id="price"
+								name="price"
+								type="number"
+								step="0.01"
+								min="0"
+								bind:value={formData.price}
+								placeholder="0.00"
+								class="pl-8 {form?.errors?.price ? 'border-red-500' : ''}"
+								required
+							/>
+						</div>
+						{#if form?.errors?.price}
+							<p class="text-sm text-red-600">{form.errors.price[0]}</p>
+						{/if}
+						<p class="text-xs text-gray-500">Enter the property price in Philippine Peso (₱)</p>
+					</div>
+
+					<!-- Description Section -->
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<Label for="description">Property Description</Label>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								class="text-xs"
+								disabled={createDescForm.submitting}
+								onclick={() => {
+									aiDescriptionButton?.click();
+								}}
+							>
+								{#if createDescForm.submitting}
+									<svg
+										class="mr-1.5 h-3.5 w-3.5 animate-spin"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+										></path>
+									</svg>
+									Generating...
+								{:else}
+									<svg
+										class="mr-1.5 h-3.5 w-3.5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M13 10V3L4 14h7v7l9-11h-7z"
+										></path>
+									</svg>
+									Generate with AI
+								{/if}
+							</Button>
+						</div>
+						<textarea
+							id="description"
+							name="description"
+							bind:value={formData.description}
+							placeholder="Describe the property features, amenities, and unique selling points..."
+							class="flex min-h-[120px] w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 {form
+								?.errors?.description
+								? 'border-red-500'
+								: ''}"
+						></textarea>
+						{#if form?.errors?.description}
+							<p class="text-sm text-red-600">{form.errors.description[0]}</p>
+						{/if}
+					</div>
 				</CardContent>
 			</Card>
 

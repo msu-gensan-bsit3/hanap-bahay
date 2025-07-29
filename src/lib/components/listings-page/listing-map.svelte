@@ -280,39 +280,39 @@
 			</div>
 		</div>
 	{/if}
+	{#if map}
+		<div
+			class="absolute top-4 right-4 z-1000 rounded-lg border bg-background/90 p-3 shadow-lg backdrop-blur-sm"
+		>
+			<h4 class="mb-2 text-sm font-medium">Property Types</h4>
+			<div class="space-y-1">
+				<div class="flex items-center gap-2">
+					<div
+						class="h-3 w-3 rounded-full border-2 border-white"
+						style="background-color: #3b82f6;"
+					></div>
+					<span class="text-xs">For Sale</span>
+				</div>
+				<div class="flex items-center gap-2">
+					<div
+						class="h-3 w-3 rounded-full border-2 border-white"
+						style="background-color: #10b981;"
+					></div>
+					<span class="text-xs">For Rent</span>
+				</div>
+				<div class="flex items-center gap-2">
+					<div
+						class="h-3 w-3 rounded-full border-2 border-white"
+						style="background-color: #f59e0b;"
+					></div>
+					<span class="text-xs">For Lease</span>
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <!-- Legend for marker colors -->
-{#if map}
-	<div
-		class="absolute top-4 right-4 z-10 rounded-lg border bg-background/90 p-3 shadow-lg backdrop-blur-sm"
-	>
-		<h4 class="mb-2 text-sm font-medium">Property Types</h4>
-		<div class="space-y-1">
-			<div class="flex items-center gap-2">
-				<div
-					class="h-3 w-3 rounded-full border-2 border-white"
-					style="background-color: #3b82f6;"
-				></div>
-				<span class="text-xs">For Sale</span>
-			</div>
-			<div class="flex items-center gap-2">
-				<div
-					class="h-3 w-3 rounded-full border-2 border-white"
-					style="background-color: #10b981;"
-				></div>
-				<span class="text-xs">For Rent</span>
-			</div>
-			<div class="flex items-center gap-2">
-				<div
-					class="h-3 w-3 rounded-full border-2 border-white"
-					style="background-color: #f59e0b;"
-				></div>
-				<span class="text-xs">For Lease</span>
-			</div>
-		</div>
-	</div>
-{/if}
 
 <style>
 	/* Ensure Leaflet controls don't interfere with page layout */

@@ -2,18 +2,59 @@ import { listingSchema } from "$lib/schema";
 import { db } from "$lib/server/db";
 import {
 	address,
+	agent,
 	agentQuery,
 	listing,
 	photosUrl,
 	property,
 	propertyFeature,
 	propertyTag,
+	user,
 } from "$lib/server/db/schema";
 
 import { listingHelp } from "$lib/server/services/ai-listing-tools";
+import { sendNewListingNotification } from "$lib/server/services/mail";
 
 import { fail, redirect, type Actions } from "@sveltejs/kit";
+import { eq } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
+
+// Async function to send listing notification email
+async function sendListingNotificationEmail(
+	listingId: number,
+	agentId: number,
+	propertyName: string,
+	propertyAddress: string,
+	sellerName: string,
+) {
+	try {
+		// Get agent details
+		const agentData = await db.query.agent.findFirst({
+			where: eq(agent.id, agentId),
+			with: {
+				user: {
+					with: {
+						address: true,
+					},
+				},
+			},
+		});
+
+		if (agentData) {
+			await sendNewListingNotification(
+				agentData.user.email,
+				`${agentData.user.firstName} ${agentData.user.lastName}`,
+				propertyName,
+				propertyAddress,
+				sellerName,
+				listingId,
+			);
+		}
+	} catch (error) {
+		console.error("Failed to send listing notification email:", error);
+		// Don't throw error to avoid affecting the main flow
+	}
+}
 
 export const load: PageServerLoad = async () => {
 	const agents = await db.query.agent.findMany({
@@ -166,11 +207,35 @@ export const actions: Actions = {
 			}
 
 			// Create listing record
-			await db.insert(listing).values({
-				propertyId: propertyRecord.id,
-				agentId: result.data.agentId,
-				status: "submitted",
+			const [listingRecord] = await db
+				.insert(listing)
+				.values({
+					propertyId: propertyRecord.id,
+					agentId: result.data.agentId,
+					status: "submitted",
+				})
+				.returning({ id: listing.id });
+
+			// Get seller name for email notification
+			const sellerData = await db.query.user.findFirst({
+				where: eq(user.id, locals.user!.id),
+				columns: { firstName: true, lastName: true },
 			});
+
+			// Send email notification asynchronously
+			if (sellerData && listingRecord) {
+				const propertyAddress = `${result.data.street ? result.data.street + ", " : ""}${result.data.barangay}, ${result.data.city}, ${result.data.province}`;
+				const sellerName = `${sellerData.firstName} ${sellerData.lastName}`;
+
+				// Don't await this - let it run in the background
+				sendListingNotificationEmail(
+					listingRecord.id,
+					result.data.agentId,
+					result.data.name,
+					propertyAddress,
+					sellerName,
+				);
+			}
 
 			// Redirect to success page or listings page
 		} catch (error) {
