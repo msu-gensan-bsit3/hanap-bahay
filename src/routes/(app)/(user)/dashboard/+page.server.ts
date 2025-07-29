@@ -5,6 +5,7 @@ import {
 	buyer,
 	conversation,
 	conversationParticipant,
+	listing,
 	offer,
 	offerConversation,
 	property,
@@ -157,17 +158,14 @@ export const actions: Actions = {
 		}
 
 		await db.transaction(async (db) => {
-			const oc = await db.query.offerConversation.findFirst({
-				where: eq(offerConversation.conversationId, queryResult.conversation.id),
+			const curListing = await db.query.listing.findFirst({
+				where: eq(listing.id, listingId),
 				with: {
-					offer: {
-						columns: {},
-						with: { listing: { columns: {}, with: { property: true } } },
-					},
+					property: true,
 				},
 			});
 
-			if (locals.user?.id === oc?.offer.listing.property.sellerId) {
+			if (locals.user?.id === curListing?.property.sellerId) {
 				return;
 			}
 

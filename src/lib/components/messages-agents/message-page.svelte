@@ -5,18 +5,20 @@
 	import { onMount, tick } from "svelte";
 	import { source, type Source } from "sveltekit-sse";
 	import { ChatArea, QuickActions } from ".";
+	import type { LayoutServerData } from "../../../routes/(agent)/$types";
 	import type { PageServerData } from "../../../routes/(agent)/agent/messages/$types";
 	import TabbedConversationsList from "./tabbed-conversations-list.svelte";
 
 	interface props {
 		userConversations: PageServerData["userConversations"];
 		propertyDetails: PageServerData["propertyDetails"];
+		listings: LayoutServerData["listings"];
 		userId: number;
 		convIdParam?: number;
 		role: "user" | "agent";
 	}
 
-	let { userConversations, propertyDetails, userId, convIdParam, role }: props = $props();
+	let { userConversations, propertyDetails, userId, convIdParam, role, listings }: props = $props();
 
 	let sender = $derived(userConversations.at(0)?.participants.find((v) => v.user.id === userId));
 	let senderName = $derived(sender?.user.firstName + " " + sender?.user.lastName);
@@ -273,12 +275,35 @@
 		// Check if any property in this conversation has sellerId matching the receiver
 		// If sellerId matches the receiver, then it's a seller conversation (agent talking to property owner)
 		// Otherwise, it's a buyer conversation (agent talking to someone interested in buying)
-		const isSeller = selectedConversation.properties.some(
-			(property) => property.sellerId === selectedConversation!.receiverId,
-		);
+
+		let isSeller = false;
+		for (const l of listings) {
+			if (selectedConversation!.receiverId === l.property.sellerId) {
+				isSeller = true;
+				break;
+			}
+		}
 
 		return isSeller ? "seller" : "buyer";
 	});
+
+	function isSeller(id: number) {
+		if (!selectedConversation) return false;
+
+		// Check if any property in this conversation has sellerId matching the receiver
+		// If sellerId matches the receiver, then it's a seller conversation (agent talking to property owner)
+		// Otherwise, it's a buyer conversation (agent talking to someone interested in buying)
+
+		let isSeller = false;
+		for (const l of listings) {
+			if (id === l.property.sellerId) {
+				isSeller = true;
+				break;
+			}
+		}
+
+		return isSeller;
+	}
 </script>
 
 <div class="w-full flex-1 @4xl:hidden">
@@ -289,6 +314,7 @@
 			onSelectConversation={selectConversation}
 			isMobile={true}
 			{userId}
+			{isSeller}
 		/>
 	{:else if showChat}
 		<ChatArea
@@ -309,6 +335,7 @@
 <div class="hidden @4xl:flex @4xl:flex-1 @4xl:gap-4">
 	<!-- Conversations Sidebar -->
 	<TabbedConversationsList
+		{isSeller}
 		{conversations}
 		{selectedConversation}
 		onSelectConversation={selectConversation}

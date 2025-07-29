@@ -24,6 +24,7 @@
 		onSelectConversation: (conversation: ConversationType) => void;
 		isMobile: boolean;
 		userId: number;
+		isSeller: (id: number) => boolean;
 	}
 
 	let {
@@ -32,6 +33,7 @@
 		onSelectConversation,
 		isMobile = false,
 		userId,
+		isSeller: userIsSeller,
 	}: props = $props();
 
 	let searchQuery = $state("");
@@ -48,7 +50,7 @@
 			// - If sellerId matches the receiver, then it's a seller conversation (agent talking to property owner)
 			// - Otherwise, it's a buyer conversation (agent talking to someone interested in buying)
 
-			const isSeller = conv.properties.some((property) => property.sellerId === conv.receiverId);
+			const isSeller = userIsSeller(conv.receiverId);
 
 			if (isSeller) {
 				sellers.push(conv);

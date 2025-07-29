@@ -33,6 +33,10 @@
 	const { enhance: searchEnhance, submitting: searchSubmitting } = $derived(searchWithAi);
 </script>
 
+<svelte:head>
+	<title>JuanHome</title>
+</svelte:head>
+
 <div
 	class="relative w-full bg-[url(https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iU07NrehBC9I/v0/-1x-1.webp)] bg-cover bg-center bg-no-repeat pb-5"
 >
