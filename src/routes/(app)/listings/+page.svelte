@@ -7,6 +7,8 @@
 	import TypeFilter from "$lib/components/listings-page/filter-type.svelte";
 
 	import SortBy from "$lib/components/listings-page/sort-by.svelte";
+	import ListingMap from "$lib/components/listings-page/listing-map.svelte";
+	import ListingMapSkeleton from "$lib/components/listings-page/listing-map-skeleton.svelte";
 
 	import CarouselListingCard from "$lib/components/listings-page/carousel-listing-card.svelte";
 	import SkeletonCard from "$lib/components/listings-page/skeleton-listing-card.svelte";
@@ -16,8 +18,11 @@
 
 	import { replaceState } from "$app/navigation";
 	import { page } from "$app/state";
-	import { ChevronDown, ChevronUp, Funnel, RotateCcw, Search } from "@lucide/svelte";
+	import { ChevronDown, ChevronUp, Funnel, RotateCcw, Search, Grid3X3, Map } from "@lucide/svelte";
 	import { tick, untrack } from "svelte";
+
+	// View toggle state
+	let viewMode = $state("grid"); // "grid" or "map"
 
 	// Filters - Initialize from URL params
 	let searchTerm = $state(page.url.searchParams.get("search") || "");
@@ -60,7 +65,7 @@
 				const listingDescription = property.description?.toLowerCase() || "";
 				const listingFeatures =
 					property.features
-						?.map((f: any) => f.name)
+						?.map((f: { name: string }) => f.name)
 						.join(" ")
 						.toLowerCase() || "";
 				const listingAddress = Object.values(property.address)
@@ -234,7 +239,8 @@
 
 	$effect(() => {
 		loading = true;
-		const _ = [
+		// Trigger re-filtering when any filter changes
+		[
 			sortBy,
 			searchTerm,
 			location,
@@ -370,7 +376,7 @@
 
 			<!-- Loading Grid -->
 			<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-				{#each { length: 12 } as _}
+				{#each { length: 12 } as _, i (i)}
 					<div class="">
 						<SkeletonCard />
 					</div>
@@ -398,56 +404,136 @@
 						<p class="text-sm text-muted-foreground">
 							{count} properties {#if totalPages > 1}• Page {pageNum} of {totalPages}{/if}
 						</p>
-						<SortBy bind:sortBy />
+						<div class="flex items-center gap-2">
+							<SortBy bind:sortBy />
+							<!-- View Toggle -->
+							<div class="flex items-center border rounded-md">
+								<Button
+									variant={viewMode === "grid" ? "default" : "ghost"}
+									size="sm"
+									class="h-8 px-2 rounded-r-none border-0"
+									onclick={() => (viewMode = "grid")}
+								>
+									<Grid3X3 class="h-4 w-4" />
+								</Button>
+								<Button
+									variant={viewMode === "map" ? "default" : "ghost"}
+									size="sm"
+									class="h-8 px-2 rounded-l-none border-0"
+									onclick={() => (viewMode = "map")}
+								>
+									<Map class="h-4 w-4" />
+								</Button>
+							</div>
+						</div>
 					</div>
 				</div>
-				<!-- <div class="flex-shrink-0">
-					<SearchAI />
-				</div> -->
 			</div>
 
-			<!-- Listings Grid -->
-			<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-				{#if loading}
-					{#each { length: 12 } as _}
-						<div class="">
-							<SkeletonCard />
+			<!-- Content Layout - Grid or Map View -->
+			{#if viewMode === "grid"}
+				<!-- Grid View - Original Layout -->
+				<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+					{#if loading}
+						{#each { length: 12 } as _, i (i)}
+							<div class="">
+								<SkeletonCard />
+							</div>
+						{/each}
+					{:else if paginatedListings.length > 0}
+						{#each paginatedListings as listing (listing.id)}
+							<div class="h-128">
+								<CarouselListingCard {...listing} />
+							</div>
+						{/each}
+					{:else}
+						<div class="col-span-full flex flex-col items-center justify-center py-12 text-center">
+							<div class="mb-4 text-muted-foreground">
+								<svg
+									class="mx-auto mb-4 h-16 w-16"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="1"
+										d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+									/>
+								</svg>
+								<h3 class="mb-2 text-lg font-medium">No properties found</h3>
+								<p class="text-sm text-muted-foreground">
+									Try adjusting your search criteria or filters
+								</p>
+							</div>
+							<Button onclick={resetFilters} variant="outline">
+								<RotateCcw class="mr-2 h-4 w-4" />
+								Clear all filters
+							</Button>
 						</div>
-					{/each}
-				{:else if paginatedListings.length > 0}
-					{#each paginatedListings as listing (listing.id)}
-						<div class="h-128">
-							<CarouselListingCard {...listing} />
-						</div>
-					{/each}
-				{:else}
-					<div class="col-span-full flex flex-col items-center justify-center py-12 text-center">
-						<div class="mb-4 text-muted-foreground">
-							<svg
-								class="mx-auto mb-4 h-16 w-16"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="1"
-									d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-								/>
-							</svg>
-							<h3 class="mb-2 text-lg font-medium">No properties found</h3>
-							<p class="text-sm text-muted-foreground">
-								Try adjusting your search criteria or filters
-							</p>
-						</div>
-						<Button onclick={resetFilters} variant="outline">
-							<RotateCcw class="mr-2 h-4 w-4" />
-							Clear all filters
-						</Button>
+					{/if}
+				</div>
+			{:else}
+				<!-- Map View - Split Layout -->
+				<div class="flex gap-4 h-[calc(100vh-280px)] min-h-[600px]">
+					<!-- Map Section - 50% width -->
+					<div class="w-2/3">
+						{#if loading}
+							<ListingMapSkeleton />
+						{:else}
+							<ListingMap listings={filteredListings} />
+						{/if}
 					</div>
-				{/if}
-			</div>
+
+					<!-- Listings Section - 50% width -->
+					<div class="w-1/3 overflow-y-auto">
+						{#if loading}
+							<div class="grid grid-cols-1 gap-4">
+								{#each { length: 6 } as _, i (i)}
+									<div class="">
+										<SkeletonCard />
+									</div>
+								{/each}
+							</div>
+						{:else if paginatedListings.length > 0}
+							<div class="grid grid-cols-1 gap-4">
+								{#each paginatedListings as listing (listing.id)}
+									<div class="h-auto">
+										<CarouselListingCard {...listing} />
+									</div>
+								{/each}
+							</div>
+						{:else}
+							<div class="flex flex-col items-center justify-center py-12 text-center h-full">
+								<div class="mb-4 text-muted-foreground">
+									<svg
+										class="mx-auto mb-4 h-16 w-16"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="1"
+											d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+										/>
+									</svg>
+									<h3 class="mb-2 text-lg font-medium">No properties found</h3>
+									<p class="text-sm text-muted-foreground">
+										Try adjusting your search criteria or filters
+									</p>
+								</div>
+								<Button onclick={resetFilters} variant="outline">
+									<RotateCcw class="mr-2 h-4 w-4" />
+									Clear all filters
+								</Button>
+							</div>
+						{/if}
+					</div>
+				</div>
+			{/if}
 
 			<!-- Pagination -->
 			{#if totalPages > 1}
@@ -468,7 +554,7 @@
 
 						<div class="flex items-center gap-1 sm:gap-2">
 							{#if totalPages <= 7}
-								{#each Array(totalPages) as _, i}
+								{#each Array(totalPages) as _, i (i)}
 									<Button
 										variant={pageNum === i + 1 ? "default" : "outline"}
 										size="sm"
