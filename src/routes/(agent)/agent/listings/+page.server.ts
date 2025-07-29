@@ -38,7 +38,7 @@ export const actions: Actions = {
 		const res = z
 			.object({
 				listingId: z.number(),
-				status: z.enum(["up", "pending", "sold", "under-review", "submitted"]),
+				status: z.enum(["up", "pending", "sold", "under-review", "submitted", "rejected"]),
 			})
 			.safeParse({
 				listingId: Number(formData.get("listingId")),

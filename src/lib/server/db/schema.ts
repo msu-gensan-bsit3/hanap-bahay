@@ -172,6 +172,7 @@ export const propertyQuery = {
 		tags: propertyTagQuery,
 		address: true,
 		photosUrl: photosUrlQuery,
+		seller: sellerQuery,
 	},
 } as const;
 
@@ -183,7 +184,7 @@ export const listing = pgTable("listing", {
 	propertyId: integer()
 		.notNull()
 		.references(() => property.id),
-	status: varchar({ enum: ["up", "pending", "sold", "under-review", "submitted"] })
+	status: varchar({ enum: ["up", "pending", "sold", "under-review", "submitted", "rejected"] })
 		.notNull()
 		.default("submitted"),
 	dateCreated: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
