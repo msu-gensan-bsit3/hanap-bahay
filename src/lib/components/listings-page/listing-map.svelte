@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy, mount } from 'svelte';
-	import CarouselListingCard from './carousel-listing-card.svelte';
+	import MiniListingCard from "$lib/components/listings-page/mini-listing-card.svelte"
 
 	// Props
 	let { listings = [] } = $props<{ listings: any[] }>();
@@ -70,7 +70,7 @@
 		const color = TYPE_COLORS[type] || '#6b7280'; // Default gray for unknown types
 
 		const marker = window.L.circleMarker([lat, lng], {
-			radius: 8,
+			radius: 12, // Increased from 8 for better click detection
 			fillColor: color,
 			color: '#ffffff',
 			weight: 2,
@@ -88,11 +88,13 @@
 			// Create popup content container
 			const popupContent = document.createElement('div');
 			popupContent.className = 'listing-popup-container';
-			popupContent.style.width = '320px';
+			popupContent.style.width = '240px';
+			popupContent.style.maxHeight = '300px'; // Add max height constraint
+			popupContent.style.overflow = 'hidden'; // Prevent overflow
 
 			// Mount Svelte component to the popup content using Svelte 5 syntax
 			try {
-				mount(CarouselListingCard, {
+				mount(MiniListingCard, {
 					target: popupContent,
 					props: listing
 				});
@@ -103,8 +105,9 @@
 
 			// Create and configure popup
 			const popup = window.L.popup({
-				maxWidth: 350,
-				minWidth: 320,
+				maxWidth: 260,
+				minWidth: 240,
+				maxHeight: 320, // Add max height for popup
 				autoPan: true,
 				closeButton: true,
 				autoClose: false,
@@ -320,7 +323,7 @@
 		margin: 0;
 		border-radius: 12px;
 		overflow: hidden;
-		width: 320px !important;
+		width: 240px !important; /* Reduced from 320px */
 	}
 
 	:global(.custom-listing-popup .leaflet-popup-tip) {
