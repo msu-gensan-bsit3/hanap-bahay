@@ -79,7 +79,7 @@
 		: ''}"
 >
 	<!-- Image with badge overlay -->
-	<a href="/listings/{listing.id}" class="group relative block h-full overflow-hidden">
+	<a href="/listings/{property.id}" class="group relative block h-full overflow-hidden">
 		<div class="relative h-full overflow-hidden bg-muted">
 			<Badge variant={property.type} class="absolute top-3 left-3 z-10">
 				For {toTitleCase(property.type)}
@@ -125,7 +125,7 @@
 
 	<!-- Content -->
 	<Card.Content class="flex flex-1 flex-col justify-between p-4">
-		<a href="/listings/{listing.id}" class="group block h-full">
+		<a href="/listings/{property.id}" class="group block h-full">
 			<div class="space-y-2">
 				<!-- Price -->
 				<h3 class="text-xl font-bold tracking-tight">

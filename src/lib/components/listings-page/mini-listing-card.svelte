@@ -59,7 +59,7 @@
 </script>
 
 <a
-	href="/listings/{listing.id}"
+	href="/listings/{property.id}"
 	class="group block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 	aria-label="View property {property.name} listed by {agent.user.firstName} {agent.user.lastName}"
 >

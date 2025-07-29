@@ -73,4 +73,7 @@ export const listingSchema = z.object({
 	// Property features and tags
 	features: z.array(z.string()).optional(),
 	tags: z.array(z.string()).optional(),
+
+	// Property photos
+	photosUrls: z.array(z.string().url("Please enter valid URLs")).optional(),
 });
