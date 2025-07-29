@@ -22,13 +22,13 @@
 	{size}
 	aria-disabled={!emblaCtx.canScrollNext}
 	class={cn(
-		"border-1 size-8 rounded-full"
+		"border-1 size-10 rounded-full"
 	)}
 	onclick={emblaCtx.scrollNext}
 	onkeydown={emblaCtx.handleKeyDown}
 	bind:ref
 	{...restProps}
 >
-	<ArrowRightIcon class="size-8" />
+	<ArrowRightIcon class="size-6" />
 	<span class="sr-only">Next slide</span>
 </Button>

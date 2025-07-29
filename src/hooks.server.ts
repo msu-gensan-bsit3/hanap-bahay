@@ -1,7 +1,10 @@
-import { error, redirect, type Handle } from '@sveltejs/kit';
-import * as auth from '$lib/server/auth';
+import { db } from "$lib/server/db";
+import { agent, user } from "$lib/server/db/schema";
+import * as auth from "$lib/server/services/auth";
+import { error, redirect, type Handle } from "@sveltejs/kit";
+import { eq } from "drizzle-orm";
 
-const protectedRoutes = ['admin'];
+const protectedRoutes = ["admin", "(agent)", "(user)"];
 
 function validateRoute(currentRoute: string) {
 	for (const route of protectedRoutes) {
@@ -20,23 +23,32 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		return error(404);
 	}
 
-	if (validateRoute(route)) {
-		if (!sessionToken) {
-			event.locals.user = null;
-			event.locals.session = null;
-			return redirect(302, '/signin');
-		}
+	if (sessionToken) {
+		const res = await auth.validateSessionToken(sessionToken);
 
-		const { session, user } = await auth.validateSessionToken(sessionToken);
+		event.locals.user = res.user;
+		event.locals.session = res.session;
 
-		if (session) {
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-		} else {
+		if (!res.user) {
 			auth.deleteSessionTokenCookie(event);
 		}
+	}
 
-		event.locals.user = user;
-		event.locals.session = session;
+	if (validateRoute(route)) {
+		if (!event.locals.user) {
+			event.locals.user = null;
+			event.locals.session = null;
+
+			return redirect(302, "/login");
+		}
+
+		if (route.includes("(agent)")) {
+			const isAgent = await db.query.agent.findFirst({ where: eq(agent.id, user.id) });
+
+			if (!isAgent) {
+				return redirect(302, "/");
+			}
+		}
 	}
 
 	return resolve(event);

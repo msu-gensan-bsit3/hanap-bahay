@@ -1,49 +1,125 @@
 <script lang="ts">
-	import { Button } from "$lib/components/ui/button/index"
-	import { Input } from "$lib/components/ui/input/index"
-	import { Label } from "$lib/components/ui/label/index"
+	import AskAi from "$lib/components/ask-ai.svelte";
+	import AgentCard from "$lib/components/listings-page/agent-card.svelte";
+	import CarouselListingCard from "$lib/components/listings-page/carousel-listing-card.svelte";
+
+	import { Button } from "$lib/components/ui/button/index";
+	import { Input } from "$lib/components/ui/input/index";
+	import { Label } from "$lib/components/ui/label/index";
 
 	import * as Carousel from "$lib/components/ui/carousel/index.js";
 
-	import { ChevronLeft, ChevronRight, Search } from "@lucide/svelte"
+	import { moreEnhance } from "$lib/states/enhance.svelte";
+	import { ChevronLast, Search } from "@lucide/svelte";
+
+	let { data } = $props();
+
+	let searchQuery = $state("");
+
+	const searchWithAi = moreEnhance({
+		reset: false,
+		onSubmitted: (res) => {
+			if (res?.msg) {
+				const msg = res.msg as string;
+				console.log(msg);
+
+				if (msg.startsWith("/listings") || msg.startsWith("/agents")) {
+					window.location.href = msg;
+					// goto(msg);
+				}
+			}
+		},
+	});
+	const { enhance: searchEnhance, submitting: searchSubmitting } = $derived(searchWithAi);
 </script>
 
-<div class="bg-[url(https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iU07NrehBC9I/v0/-1x-1.webp)] bg-no-repeat w-full">
-	<div class="max-w-xl max-h-screen mx-auto">
-		<div class="container mx-auto py-12">
-			<div class="max-w-4xl mx-auto gap-4 text-center">
-				<h1 class="mb-4 text-background text-5xl font-bold tracking-tight leading-tight">
+<svelte:head>
+	<title>JuanHome</title>
+</svelte:head>
+
+<div
+	class="relative w-full bg-[url(https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iU07NrehBC9I/v0/-1x-1.webp)] bg-cover bg-center bg-no-repeat pb-5"
+>
+	<!-- Overlay for better text readability -->
+	<div class="absolute inset-0 bg-black/40"></div>
+
+	<div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+		<div class="container mx-auto py-16 lg:py-24">
+			<div class="mx-auto max-w-4xl text-center">
+				<h1
+					class="mb-8 text-4xl leading-tight font-bold tracking-tight text-white sm:text-5xl lg:text-6xl"
+				>
 					In
-					<span class="bg-gradient-to-r from-amber-300 to-red-500 bg-clip-text text-transparent">JuanHomes</span>
+					<span class="bg-gradient-to-r from-amber-300 to-red-500 bg-clip-text text-transparent">
+						JuanHomes
+					</span>
 					you can find the
-					<span class="bg-gradient-to-r from-amber-500 to-amber-300 bg-clip-text text-transparent">one</span>
+					<span class="bg-gradient-to-r from-amber-500 to-amber-300 bg-clip-text text-transparent">
+						one
+					</span>
 					which feels like
-					<span class="bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">home</span>
+					<span class="bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
+						home
+					</span>
 				</h1>
-				<div class="max-w-6xl mx-auto">
-					<div class="bg-background rounded-2xl border mx-auto">
-						<div class="w-full flex items-center justify-between">
-							<div class="flex flex-1 justify-start"></div>
-							<div class="flex items-center justify-center">
-								<div class="inline-flex">
-									<!-- himo lang kog mga button variants unya -->
-									<Button class="border-b-1 border-red-700 rounded-none" variant="ghost">For Rent</Button>
-									<Button variant="ghost">For Sale</Button>
-									<Button variant="ghost">For Lease</Button>
-								</div>
+
+				<div class="mx-auto mt-25 mb-10 max-w-2xl">
+					<div class="rounded-xl bg-white/80 p-6 shadow-lg backdrop-blur-xs">
+						<form action="?/searchWithAi" method="post" use:searchEnhance class="space-y-4">
+							<div class="text-center">
+								<Label class="text-lg font-medium text-gray-900">What are you looking for?</Label>
 							</div>
-							<div class="flex flex-1 justify-end"></div>
-						</div>
-						<!-- i think iconvert man ni into a form, apparently wrapper sa superform ang form sa shadcn -->
-						<div class="p-4 border-t space-y-2">
-							<Label>What are you looking for?</Label>
-							<div class="w-full inline-flex gap-2">
-								<Input />
-								<Button>
-									<Search /> Search
+
+							<div class="flex gap-2">
+								<Input
+									name="chatInput"
+									placeholder="Search by location, property type, or keywords..."
+									class="h-11 flex-1 border-gray-200 text-base focus:border-primary focus:ring-1 focus:ring-primary"
+									bind:value={searchQuery}
+									required
+									disabled={searchSubmitting}
+								/>
+								<input type="hidden" name="sessionId" value={crypto.randomUUID()} />
+								<Button type="submit" size="lg" class="h-11 px-6" disabled={searchSubmitting}>
+									{#if searchSubmitting}
+										<div class="flex items-center gap-2">
+											<div class="flex space-x-1">
+												<div class="h-1 w-1 animate-pulse rounded-full bg-current"></div>
+												<div
+													class="h-1 w-1 animate-pulse rounded-full bg-current"
+													style="animation-delay: 0.2s;"
+												></div>
+												<div
+													class="h-1 w-1 animate-pulse rounded-full bg-current"
+													style="animation-delay: 0.4s;"
+												></div>
+											</div>
+										</div>
+									{:else}
+										<Search class="h-4 w-4" />
+									{/if}
 								</Button>
 							</div>
-						</div>
+
+							{#if searchSubmitting}
+								<div class="text-center text-sm text-gray-600">
+									<div class="flex items-center justify-center gap-2">
+										<div class="flex space-x-1">
+											<div class="h-2 w-2 animate-bounce rounded-full bg-primary"></div>
+											<div
+												class="h-2 w-2 animate-bounce rounded-full bg-primary"
+												style="animation-delay: 0.1s;"
+											></div>
+											<div
+												class="h-2 w-2 animate-bounce rounded-full bg-primary"
+												style="animation-delay: 0.2s;"
+											></div>
+										</div>
+										<span>AI is processing your search...</span>
+									</div>
+								</div>
+							{/if}
+						</form>
 					</div>
 				</div>
 			</div>
@@ -51,24 +127,155 @@
 	</div>
 </div>
 
-<div class="bg-background w-full">
-	<Carousel.Root class="max-w-screen-xl mx-auto py-8 space-y-2">
-		<div class="w-full flex items-center justify-between">
-			<div>
-				<h2 class="text-xl font-bold tracking-tight">Featured Listings</h2>
-				<p class="text-muted-foreground text-sm">10+ new listings</p>
+<!-- Featured Listings Carousel -->
+<div class="w-full bg-background px-4">
+	{#await data.listings}
+		<!-- Loading state for listings -->
+		<div class="mx-auto my-8 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
+					<p class="text-sm text-muted-foreground">Loading premium properties...</p>
+				</div>
 			</div>
-			<div class="inline-flex mx-3 gap-6">
-				<Carousel.Previous />
-				<Carousel.Next />
-				<ChevronLeft size={42} class="border-1 rounded-full p-1 text-muted-foreground text-3xl" />
-				<ChevronRight size={42} class="border-1 rounded-full p-1" />
+			<div class="flex gap-4 overflow-hidden">
+				{#each Array(4) as _}
+					<div class="h-128 w-80 flex-shrink-0 animate-pulse rounded-lg bg-muted"></div>
+				{/each}
 			</div>
 		</div>
-		<Carousel.Content>
-			<Carousel.Item>
-				test
-			</Carousel.Item>
-		</Carousel.Content>
-	</Carousel.Root>
+	{:then featuredListings}
+		<!-- Listings loaded successfully -->
+		<Carousel.Root class="mx-auto my-8 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
+					<p class="text-sm text-muted-foreground">{featuredListings.length} premium properties</p>
+				</div>
+				<div class="mx-3 inline-flex gap-6">
+					<Carousel.Previous />
+					<Carousel.Next />
+				</div>
+			</div>
+			<Carousel.Content class="-ml-2 md:-ml-4">
+				{#each featuredListings as listing}
+					<Carousel.Item class="pl-2 md:basis-1/2 md:pl-4 lg:basis-1/3">
+						<div class="h-128">
+							<CarouselListingCard {...listing} />
+						</div>
+					</Carousel.Item>
+				{/each}
+				<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
+					<a
+						href="/listings"
+						class="inline-flex rounded-lg border-2 border-dashed border-muted-foreground/25 px-8 py-4 text-muted-foreground transition-colors hover:border-muted-foreground/50"
+					>
+						See All Listings <ChevronLast strokeWidth={1} class="ml-2" />
+					</a>
+				</Carousel.Item>
+			</Carousel.Content>
+		</Carousel.Root>
+	{:catch error}
+		<!-- Error state for listings -->
+		<div class="mx-auto my-8 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
+					<p class="text-sm text-red-500">Failed to load properties</p>
+				</div>
+			</div>
+			<div
+				class="flex items-center justify-center rounded-lg border-2 border-dashed border-red-200 py-12"
+			>
+				<div class="text-center">
+					<p class="text-sm text-muted-foreground">{error.message}</p>
+					<Button onclick={() => window.location.reload()} variant="outline" class="mt-2">
+						Try again
+					</Button>
+				</div>
+			</div>
+		</div>
+	{/await}
 </div>
+
+<!-- Featured Agents Carousel -->
+<div class="w-full bg-muted/30 px-4">
+	{#await data.agents}
+		<!-- Loading state for agents -->
+		<div class="mx-auto my-4 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
+					<p class="text-sm text-muted-foreground">Loading expert real estate professionals...</p>
+				</div>
+			</div>
+			<div class="flex gap-4 overflow-hidden">
+				{#each Array(4) as _}
+					<div class="h-64 w-80 flex-shrink-0 animate-pulse rounded-lg bg-muted"></div>
+				{/each}
+			</div>
+		</div>
+	{:then featuredAgents}
+		<!-- Agents loaded successfully -->
+		<Carousel.Root class="mx-auto my-4 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
+					<p class="text-sm text-muted-foreground">
+						{featuredAgents.length} expert real estate professionals
+					</p>
+				</div>
+				<div class="mx-3 inline-flex gap-6">
+					<Carousel.Previous />
+					<Carousel.Next />
+				</div>
+			</div>
+			<Carousel.Content class="-ml-2 md:-ml-4">
+				{#each featuredAgents as agent}
+					<Carousel.Item class="pl-2 md:basis-1/2 md:pl-4 lg:basis-1/3">
+						<div class="h-full">
+							<AgentCard {agent} />
+						</div>
+					</Carousel.Item>
+				{/each}
+				{#if featuredAgents.length === 0}
+					<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
+						<div class="py-8 text-center text-muted-foreground">
+							<p>No agents available</p>
+						</div>
+					</Carousel.Item>
+				{/if}
+				<Carousel.Item class="flex basis-auto items-center justify-center pl-2 md:pl-4">
+					<a
+						href="/agents"
+						class="inline-flex rounded-lg border-2 border-dashed border-muted-foreground/25 px-8 py-4 text-muted-foreground transition-colors hover:border-muted-foreground/50"
+					>
+						See All Agents <ChevronLast strokeWidth={1} class="ml-2" />
+					</a>
+				</Carousel.Item>
+			</Carousel.Content>
+		</Carousel.Root>
+	{:catch error}
+		<!-- Error state for agents -->
+		<div class="mx-auto my-4 max-w-screen-xl space-y-4">
+			<div class="flex w-full items-center justify-between">
+				<div>
+					<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
+					<p class="text-sm text-red-500">Failed to load agents</p>
+				</div>
+			</div>
+			<div
+				class="flex items-center justify-center rounded-lg border-2 border-dashed border-red-200 py-12"
+			>
+				<div class="text-center">
+					<p class="text-sm text-muted-foreground">{error.message}</p>
+					<Button onclick={() => window.location.reload()} variant="outline" class="mt-2">
+						Try again
+					</Button>
+				</div>
+			</div>
+		</div>
+	{/await}
+</div>
+
+<AskAi />
