@@ -9,7 +9,7 @@
 		agent: ClientListing["agent"];
 		listingId: number;
 		role: "anon" | "buyer" | "seller" | "agent";
-		listingStatus?: "up" | "pending" | "sold" | "under-review" | "submitted";
+		listingStatus?: "up" | "pending" | "sold" | "under-review" | "submitted" | "rejected";
 	}
 
 	let { agent, role, listingId, listingStatus }: props = $props();

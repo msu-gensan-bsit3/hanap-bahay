@@ -78,7 +78,7 @@
 				{/if}
 				{#if user}
 					<a
-						href="/create-listing"
+						href={curAgent ? "/agent/listings/create" : "/create-listing"}
 						class="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
 					>
 						<Plus size={20} />
@@ -226,7 +226,10 @@
 						</a>
 					</DropdownMenu.Item>
 					<DropdownMenu.Item>
-						<a href="/create-listing" class="flex w-full items-center gap-2">
+						<a
+							href="{curAgent ? '/agent/listings/create' : '/create-listing'} "
+							class="flex w-full items-center gap-2"
+						>
 							<Plus />
 							Create Listing
 						</a>

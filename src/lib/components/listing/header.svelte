@@ -9,7 +9,7 @@
 		price: number;
 		listingType: "sale" | "rent" | "lease";
 		category: string;
-		status?: "up" | "pending" | "sold" | "under-review" | "submitted";
+		status?: "up" | "pending" | "sold" | "under-review" | "submitted" | "rejected";
 	}
 
 	let { propertyName, price, listingType, category, status }: props = $props();
