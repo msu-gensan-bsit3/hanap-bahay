@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from "$app/stores";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
 	import { moreEnhance } from "$lib/states/enhance.svelte";
@@ -18,11 +19,9 @@
 
 	// Set initial tab based on user type
 	$effect(() => {
-		if (data.userType?.isSeller && !data.userType?.isBuyer) {
+		if (data.userType?.isSeller) {
 			activeTab = "seller";
-		} else if (data.userType?.isBuyer && !data.userType?.isSeller) {
-			activeTab = "buyer";
-		} else if (data.userType?.isBuyer) {
+		} else {
 			activeTab = "buyer";
 		}
 	});
@@ -130,6 +129,37 @@
 		</div>
 	{/if}
 
+	<!-- Success/Error Messages -->
+	{#if $page.form?.success}
+		<div class="rounded-lg border border-green-200 bg-green-50 p-4 text-green-800">
+			<div class="flex items-center">
+				<svg class="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+					<path
+						fill-rule="evenodd"
+						d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+						clip-rule="evenodd"
+					></path>
+				</svg>
+				{$page.form.message || "Operation completed successfully!"}
+			</div>
+		</div>
+	{/if}
+
+	{#if $page.form?.error}
+		<div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+			<div class="flex items-center">
+				<svg class="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+					<path
+						fill-rule="evenodd"
+						d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+						clip-rule="evenodd"
+					></path>
+				</svg>
+				{$page.form.error}
+			</div>
+		</div>
+	{/if}
+
 	<!-- Tab Navigation -->
 	{#if data.userType?.isSeller && data.userType?.isBuyer}
 		<div class="flex items-center justify-center">
@@ -166,7 +196,7 @@
 					<h2 class="text-3xl font-bold tracking-tight">My Properties</h2>
 					<p class="text-muted-foreground">Manage and track your property listings</p>
 				</div>
-				<Button href="/listings/create" class="shadow-sm">
+				<Button href="/create-listing" class="shadow-sm">
 					<Building class="mr-2 h-4 w-4" />
 					Add New Listing
 				</Button>
@@ -183,7 +213,7 @@
 					<p class="mt-2 text-muted-foreground">
 						Start by creating your first property listing to reach potential buyers.
 					</p>
-					<Button href="/listings/create" class="mt-6">Create Your First Listing</Button>
+					<Button href="/create-listing" class="mt-6">Create Your First Listing</Button>
 				</div>
 			{:else}
 				<div class="space-y-6">
@@ -201,6 +231,7 @@
 						{#each sellerListings.listings as property}
 							{@const sendMessage = moreEnhance({ reset: false })}
 							{@const { enhance, submitting } = sendMessage}
+							{@const deleteProperty = moreEnhance({ reset: false })}
 							<div
 								class="group rounded-2xl border bg-card p-6 shadow-sm transition-all duration-200 hover:shadow-md"
 							>
@@ -284,14 +315,28 @@
 												Send Message
 											</Button>
 										</form>
-										<Button
-											variant="ghost"
-											size="sm"
-											class="flex w-full text-red-600 hover:bg-red-50 hover:text-red-700"
-										>
-											<Trash2 class="mr-2 h-4 w-4" />
-											Delete
-										</Button>
+										<form method="POST" action="?/deleteListing" use:deleteProperty.enhance>
+											<input type="hidden" name="propertyId" value={property.id} />
+											<Button
+												variant="ghost"
+												size="sm"
+												type="submit"
+												class="flex w-full text-red-600 hover:bg-red-50 hover:text-red-700"
+												disabled={deleteProperty.submitting}
+												onclick={(e) => {
+													if (
+														!confirm(
+															"Are you sure you want to delete this property? This action cannot be undone.",
+														)
+													) {
+														e.preventDefault();
+													}
+												}}
+											>
+												<Trash2 class="mr-2 h-4 w-4" />
+												{deleteProperty.submitting ? "Deleting..." : "Delete"}
+											</Button>
+										</form>
 
 										<!-- Agent Info -->
 										{#if property.listing?.agent}
@@ -449,8 +494,8 @@
 													</span>
 												</div>
 											</div>
-											<Badge class="{getStatusColor(offer.listing.status)} border-0 font-medium">
-												{toTitleCase(offer.listing.status)}
+											<Badge class="{getStatusColor(offer.status)} border-0 font-medium">
+												{toTitleCase(offer.status)}
 											</Badge>
 										</div>
 
@@ -497,14 +542,35 @@
 										</form>
 
 										{#if offer.status === "new" || offer.status === "in negotiation"}
-											<Button
-												variant="ghost"
-												size="sm"
-												class="w-full text-red-600 hover:bg-red-50 hover:text-red-700 "
+											{@const withdrawOffer = moreEnhance({ reset: false })}
+											<form method="POST" action="?/withdrawOffer" use:withdrawOffer.enhance>
+												<input type="hidden" name="offerId" value={offer.id} />
+												<Button
+													variant="ghost"
+													size="sm"
+													type="submit"
+													class="w-full text-red-600 hover:bg-red-50 hover:text-red-700"
+													disabled={withdrawOffer.submitting}
+													onclick={(e) => {
+														if (
+															!confirm(
+																"Are you sure you want to withdraw this offer? This action cannot be undone.",
+															)
+														) {
+															e.preventDefault();
+														}
+													}}
+												>
+													<Trash2 class="mr-2 h-4 w-4" />
+													{withdrawOffer.submitting ? "Withdrawing..." : "Withdraw Offer"}
+												</Button>
+											</form>
+										{:else if offer.status === "cancelled"}
+											<div
+												class="w-full rounded-lg border border-red-200 bg-red-50 p-3 py-1 text-center"
 											>
-												<Trash2 class="mr-2 h-4 w-4" />
-												Withdraw Offer
-											</Button>
+												<span class="text-sm text-red-700">Offer Withdrawn</span>
+											</div>
 										{/if}
 									</div>
 								</div>
@@ -582,9 +648,9 @@
 			</p>
 			<div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
 				<Button href="/listings" class="w-full sm:w-auto">Browse Properties</Button>
-				<Button variant="outline" href="/listings/create" class="w-full sm:w-auto"
-					>List Property</Button
-				>
+				<Button variant="outline" href="/create-listing" class="w-full sm:w-auto">
+					List Property
+				</Button>
 			</div>
 		</div>
 	{/if}

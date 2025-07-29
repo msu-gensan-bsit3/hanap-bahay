@@ -43,6 +43,7 @@
 			const properties = v.offerConversations.map((o) => ({
 				...o.offer.listing.property,
 				listingId: o.offer.listing.id,
+				listingStatus: o.offer.listing.status,
 			}));
 
 			const agentId = receiver.user.id;

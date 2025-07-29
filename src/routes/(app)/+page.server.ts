@@ -15,7 +15,7 @@ export const load: PageServerLoad = async () => {
 			property: { ...propertyQuery, columns: { ...propertyQuery.columns, sellerId: false } },
 		},
 		limit: 8,
-		where: inArray(listing.status, ["up", "sold", "pending"]),
+		where: inArray(listing.status, ["up"]),
 	});
 
 	const agentsPromise = db.query.agent.findMany({

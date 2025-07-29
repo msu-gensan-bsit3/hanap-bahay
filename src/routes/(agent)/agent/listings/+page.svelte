@@ -18,6 +18,7 @@
 		MessageCircle,
 		RotateCcw,
 		User,
+		X,
 	} from "@lucide/svelte";
 
 	let { data } = $props();
@@ -111,6 +112,8 @@
 				return "bg-purple-100 text-purple-800";
 			case "submitted":
 				return "bg-orange-100 text-orange-800";
+			case "rejected":
+				return "bg-red-100 text-red-800";
 			default:
 				return "bg-gray-100 text-gray-800";
 		}
@@ -127,6 +130,8 @@
 				return AlertCircle;
 			case "submitted":
 				return Clock;
+			case "rejected":
+				return X;
 			default:
 				return AlertCircle;
 		}
@@ -197,6 +202,7 @@
 										<Select.Item value="Up">Active</Select.Item>
 										<Select.Item value="Pending">Pending</Select.Item>
 										<Select.Item value="Sold">Sold</Select.Item>
+										<Select.Item value="Rejected">Rejected</Select.Item>
 									</Select.Group>
 								</Select.Content>
 							</Select.Root>
@@ -255,6 +261,7 @@
 								<Select.Item value="Up">Active</Select.Item>
 								<Select.Item value="Pending">Pending</Select.Item>
 								<Select.Item value="Sold">Sold</Select.Item>
+								<Select.Item value="Rejected">Rejected</Select.Item>
 							</Select.Group>
 						</Select.Content>
 					</Select.Root>
@@ -448,7 +455,36 @@
 								</div>
 
 								<!-- Status Actions -->
-								{#if listing.status === "submitted" || listing.status === "under-review"}
+								{#if listing.status === "submitted"}
+									<div class="mt-5 flex w-full flex-row gap-2 md:flex-col">
+										<form method="POST" action="?/updateStatus" use:enhanceStatus>
+											<input type="hidden" name="listingId" value={listing.id} />
+											<input type="hidden" name="status" value="under-review" />
+											<Button
+												variant="default"
+												size="sm"
+												type="submit"
+												class="flex-1 bg-blue-600 hover:bg-blue-700 md:w-full md:flex-none"
+												disabled={submittingStatus}
+											>
+												Accept
+											</Button>
+										</form>
+										<form method="POST" action="?/updateStatus" use:enhanceStatus>
+											<input type="hidden" name="listingId" value={listing.id} />
+											<input type="hidden" name="status" value="rejected" />
+											<Button
+												variant="outline"
+												size="sm"
+												type="submit"
+												class="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700 md:w-full md:flex-none"
+												disabled={submittingStatus}
+											>
+												Delete
+											</Button>
+										</form>
+									</div>
+								{:else if listing.status === "under-review"}
 									<div class="mt-5 flex w-full flex-row gap-2 md:flex-col">
 										<form method="POST" action="?/updateStatus" use:enhanceStatus>
 											<input type="hidden" name="listingId" value={listing.id} />
@@ -465,7 +501,7 @@
 										</form>
 										<form method="POST" action="?/updateStatus" use:enhanceStatus>
 											<input type="hidden" name="listingId" value={listing.id} />
-											<input type="hidden" name="status" value="under-review" />
+											<input type="hidden" name="status" value="rejected" />
 											<Button
 												variant="outline"
 												size="sm"
@@ -473,25 +509,9 @@
 												class="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700 md:w-full md:flex-none"
 												disabled={submittingStatus}
 											>
-												{listing.status === "submitted" ? "Review" : "Reject"}
+												Reject
 											</Button>
 										</form>
-									</div>
-								{:else if listing.status === "up"}
-									<div class="mt-5 flex w-full flex-row gap-2 md:flex-col">
-										<!-- <form method="POST" action="?/updateStatus" use:enhanceStatus>
-											<input type="hidden" name="listingId" value={listing.id} />
-											<input type="hidden" name="status" value="sold" />
-											<Button
-												variant="default"
-												size="sm"
-												type="submit"
-												class="flex-1 bg-blue-600 hover:bg-blue-700 md:w-full md:flex-none"
-												disabled={submittingStatus}
-											>
-												Mark as Sold
-											</Button>
-										</form> -->
 										<Button
 											variant="outline"
 											size="sm"
@@ -501,6 +521,31 @@
 											<Edit class="mr-2 h-4 w-4" />
 											Edit
 										</Button>
+									</div>
+								{:else if listing.status === "up"}
+									<div class="mt-5 flex w-full flex-row gap-2 md:flex-col">
+										<form method="POST" action="?/updateStatus" use:enhanceStatus>
+											<input type="hidden" name="listingId" value={listing.id} />
+											<input type="hidden" name="status" value="under-review" />
+											<Button
+												variant="outline"
+												size="sm"
+												type="submit"
+												class="flex-1 text-orange-600 hover:bg-orange-50 hover:text-orange-700 md:w-full md:flex-none"
+												disabled={submittingStatus}
+											>
+												Take Down
+											</Button>
+										</form>
+										<!-- <Button
+											variant="outline"
+											size="sm"
+											href="/agent/listings/edit/{listing.id}"
+											class="flex-1 md:w-full md:flex-none"
+										>
+											<Edit class="mr-2 h-4 w-4" />
+											Edit
+										</Button> -->
 									</div>
 								{/if}
 							</div>

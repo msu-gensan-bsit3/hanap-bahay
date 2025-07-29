@@ -41,7 +41,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			},
 			agent: listingQuery.with.agent,
 		},
-		where: (listings, { eq, and }) => and(eq(listings.agentId, agentId), eq(listings.status, "up")),
+		where: (listings, { eq, and }) => and(eq(listings.agentId, agentId)),
 		orderBy: (listings, { desc }) => [desc(listings.dateCreated)],
 	});
 

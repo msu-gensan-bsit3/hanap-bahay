@@ -3,8 +3,11 @@
 	import CategoryFilter from "$lib/components/listings-page/filter-category.svelte";
 	import LocationFilter from "$lib/components/listings-page/filter-location.svelte";
 	import PriceFilter from "$lib/components/listings-page/filter-price.svelte";
+	import StatusFilter from "$lib/components/listings-page/filter-status.svelte";
 	import TypeFilter from "$lib/components/listings-page/filter-type.svelte";
 
+	import ListingMapSkeleton from "$lib/components/listings-page/listing-map-skeleton.svelte";
+	import ListingMap from "$lib/components/listings-page/listing-map.svelte";
 	import SortBy from "$lib/components/listings-page/sort-by.svelte";
 
 	import CarouselListingCard from "$lib/components/listings-page/carousel-listing-card.svelte";
@@ -15,14 +18,18 @@
 
 	import { replaceState } from "$app/navigation";
 	import { page } from "$app/state";
-	import { ChevronDown, ChevronUp, Funnel, RotateCcw, Search } from "@lucide/svelte";
+	import { ChevronDown, ChevronUp, Funnel, Grid3X3, Map, RotateCcw, Search } from "@lucide/svelte";
 	import { tick, untrack } from "svelte";
+
+	// View toggle state
+	let viewMode = $state("grid"); // "grid" or "map"
 
 	// Filters - Initialize from URL params
 	let searchTerm = $state(page.url.searchParams.get("search") || "");
 	let location = $state(page.url.searchParams.get("location") || "All Locations");
 	let saleType = $state(page.url.searchParams.get("saleType") || "All Types");
 	let category = $state(page.url.searchParams.get("category") || "all");
+	let status = $state(page.url.searchParams.get("status") || "all");
 
 	let minPrice = $state(parseInt(page.url.searchParams.get("minPrice") || "0"));
 	let maxPrice = $state(parseInt(page.url.searchParams.get("maxPrice") || "0"));
@@ -58,7 +65,7 @@
 				const listingDescription = property.description?.toLowerCase() || "";
 				const listingFeatures =
 					property.features
-						?.map((f: any) => f.name)
+						?.map((f: { name: string }) => f.name)
 						.join(" ")
 						.toLowerCase() || "";
 				const listingAddress = Object.values(property.address)
@@ -89,6 +96,9 @@
 				// Category filter - only apply if category is not "all"
 				const matchCategory = category === "all" || property.category === category;
 
+				// Status filter - only apply if status is not "all"
+				const matchStatus = status === "all" || listing.status === status;
+
 				// Price filter
 				let matchPrice = true;
 				if (minPrice > 0 || maxPrice > 0) {
@@ -118,6 +128,7 @@
 					matchesLocation &&
 					matchType &&
 					matchCategory &&
+					matchStatus &&
 					matchPrice &&
 					matchBeds &&
 					matchBaths
@@ -149,6 +160,7 @@
 		location = "All Locations";
 		saleType = "All Types";
 		category = "all";
+		status = "all";
 		minPrice = 0;
 		maxPrice = 0;
 		bedrooms = 0;
@@ -168,6 +180,7 @@
 		url.searchParams.delete("location");
 		url.searchParams.delete("saleType");
 		url.searchParams.delete("category");
+		url.searchParams.delete("status");
 		url.searchParams.delete("minPrice");
 		url.searchParams.delete("maxPrice");
 		url.searchParams.delete("bedrooms");
@@ -189,6 +202,9 @@
 		}
 		if (category !== "all") {
 			url.searchParams.set("category", category);
+		}
+		if (status !== "all") {
+			url.searchParams.set("status", status);
 		}
 		if (minPrice > 0) {
 			url.searchParams.set("minPrice", minPrice.toString());
@@ -223,12 +239,14 @@
 
 	$effect(() => {
 		loading = true;
-		const _ = [
+		// Trigger re-filtering when any filter changes
+		[
 			sortBy,
 			searchTerm,
 			location,
 			saleType,
 			category,
+			status,
 			minPrice,
 			maxPrice,
 			bedrooms,
@@ -264,7 +282,7 @@
 	>
 		<div class="mx-auto max-w-7xl px-4 py-3">
 			<!-- Mobile: Stacked layout -->
-			<div class="flex flex-col gap-3 lg:hidden">
+			<div class="flex flex-col gap-3 min-[1170px]:hidden">
 				<!-- Mobile Filter Toggle Button -->
 				<div class="flex items-center justify-between">
 					<div class="relative flex-1">
@@ -302,6 +320,7 @@
 								<LocationFilter bind:location />
 							</div>
 							<CategoryFilter bind:category />
+							<StatusFilter bind:status />
 							<TypeFilter bind:saleType />
 						</div>
 						<!-- Filter Row 2 -->
@@ -318,7 +337,7 @@
 			</div>
 
 			<!-- Desktop: Single row layout -->
-			<div class="hidden items-center gap-2 lg:flex">
+			<div class="hidden items-center gap-2 min-[1170px]:flex">
 				<!-- Search Bar -->
 				<div class="relative w-[400%] max-w-lg min-w-40 flex-grow">
 					<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -330,6 +349,7 @@
 				</div>
 				<LocationFilter bind:location />
 				<CategoryFilter bind:category />
+				<StatusFilter bind:status />
 				<TypeFilter bind:saleType />
 				<PriceFilter bind:minPrice bind:maxPrice />
 				<RoomsFilter bind:bedrooms bind:exactBeds bind:bathrooms bind:exactBaths />
@@ -356,7 +376,7 @@
 
 			<!-- Loading Grid -->
 			<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-				{#each { length: 12 } as _}
+				{#each { length: 12 } as _, i (i)}
 					<div class="">
 						<SkeletonCard />
 					</div>
@@ -384,56 +404,136 @@
 						<p class="text-sm text-muted-foreground">
 							{count} properties {#if totalPages > 1}• Page {pageNum} of {totalPages}{/if}
 						</p>
-						<SortBy bind:sortBy />
+						<div class="flex items-center gap-2">
+							<SortBy bind:sortBy />
+							<!-- View Toggle -->
+							<div class="flex items-center rounded-md border">
+								<Button
+									variant={viewMode === "grid" ? "default" : "ghost"}
+									size="sm"
+									class="h-8 rounded-r-none border-0 px-2"
+									onclick={() => (viewMode = "grid")}
+								>
+									<Grid3X3 class="h-4 w-4" />
+								</Button>
+								<Button
+									variant={viewMode === "map" ? "default" : "ghost"}
+									size="sm"
+									class="h-8 rounded-l-none border-0 px-2"
+									onclick={() => (viewMode = "map")}
+								>
+									<Map class="h-4 w-4" />
+								</Button>
+							</div>
+						</div>
 					</div>
 				</div>
-				<!-- <div class="flex-shrink-0">
-					<SearchAI />
-				</div> -->
 			</div>
 
-			<!-- Listings Grid -->
-			<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-				{#if loading}
-					{#each { length: 12 } as _}
-						<div class="">
-							<SkeletonCard />
+			<!-- Content Layout - Grid or Map View -->
+			{#if viewMode === "grid"}
+				<!-- Grid View - Original Layout -->
+				<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+					{#if loading}
+						{#each { length: 12 } as _, i (i)}
+							<div class="">
+								<SkeletonCard />
+							</div>
+						{/each}
+					{:else if paginatedListings.length > 0}
+						{#each paginatedListings as listing (listing.id)}
+							<div class="max-h-130">
+								<CarouselListingCard {...listing} />
+							</div>
+						{/each}
+					{:else}
+						<div class="col-span-full flex flex-col items-center justify-center py-12 text-center">
+							<div class="mb-4 text-muted-foreground">
+								<svg
+									class="mx-auto mb-4 h-16 w-16"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="1"
+										d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+									/>
+								</svg>
+								<h3 class="mb-2 text-lg font-medium">No properties found</h3>
+								<p class="text-sm text-muted-foreground">
+									Try adjusting your search criteria or filters
+								</p>
+							</div>
+							<Button onclick={resetFilters} variant="outline">
+								<RotateCcw class="mr-2 h-4 w-4" />
+								Clear all filters
+							</Button>
 						</div>
-					{/each}
-				{:else if paginatedListings.length > 0}
-					{#each paginatedListings as listing (listing.id)}
-						<div class="h-128">
-							<CarouselListingCard {...listing} />
-						</div>
-					{/each}
-				{:else}
-					<div class="col-span-full flex flex-col items-center justify-center py-12 text-center">
-						<div class="mb-4 text-muted-foreground">
-							<svg
-								class="mx-auto mb-4 h-16 w-16"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="1"
-									d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-								/>
-							</svg>
-							<h3 class="mb-2 text-lg font-medium">No properties found</h3>
-							<p class="text-sm text-muted-foreground">
-								Try adjusting your search criteria or filters
-							</p>
-						</div>
-						<Button onclick={resetFilters} variant="outline">
-							<RotateCcw class="mr-2 h-4 w-4" />
-							Clear all filters
-						</Button>
+					{/if}
+				</div>
+			{:else}
+				<!-- Map View - Split Layout -->
+				<div class="flex h-[calc(100vh-280px)] min-h-[600px] gap-4">
+					<!-- Map Section - 50% width -->
+					<div class="w-2/3">
+						{#if loading}
+							<ListingMapSkeleton />
+						{:else}
+							<ListingMap listings={filteredListings} />
+						{/if}
 					</div>
-				{/if}
-			</div>
+
+					<!-- Listings Section - 50% width -->
+					<div class="w-1/3 overflow-y-auto">
+						{#if loading}
+							<div class="grid grid-cols-1 gap-4">
+								{#each { length: 6 } as _, i (i)}
+									<div class="">
+										<SkeletonCard />
+									</div>
+								{/each}
+							</div>
+						{:else if paginatedListings.length > 0}
+							<div class="grid grid-cols-1 gap-4">
+								{#each paginatedListings as listing (listing.id)}
+									<div class="max-h-130">
+										<CarouselListingCard {...listing} />
+									</div>
+								{/each}
+							</div>
+						{:else}
+							<div class="flex h-full flex-col items-center justify-center py-12 text-center">
+								<div class="mb-4 text-muted-foreground">
+									<svg
+										class="mx-auto mb-4 h-16 w-16"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="1"
+											d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+										/>
+									</svg>
+									<h3 class="mb-2 text-lg font-medium">No properties found</h3>
+									<p class="text-sm text-muted-foreground">
+										Try adjusting your search criteria or filters
+									</p>
+								</div>
+								<Button onclick={resetFilters} variant="outline">
+									<RotateCcw class="mr-2 h-4 w-4" />
+									Clear all filters
+								</Button>
+							</div>
+						{/if}
+					</div>
+				</div>
+			{/if}
 
 			<!-- Pagination -->
 			{#if totalPages > 1}
@@ -454,7 +554,7 @@
 
 						<div class="flex items-center gap-1 sm:gap-2">
 							{#if totalPages <= 7}
-								{#each Array(totalPages) as _, i}
+								{#each Array(totalPages) as _, i (i)}
 									<Button
 										variant={pageNum === i + 1 ? "default" : "outline"}
 										size="sm"

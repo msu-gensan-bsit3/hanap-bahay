@@ -8,7 +8,6 @@
 		LogOut,
 		Menu,
 		MessageSquare,
-		Settings,
 		Users,
 		type IconProps,
 	} from "@lucide/svelte";
@@ -112,12 +111,17 @@
 			icon: MessageSquare,
 			badge: unreadMessageCount > 0 ? unreadMessageCount : undefined,
 		},
-		{
-			label: "Settings",
-			href: "/agent/settings",
-			icon: Settings,
-			fillRule: true,
-		},
+		// {
+		// 	label: "Profile",
+		// 	href: "/agent/profile",
+		// 	icon: User,
+		// },
+		// {
+		// 	label: "Settings",
+		// 	href: "/agent/settings",
+		// 	icon: Settings,
+		// 	fillRule: true,
+		// },
 	]);
 
 	const agentInfo = $derived({
@@ -272,7 +276,7 @@
 	{#if sidebarOpen}
 		<div class="absolute bottom-0 w-full border-t border-gray-200 bg-white/90 backdrop-blur-sm">
 			<div class="flex items-center justify-between p-4">
-				<div class="flex min-w-0 flex-1 items-center">
+				<a class="flex min-w-0 flex-1 items-center" href="/agent/profile">
 					<div class="relative">
 						<img
 							class="h-12 w-12 rounded-full object-cover shadow-md ring-2 ring-gray-200"
@@ -285,16 +289,16 @@
 					</div>
 					<div class="ml-3 min-w-0 flex-1">
 						<p class="truncate text-sm font-semibold text-gray-900">{agentInfo.name}</p>
-						<p class="truncate text-xs text-gray-500">{agentInfo.license}</p>
+						<p class="truncate text-xs text-gray-500">#{agentInfo.license}</p>
 						<div class="mt-1 flex items-center gap-1">
-							<div class="h-2 w-2 rounded-full bg-green-500"></div>
+							<!-- <div class="h-2 w-2 rounded-full bg-green-500"></div> -->
 							<span class="text-xs font-medium text-green-600">{agentInfo.status}</span>
 						</div>
 					</div>
-				</div>
+				</a>
 				<button
 					onclick={handleLogout}
-					class="rounded-lg p-2.5 text-gray-500 transition-all duration-200 hover:scale-105 hover:bg-red-50 hover:text-red-600 active:scale-95"
+					class="cursor-pointer rounded-lg p-2.5 text-gray-500 transition-all duration-200 hover:scale-105 hover:bg-red-50 hover:text-red-600 active:scale-95"
 					title="Logout"
 				>
 					<LogOut size={18} />

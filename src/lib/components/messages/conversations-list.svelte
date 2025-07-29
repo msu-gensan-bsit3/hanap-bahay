@@ -14,7 +14,10 @@
 			avatar: string;
 			online: boolean;
 			agentId: number;
-			properties: (Property & { listingId: number })[];
+			properties: (Property & {
+				listingId: number;
+				listingStatus: "up" | "under-review" | "pending" | "submitted" | "sold";
+			})[];
 		}[];
 	}
 	interface props {

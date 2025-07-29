@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import * as Breadcrumb from "$lib/components/ui/breadcrumb";
-	import { Home, Building } from "@lucide/svelte";
+	import { Building } from "@lucide/svelte";
 
 	// Define route-to-label mappings for agent portal
 	const agentRouteLabels: Record<string, string> = {
@@ -10,6 +10,7 @@
 		listings: "My Listings",
 		messages: "Messages",
 		leads: "Leads",
+		profile: "Profile",
 		settings: "Settings",
 	};
 

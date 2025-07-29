@@ -332,7 +332,7 @@
 				{:else if paginatedAgents.length > 0}
 					{#each paginatedAgents as agent (agent.user.id)}
 						<div class="h-full">
-							<AgentCard {agent} />
+							<AgentCard {agent} user={data.user} />
 						</div>
 					{/each}
 				{:else}

@@ -3,7 +3,7 @@ import { enhance as defaultEnhance } from "$app/forms";
 
 interface options {
 	onSubmit?: (fd: FormData) => void;
-	onSubmitted?: (res: Record<string, unknown> | undefined) => void;
+	onSubmitted?: (res: Record<string, unknown> | undefined) => void | boolean;
 	onFailure?: (err: string) => void;
 	reset?: boolean;
 }
@@ -20,10 +20,14 @@ export class MoreEnhance {
 	}
 
 	enhance(el: HTMLFormElement) {
-		defaultEnhance(el, () => {
+		defaultEnhance(el, ({ cancel }) => {
 			this.submitting = true;
 
-			this.opts?.onSubmit?.(new FormData(el));
+			// Return true to cancel
+			if (this.opts?.onSubmit?.(new FormData(el))) {
+				this.submitting = false;
+				cancel();
+			}
 
 			return ({ result, update }) => {
 				if (result.type === "success") {
