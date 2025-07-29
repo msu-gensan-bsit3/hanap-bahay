@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const curListing = await db.query.listing.findFirst({
 		...listingQuery,
-		where: eq(listing.id, id),
+		where: eq(listing.propertyId, id),
 	});
 
 	if (!curListing) {
@@ -50,7 +50,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	if (
 		!["up", "sold", "pending"].includes(curListing.status) &&
-		curListing.agent.user.id !== locals.user?.id
+		curListing.agent.user.id !== locals.user?.id &&
+		curListing.property.sellerId !== locals.user?.id
 	) {
 		return error(400, "Listing not available.");
 	}

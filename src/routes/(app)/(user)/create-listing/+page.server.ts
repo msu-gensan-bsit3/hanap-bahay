@@ -162,7 +162,7 @@ export const actions: Actions = {
 					propertyId: propertyRecord.id,
 					url: url,
 				}));
-				await db.insert(photosUrl).values(photoValues);
+				await db.insert(photosUrl).values(photoValues).onConflictDoNothing();
 			}
 
 			// Create listing record

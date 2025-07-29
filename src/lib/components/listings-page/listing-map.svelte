@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { onMount, onDestroy, mount } from 'svelte';
-	import MiniListingCard from "$lib/components/listings-page/mini-listing-card.svelte"
+	import MiniListingCard from "$lib/components/listings-page/mini-listing-card.svelte";
+	import { mount, onDestroy, onMount } from "svelte";
 
 	// Props
 	let { listings = [] } = $props<{ listings: any[] }>();
 
 	// Map container reference
 	let mapContainer: HTMLDivElement;
-	let map: any = null;
+	let map: any = $state(null);
 	let markers: any[] = [];
 	let activePopup: any = null;
 
@@ -16,14 +16,14 @@
 		north: 21.0,
 		south: 4.5,
 		east: 127.0,
-		west: 116.0
+		west: 116.0,
 	};
 
 	// Color coding for property types
 	const TYPE_COLORS = {
-		'rent': '#10b981',    // Green
-		'sale': '#3b82f6',    // Blue
-		'lease': '#f59e0b'    // Amber
+		rent: "#10b981", // Green
+		sale: "#3b82f6", // Blue
+		lease: "#f59e0b", // Amber
 	};
 
 	// Function to check if coordinates are within Philippines
@@ -45,7 +45,7 @@
 			let lat: number, lng: number;
 
 			// Handle if location is already parsed JSON or string
-			if (typeof location === 'string') {
+			if (typeof location === "string") {
 				const parsed = JSON.parse(location);
 				lat = parseFloat(parsed.latitude || parsed.lat);
 				lng = parseFloat(parsed.longitude || parsed.lng);
@@ -60,46 +60,46 @@
 
 			return { lat, lng };
 		} catch (error) {
-			console.warn('Invalid location data for listing:', listing.id, error);
+			console.warn("Invalid location data for listing:", listing.id, error);
 			return null;
 		}
 	}
 
 	// Function to create custom circle marker with click events
 	function createCircleMarker(lat: number, lng: number, type: string, listing: any): any {
-		const color = TYPE_COLORS[type] || '#6b7280'; // Default gray for unknown types
+		const color = TYPE_COLORS[type] || "#6b7280"; // Default gray for unknown types
 
 		const marker = window.L.circleMarker([lat, lng], {
 			radius: 12, // Increased from 8 for better click detection
 			fillColor: color,
-			color: '#ffffff',
+			color: "#ffffff",
 			weight: 2,
 			opacity: 1,
-			fillOpacity: 0.8
+			fillOpacity: 0.8,
 		});
 
 		// Add click event to show popup
-		marker.on('click', (e: any) => {
+		marker.on("click", (e: any) => {
 			// Close any existing popup
 			if (activePopup) {
 				map.closePopup(activePopup);
 			}
 
 			// Create popup content container
-			const popupContent = document.createElement('div');
-			popupContent.className = 'listing-popup-container';
-			popupContent.style.width = '240px';
-			popupContent.style.maxHeight = '300px'; // Add max height constraint
-			popupContent.style.overflow = 'hidden'; // Prevent overflow
+			const popupContent = document.createElement("div");
+			popupContent.className = "listing-popup-container";
+			popupContent.style.width = "240px";
+			popupContent.style.maxHeight = "300px"; // Add max height constraint
+			popupContent.style.overflow = "hidden"; // Prevent overflow
 
 			// Mount Svelte component to the popup content using Svelte 5 syntax
 			try {
 				mount(MiniListingCard, {
 					target: popupContent,
-					props: listing
+					props: listing,
 				});
 			} catch (error) {
-				console.error('Error creating listing card:', error);
+				console.error("Error creating listing card:", error);
 				popupContent.innerHTML = '<div class="p-4">Error loading listing details</div>';
 			}
 
@@ -112,7 +112,7 @@
 				closeButton: true,
 				autoClose: false,
 				closeOnEscapeKey: true,
-				className: 'custom-listing-popup'
+				className: "custom-listing-popup",
 			}).setContent(popupContent);
 
 			// Bind and open popup
@@ -128,7 +128,7 @@
 
 	// Clear all markers from map
 	function clearMarkers() {
-		markers.forEach(marker => {
+		markers.forEach((marker) => {
 			if (map && marker) {
 				map.removeLayer(marker);
 			}
@@ -150,23 +150,23 @@
 
 		// Filter listings with valid Philippines coordinates
 		const validListings = listings
-			.map(listing => ({
+			.map((listing) => ({
 				...listing,
-				coordinates: getValidCoordinates(listing)
+				coordinates: getValidCoordinates(listing),
 			}))
-			.filter(listing => listing.coordinates !== null);
+			.filter((listing) => listing.coordinates !== null);
 
 		// Add markers for each valid listing
-		validListings.forEach(listing => {
+		validListings.forEach((listing) => {
 			const { lat, lng } = listing.coordinates!;
-			const propertyType = listing.property?.type || 'unknown';
+			const propertyType = listing.property?.type || "unknown";
 
 			try {
 				const marker = createCircleMarker(lat, lng, propertyType, listing);
 				marker.addTo(map);
 				markers.push(marker);
 			} catch (error) {
-				console.warn('Failed to create marker for listing:', listing.id, error);
+				console.warn("Failed to create marker for listing:", listing.id, error);
 			}
 		});
 
@@ -184,22 +184,22 @@
 		try {
 			// Create map centered on Philippines
 			map = window.L.map(mapContainer, {
-				center: [12.8797, 121.7740], // Center of Philippines
+				center: [12.8797, 121.774], // Center of Philippines
 				zoom: 6,
 				zoomControl: true,
 				scrollWheelZoom: true,
 				doubleClickZoom: true,
-				dragging: true
+				dragging: true,
 			});
 
 			// Add OpenStreetMap tile layer
-			window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-				attribution: '© OpenStreetMap contributors',
-				maxZoom: 18
+			window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+				attribution: "© OpenStreetMap contributors",
+				maxZoom: 18,
 			}).addTo(map);
 
 			// Close popup when clicking on map
-			map.on('click', () => {
+			map.on("click", () => {
 				if (activePopup) {
 					map.closePopup(activePopup);
 					activePopup = null;
@@ -209,7 +209,7 @@
 			// Update markers after map is ready
 			updateMarkers();
 		} catch (error) {
-			console.error('Failed to initialize map:', error);
+			console.error("Failed to initialize map:", error);
 		}
 	}
 
@@ -223,16 +223,16 @@
 			}
 
 			// Load CSS
-			const link = document.createElement('link');
-			link.rel = 'stylesheet';
-			link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+			const link = document.createElement("link");
+			link.rel = "stylesheet";
+			link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
 			document.head.appendChild(link);
 
 			// Load JS
-			const script = document.createElement('script');
-			script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+			const script = document.createElement("script");
+			script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
 			script.onload = () => resolve();
-			script.onerror = () => reject(new Error('Failed to load Leaflet'));
+			script.onerror = () => reject(new Error("Failed to load Leaflet"));
 			document.head.appendChild(script);
 		});
 	}
@@ -243,7 +243,7 @@
 			await loadLeaflet();
 			initializeMap();
 		} catch (error) {
-			console.error('Failed to load map:', error);
+			console.error("Failed to load map:", error);
 		}
 	});
 
@@ -266,14 +266,16 @@
 <!-- Map container with proper z-index -->
 <div
 	bind:this={mapContainer}
-	class="w-full h-full bg-muted rounded-lg border relative"
+	class="relative h-full w-full rounded-lg border bg-muted"
 	style="z-index: 1;"
 >
 	<!-- Loading state -->
 	{#if !map}
-		<div class="absolute inset-0 flex items-center justify-center bg-muted rounded-lg">
+		<div class="absolute inset-0 flex items-center justify-center rounded-lg bg-muted">
 			<div class="text-center text-muted-foreground">
-				<div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+				<div
+					class="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"
+				></div>
 				<p class="text-sm">Loading map...</p>
 			</div>
 		</div>
@@ -282,19 +284,30 @@
 
 <!-- Legend for marker colors -->
 {#if map}
-	<div class="absolute top-4 right-4 bg-background/90 backdrop-blur-sm border rounded-lg p-3 shadow-lg z-10">
-		<h4 class="text-sm font-medium mb-2">Property Types</h4>
+	<div
+		class="absolute top-4 right-4 z-10 rounded-lg border bg-background/90 p-3 shadow-lg backdrop-blur-sm"
+	>
+		<h4 class="mb-2 text-sm font-medium">Property Types</h4>
 		<div class="space-y-1">
 			<div class="flex items-center gap-2">
-				<div class="w-3 h-3 rounded-full border-2 border-white" style="background-color: #3b82f6;"></div>
+				<div
+					class="h-3 w-3 rounded-full border-2 border-white"
+					style="background-color: #3b82f6;"
+				></div>
 				<span class="text-xs">For Sale</span>
 			</div>
 			<div class="flex items-center gap-2">
-				<div class="w-3 h-3 rounded-full border-2 border-white" style="background-color: #10b981;"></div>
+				<div
+					class="h-3 w-3 rounded-full border-2 border-white"
+					style="background-color: #10b981;"
+				></div>
 				<span class="text-xs">For Rent</span>
 			</div>
 			<div class="flex items-center gap-2">
-				<div class="w-3 h-3 rounded-full border-2 border-white" style="background-color: #f59e0b;"></div>
+				<div
+					class="h-3 w-3 rounded-full border-2 border-white"
+					style="background-color: #f59e0b;"
+				></div>
 				<span class="text-xs">For Lease</span>
 			</div>
 		</div>
@@ -315,7 +328,9 @@
 	:global(.custom-listing-popup .leaflet-popup-content-wrapper) {
 		padding: 0;
 		border-radius: 12px;
-		box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+		box-shadow:
+			0 10px 25px -5px rgba(0, 0, 0, 0.1),
+			0 4px 6px -2px rgba(0, 0, 0, 0.05);
 		border: 1px solid hsl(var(--border));
 	}
 

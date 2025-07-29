@@ -197,7 +197,7 @@
 								variant="default"
 								size="sm"
 								class="h-8 flex-1 text-xs"
-								href="/listings/{property.listingId}"
+								href="/listings/{property.id}"
 							>
 								<Eye class="mr-1 h-3 w-3" />
 								View

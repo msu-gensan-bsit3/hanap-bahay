@@ -226,7 +226,7 @@
 								variant="outline"
 								size="sm"
 								class="h-8 flex-1 border-blue-200 text-xs hover:bg-blue-50"
-								href="/listings/{property.listingId}"
+								href="/listings/{property.id}"
 							>
 								<FileText class="mr-1 h-3 w-3" />
 								Info
@@ -248,7 +248,7 @@
 								variant="outline"
 								size="sm"
 								class="h-8 flex-1 border-blue-200 text-xs hover:bg-blue-50"
-								href="/listings/{property.listingId}"
+								href="/listings/{property.id}"
 							>
 								<FileText class="mr-1 h-3 w-3" />
 								Info

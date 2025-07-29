@@ -430,7 +430,7 @@
 									<Button
 										variant="outline"
 										size="sm"
-										href="/listings/{listing.id}"
+										href="/listings/{listing.property.id}"
 										class="flex w-full justify-start"
 									>
 										<Eye class="mr-2 h-4 w-4" />
