@@ -49,7 +49,7 @@
 	let isAgent = $derived(role === "agent");
 	let isUser = $derived(role === "user");
 
-	let property = $derived(properties?.at(0));
+	let property = $derived(properties?.at(properties.length - 1));
 
 	let propertyImage = $derived(() => {
 		if (!property?.id || !propertyImages?.[property.id]?.length) {
@@ -193,7 +193,12 @@
 					<!-- Action Buttons -->
 					<div class="flex gap-2 pt-2">
 						{#if isAgent}
-							<Button variant="default" size="sm" class="h-8 flex-1 text-xs">
+							<Button
+								variant="default"
+								size="sm"
+								class="h-8 flex-1 text-xs"
+								href="/listings/{property.listingId}"
+							>
 								<Eye class="mr-1 h-3 w-3" />
 								View
 							</Button>

@@ -17,7 +17,7 @@
 	} from "@lucide/svelte";
 
 	interface props {
-		properties?: (Property & { listingId: number })[];
+		properties?: (Property & { listingId: number; listingStatus?: string })[];
 		onQuickResponse: (message: string) => void;
 		role: "user" | "agent";
 		propertyImages?: Record<number, string[]>;
@@ -30,7 +30,8 @@
 	let isAgent = $derived(role === "agent");
 	let isUser = $derived(role === "user");
 
-	let property = $derived(properties?.at(0));
+	let property = $derived(properties?.at(properties.length - 1));
+	let isSold = $derived(property?.listingStatus === "sold");
 
 	let propertyImage = $derived(() => {
 		if (!property?.id || !propertyImages?.[property.id]?.length) {
@@ -91,31 +92,52 @@
 			<div class="relative flex h-full flex-col">
 				<!-- Property Image -->
 				{#if propertyImage()}
-					<div class="aspect-7/6 w-full overflow-hidden">
+					<div class="relative aspect-7/6 w-full overflow-hidden">
 						<img
 							src={propertyImage()}
 							alt={property?.name || "Property"}
-							class="h-full w-full object-cover"
+							class="h-full w-full object-cover {isSold ? 'opacity-75 grayscale' : ''}"
 						/>
+						{#if isSold && isUser}
+							<div class="absolute inset-0 flex items-center justify-center bg-black/40">
+								<div class="rounded-lg bg-red-600 px-4 py-2 text-lg font-bold text-white">SOLD</div>
+							</div>
+						{/if}
 					</div>
 				{:else}
 					<!-- Property Image Placeholder -->
 					<div
 						class="h-full bg-gradient-to-br {isAgent
 							? 'from-blue-500 to-blue-600'
-							: 'from-green-500 to-green-600'}"
+							: 'from-green-500 to-green-600'} relative"
 					>
 						<div class="flex h-full items-center justify-center">
 							<Home class="h-8 w-8 text-white/80" />
 						</div>
+						{#if isSold && isUser}
+							<div class="absolute inset-0 flex items-center justify-center bg-black/40">
+								<div class="rounded-lg bg-red-600 px-4 py-2 text-lg font-bold text-white">SOLD</div>
+							</div>
+						{/if}
 					</div>
 				{/if}
+
 				<!-- Role indicator -->
-				<div class="absolute top-2 left-2">
-					<Badge variant="secondary" class="bg-white/90 text-xs text-gray-600">
-						{isAgent ? "Agent View" : "Buyer View"}
-					</Badge>
-				</div>
+				{#if !isSold}
+					<div class="absolute top-2 left-2">
+						<Badge variant="secondary" class="bg-white/90 text-xs text-gray-600">
+							{isAgent ? "Agent View" : "Buyer View"}
+						</Badge>
+					</div>
+				{/if}
+
+				<!-- Sold Status Badge -->
+				<!-- {#if isSold && isUser}
+					<div class="absolute top-2 left-2">
+						<Badge variant="destructive" class="bg-red-600 text-xs text-white">SOLD</Badge>
+					</div>
+				{/if} -->
+
 				<!-- Property Type Badge -->
 				<Badge variant="secondary" class="absolute top-2 right-2 bg-white/90 text-gray-700">
 					{propertyType()}
@@ -161,14 +183,22 @@
 
 					<!-- Price -->
 					<div class="flex items-center justify-between">
-						<p class="text-lg font-bold text-blue-600">₱{property.price.toLocaleString()}</p>
-						<Badge variant="outline" class="text-xs">
-							{property.type === "sale"
-								? "For Sale"
-								: property.type === "rent"
-									? "For Rent"
-									: "For Lease"}
-						</Badge>
+						<p class="text-lg font-bold {isSold ? 'text-gray-400' : 'text-blue-600'}">
+							₱{property.price.toLocaleString()}
+						</p>
+						<div class="flex gap-2">
+							{#if isSold}
+								<!-- <Badge variant="destructive" class="text-xs">SOLD</Badge> -->
+							{:else}
+								<Badge variant="outline" class="text-xs">
+									{property.type === "sale"
+										? "For Sale"
+										: property.type === "rent"
+											? "For Rent"
+											: "For Lease"}
+								</Badge>
+							{/if}
+						</div>
 					</div>
 
 					<!-- Action Buttons -->
@@ -181,6 +211,25 @@
 							<Button variant="outline" size="sm" class="h-8 flex-1 text-xs">
 								<Calendar class="mr-1 h-3 w-3" />
 								Schedule
+							</Button>
+						{:else if isSold}
+							<Button
+								variant="secondary"
+								size="sm"
+								class="h-8 flex-1 bg-gray-100 text-xs text-gray-500"
+								disabled
+							>
+								<Calendar class="mr-1 h-3 w-3" />
+								No Longer Available
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								class="h-8 flex-1 border-blue-200 text-xs hover:bg-blue-50"
+								href="/listings/{property.listingId}"
+							>
+								<FileText class="mr-1 h-3 w-3" />
+								Info
 							</Button>
 						{:else}
 							<Button
@@ -199,11 +248,10 @@
 								variant="outline"
 								size="sm"
 								class="h-8 flex-1 border-blue-200 text-xs hover:bg-blue-50"
-								onclick={() =>
-									onQuickResponse("Could you please send me more details about this property?")}
+								href="/listings/{property.listingId}"
 							>
 								<FileText class="mr-1 h-3 w-3" />
-								Get Info
+								Info
 							</Button>
 						{/if}
 					</div>
@@ -340,9 +388,12 @@
 						variant="outline"
 						size="sm"
 						class="h-auto w-full justify-start border-blue-200 p-3 text-left transition-all hover:bg-blue-50"
+						disabled={isSold}
 						onclick={() =>
 							onQuickResponse(
-								"I have some questions about this property. Could you tell me more about the neighborhood, amenities, and nearby facilities?",
+								isSold
+									? "I noticed this property is sold. Do you have any similar properties available?"
+									: "I have some questions about this property. Could you tell me more about the neighborhood, amenities, and nearby facilities?",
 							)}
 					>
 						<div class="flex w-full items-start gap-3">
@@ -350,8 +401,14 @@
 								<MessageSquare class="h-3 w-3 text-blue-600" />
 							</div>
 							<div class="min-w-0 flex-1 text-xs">
-								<div class="font-medium text-gray-900">Ask Questions</div>
-								<div class="mt-0.5 text-xs text-gray-500">Get more details about the property</div>
+								<div class="font-medium text-gray-900">
+									{isSold ? "Similar Properties" : "Ask Questions"}
+								</div>
+								<div class="mt-0.5 text-xs text-gray-500">
+									{isSold
+										? "Find similar available properties"
+										: "Get more details about the property"}
+								</div>
 							</div>
 						</div>
 					</Button>
@@ -360,7 +417,10 @@
 					<Button
 						variant="outline"
 						size="sm"
-						class="h-auto w-full justify-start border-amber-200 p-3 text-left transition-all hover:bg-amber-50"
+						class="h-auto w-full justify-start border-amber-200 p-3 text-left transition-all hover:bg-amber-50 {isSold
+							? 'opacity-50'
+							: ''}"
+						disabled={isSold}
 						onclick={() =>
 							onQuickResponse(
 								"I'm interested in this property. Is there any flexibility with the price? I'd like to discuss the terms and make an offer.",
@@ -371,8 +431,12 @@
 								<Send class="h-3 w-3 text-amber-600" />
 							</div>
 							<div class="min-w-0 flex-1 text-xs">
-								<div class="font-medium text-gray-900">Discuss Price</div>
-								<div class="mt-0.5 text-xs text-gray-500">Inquire about pricing and terms</div>
+								<div class="font-medium text-gray-900">
+									{isSold ? "Not Available" : "Discuss Price"}
+								</div>
+								<div class="mt-0.5 text-xs text-gray-500">
+									{isSold ? "This property has been sold" : "Inquire about pricing and terms"}
+								</div>
 							</div>
 						</div>
 					</Button>

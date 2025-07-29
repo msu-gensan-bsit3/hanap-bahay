@@ -20,11 +20,14 @@
 
 	let { data } = $props();
 
-	// Mock data for demo - in real app this would come from database
+	// Calculate actual sold properties from all listings data
+	const soldProperties = data.listings.filter((listing) => listing.status === "sold").length;
+
+	// Statistics - using actual sold count, others remain mock for demo
 	const mockStats = {
 		rating: (4.0 + Math.random() * 1.0).toFixed(1),
 		reviewCount: Math.floor(Math.random() * 100) + 20,
-		totalSold: Math.floor(Math.random() * 50) + 10,
+		totalSold: soldProperties,
 		totalClients: Math.floor(Math.random() * 80) + 25,
 	};
 

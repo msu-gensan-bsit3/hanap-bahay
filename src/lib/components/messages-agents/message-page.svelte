@@ -256,7 +256,8 @@
 		if (!conversation) return {};
 
 		// Get listing status from the first offer conversation
-		const firstOfferConversation = conversation.offerConversations[0];
+		const firstOfferConversation =
+			conversation.offerConversations[conversation.offerConversations.length - 1];
 		const listingStatus = firstOfferConversation?.offer?.listing?.status;
 
 		// Get all offer IDs for this conversation

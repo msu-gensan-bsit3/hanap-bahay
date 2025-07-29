@@ -72,7 +72,7 @@
 				<div class="h-[2px] w-full bg-black/10"></div>
 				<button
 					class="flex h-23 w-full cursor-pointer items-center gap-4 p-4 text-start transition-colors hover:bg-black/5"
-					onclick={() => goto(`/agent/listings/${listing.id}`)}
+					onclick={() => goto(`/agent/listings`)}
 				>
 					<!-- svelte-ignore hydration_attribute_changed -->
 					<img src={listing.image} alt={listing.title} class="size-14 rounded-lg object-cover" />
