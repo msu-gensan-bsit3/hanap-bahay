@@ -8,7 +8,6 @@
 		LogOut,
 		Menu,
 		MessageSquare,
-		Settings,
 		Users,
 		type IconProps,
 	} from "@lucide/svelte";
@@ -112,12 +111,12 @@
 			icon: MessageSquare,
 			badge: unreadMessageCount > 0 ? unreadMessageCount : undefined,
 		},
-		{
-			label: "Settings",
-			href: "/agent/settings",
-			icon: Settings,
-			fillRule: true,
-		},
+		// {
+		// 	label: "Settings",
+		// 	href: "/agent/settings",
+		// 	icon: Settings,
+		// 	fillRule: true,
+		// },
 	]);
 
 	const agentInfo = $derived({

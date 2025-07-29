@@ -214,12 +214,12 @@
 	{:then featuredListings}
 		<!-- Listings loaded successfully -->
 		<Carousel.Root class="mx-auto my-8 max-w-screen-xl space-y-4">
-			<div class="flex w-full items-center justify-between">
+			<div class="flex w-full flex-col justify-between gap-3 sm:flex-row sm:items-center">
 				<div>
 					<h2 class="text-2xl font-bold tracking-tight">Featured Listings</h2>
 					<p class="text-sm text-muted-foreground">{featuredListings.length} premium properties</p>
 				</div>
-				<div class="flex items-center gap-4">
+				<div class="flex items-center justify-between gap-4">
 					<Button variant="outline" size="sm" onclick={() => (window.location.href = "/listings")}>
 						View All Listings
 					</Button>
@@ -290,14 +290,14 @@
 	{:then featuredAgents}
 		<!-- Agents loaded successfully -->
 		<Carousel.Root class="mx-auto my-4 max-w-screen-xl space-y-4">
-			<div class="flex w-full items-center justify-between">
+			<div class="flex w-full flex-col justify-between gap-3 sm:flex-row sm:items-center">
 				<div>
 					<h2 class="text-2xl font-bold tracking-tight">Featured Agents</h2>
 					<p class="text-sm text-muted-foreground">
 						{featuredAgents.length} expert real estate professionals
 					</p>
 				</div>
-				<div class="flex items-center gap-4">
+				<div class="flex items-center justify-between gap-4">
 					<Button variant="outline" size="sm" onclick={() => (window.location.href = "/agents")}>
 						View All Agents
 					</Button>

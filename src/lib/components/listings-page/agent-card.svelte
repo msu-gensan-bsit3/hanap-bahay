@@ -175,7 +175,7 @@
 		{#if user}
 			<form method="POST" action="/agents/{agent.user.id}?/sendMessage" use:enhance>
 				<input type="hidden" name="agentId" value={agent.user.id} />
-				<Button class="w-full" size="sm" disabled={submitting} type="submit">
+				<Button class="w-full" size="sm" disabled={submitting} type="submit" variant="outline">
 					{#if submitting}
 						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
 					{:else}
@@ -185,7 +185,7 @@
 				</Button>
 			</form>
 		{:else}
-			<Button class="w-full" size="sm" href="/login">
+			<Button class="w-full" size="sm" href="/login" variant="outline">
 				<MessageCircle class="mr-2 h-4 w-4" />
 				Contact Agent
 			</Button>

@@ -15,7 +15,7 @@ import {
 	seller,
 } from "$lib/server/db/schema";
 import { error, fail, redirect, type Actions } from "@sveltejs/kit";
-import { and, eq, exists } from "drizzle-orm";
+import { and, desc, eq, exists } from "drizzle-orm";
 import z from "zod";
 import type { PageServerLoad } from "./$types";
 
@@ -45,6 +45,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (sellerData) {
 		userListings = await db.query.property.findMany({
 			where: eq(property.sellerId, locals.user.id),
+			orderBy: (t) => [desc(t.id)],
 			with: {
 				photosUrl: {
 					columns: { url: true },
@@ -63,6 +64,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (buyerData) {
 		userOffers = await db.query.offer.findMany({
 			where: eq(offer.buyerId, locals.user.id),
+			orderBy: (t) => [desc(t.dateCreated)],
 			with: {
 				listing: {
 					with: {
@@ -264,6 +266,50 @@ export const actions: Actions = {
 		} catch (error) {
 			console.error("Error deleting property:", error);
 			return fail(500, { error: "Failed to delete property" });
+		}
+	},
+
+	withdrawOffer: async ({ request, locals }) => {
+		if (!locals.user) {
+			return redirect(302, "/login");
+		}
+
+		const formData = await request.formData();
+		const offerId = Number(formData.get("offerId"));
+
+		if (!offerId || isNaN(offerId)) {
+			return fail(400, { error: "Invalid offer ID" });
+		}
+
+		try {
+			// First, verify that the offer belongs to the current user (buyer)
+			const offerData = await db.query.offer.findFirst({
+				where: eq(offer.id, offerId),
+			});
+
+			if (!offerData) {
+				return fail(404, { error: "Offer not found" });
+			}
+
+			if (offerData.buyerId !== locals.user.id) {
+				return fail(403, { error: "You can only withdraw your own offers" });
+			}
+
+			// Check if offer can be withdrawn (only new or in negotiation offers)
+			if (!["new", "in negotiation"].includes(offerData.status)) {
+				return fail(400, {
+					error:
+						"This offer cannot be withdrawn. Only new or in-negotiation offers can be withdrawn.",
+				});
+			}
+
+			// Update offer status to cancelled
+			await db.update(offer).set({ status: "cancelled" }).where(eq(offer.id, offerId));
+
+			return { success: true, message: "Offer withdrawn successfully" };
+		} catch (error) {
+			console.error("Error withdrawing offer:", error);
+			return fail(500, { error: "Failed to withdraw offer" });
 		}
 	},
 };

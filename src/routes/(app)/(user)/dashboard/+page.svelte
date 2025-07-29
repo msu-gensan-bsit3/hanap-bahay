@@ -494,8 +494,8 @@
 													</span>
 												</div>
 											</div>
-											<Badge class="{getStatusColor(offer.listing.status)} border-0 font-medium">
-												{toTitleCase(offer.listing.status)}
+											<Badge class="{getStatusColor(offer.status)} border-0 font-medium">
+												{toTitleCase(offer.status)}
 											</Badge>
 										</div>
 
@@ -542,14 +542,35 @@
 										</form>
 
 										{#if offer.status === "new" || offer.status === "in negotiation"}
-											<Button
-												variant="ghost"
-												size="sm"
-												class="w-full text-red-600 hover:bg-red-50 hover:text-red-700 "
+											{@const withdrawOffer = moreEnhance({ reset: false })}
+											<form method="POST" action="?/withdrawOffer" use:withdrawOffer.enhance>
+												<input type="hidden" name="offerId" value={offer.id} />
+												<Button
+													variant="ghost"
+													size="sm"
+													type="submit"
+													class="w-full text-red-600 hover:bg-red-50 hover:text-red-700"
+													disabled={withdrawOffer.submitting}
+													onclick={(e) => {
+														if (
+															!confirm(
+																"Are you sure you want to withdraw this offer? This action cannot be undone.",
+															)
+														) {
+															e.preventDefault();
+														}
+													}}
+												>
+													<Trash2 class="mr-2 h-4 w-4" />
+													{withdrawOffer.submitting ? "Withdrawing..." : "Withdraw Offer"}
+												</Button>
+											</form>
+										{:else if offer.status === "cancelled"}
+											<div
+												class="w-full rounded-lg border border-red-200 bg-red-50 p-3 py-1 text-center"
 											>
-												<Trash2 class="mr-2 h-4 w-4" />
-												Withdraw Offer
-											</Button>
+												<span class="text-sm text-red-700">Offer Withdrawn</span>
+											</div>
 										{/if}
 									</div>
 								</div>
