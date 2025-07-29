@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
+	import * as Dialog from "$lib/components/ui/dialog";
 	import * as Select from "$lib/components/ui/select";
 	import { moreEnhance } from "$lib/states/enhance.svelte";
 	import { getDetails, toTitleCase } from "$lib/utils";
 	import {
+		Check,
 		ChevronDown,
 		ChevronUp,
 		Clock,
@@ -15,6 +17,7 @@
 		MessageCircle,
 		RotateCcw,
 		User,
+		X,
 	} from "@lucide/svelte";
 
 	let { data, form } = $props();
@@ -29,6 +32,28 @@
 	// Pagination state
 	const perPage = 6; // Number of items per page
 	let pageNum = $state(1);
+
+	// Dialog state
+	let showMarkAsSoldDialog = $state(false);
+	let showDeclineDialog = $state(false);
+	let selectedLeadId = $state("");
+	let selectedBuyerName = $state("");
+	let selectedPropertyName = $state("");
+
+	// Enhanced form actions for dialogs
+	const markAsSoldEnhance = moreEnhance({
+		reset: false,
+		onSubmit: () => {
+			showMarkAsSoldDialog = false;
+		},
+	});
+
+	const declineEnhance = moreEnhance({
+		reset: false,
+		onSubmit: () => {
+			showDeclineDialog = false;
+		},
+	});
 
 	// Derived values for filtering, sorting, and pagination
 	const paginatedLeads = $derived.by(() => {
@@ -113,6 +138,21 @@
 			default:
 				return "bg-gray-100 text-gray-800";
 		}
+	}
+
+	// Dialog helper functions
+	function openMarkAsSoldDialog(leadId: number, buyerName: string, propertyName: string) {
+		selectedLeadId = String(leadId);
+		selectedBuyerName = buyerName;
+		selectedPropertyName = propertyName;
+		showMarkAsSoldDialog = true;
+	}
+
+	function openDeclineDialog(leadId: number, buyerName: string, propertyName: string) {
+		selectedLeadId = String(leadId);
+		selectedBuyerName = buyerName;
+		selectedPropertyName = propertyName;
+		showDeclineDialog = true;
 	}
 </script>
 
@@ -452,55 +492,35 @@
 								</div>
 
 								{#if lead.status === "new"}
-									{@const markAsSold = moreEnhance({
-										reset: false,
-										onSubmit: () => {
-											return confirm(
-												"Are you sure you want to mark this lead as sold? This action will close this lead and mark the property as successfully sold to this buyer.",
-											);
-										},
-									})}
-									{@const decline = moreEnhance({
-										reset: false,
-										onSubmit: () => {
-											return confirm(
-												"Are you sure you want to decline this lead? This action will reject the buyer's offer and close this lead. This action cannot be undone.",
-											);
-										},
-									})}
 									<div class="mt-5 flex w-full flex-row gap-2 md:flex-col">
-										<form method="POST" action="?/markAsSold" class="flex-1" use:markAsSold.enhance>
-											<input type="hidden" name="offerId" value={lead.id} />
-											<Button
-												variant="default"
-												size="sm"
-												type="submit"
-												class="w-full bg-green-600 hover:bg-green-700 md:flex-none"
-												disabled={markAsSold.submitting}
-											>
-												{#if markAsSold.submitting}
-													Marking...
-												{:else}
-													Mark As Sold
-												{/if}
-											</Button>
-										</form>
-										<form method="POST" action="?/decline" class="flex-1" use:decline.enhance>
-											<input type="hidden" name="offerId" value={lead.id} />
-											<Button
-												variant="outline"
-												size="sm"
-												type="submit"
-												class="w-full text-red-600 hover:bg-red-50 hover:text-red-700 md:flex-none"
-												disabled={decline.submitting}
-											>
-												{#if decline.submitting}
-													Declining...
-												{:else}
-													Decline
-												{/if}
-											</Button>
-										</form>
+										<Button
+											variant="default"
+											size="sm"
+											class="flex-1 bg-green-600 hover:bg-green-700 md:flex-none"
+											disabled={Number(selectedLeadId) === lead.id && markAsSoldEnhance.submitting}
+											onclick={() =>
+												openMarkAsSoldDialog(
+													lead.id,
+													`${lead.buyer.user.firstName} ${lead.buyer.user.lastName}`,
+													lead.listing.property.name,
+												)}
+										>
+											Mark As Sold
+										</Button>
+										<Button
+											variant="outline"
+											size="sm"
+											class="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700 md:flex-none"
+											disabled={Number(selectedLeadId) === lead.id && declineEnhance.submitting}
+											onclick={() =>
+												openDeclineDialog(
+													lead.id,
+													`${lead.buyer.user.firstName} ${lead.buyer.user.lastName}`,
+													lead.listing.property.name,
+												)}
+										>
+											Decline
+										</Button>
 									</div>
 								{:else if lead.status === "completed"}
 									<div class="mt-5 flex w-full justify-center">
@@ -578,3 +598,95 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Mark as Sold Confirmation Dialog -->
+<Dialog.Root bind:open={showMarkAsSoldDialog}>
+	<Dialog.Content class="max-w-md">
+		<Dialog.Header>
+			<Dialog.Title class="flex items-center gap-2 text-green-700">
+				<Check class="h-5 w-5" />
+				Mark Lead as Sold
+			</Dialog.Title>
+			<Dialog.Description>
+				This action will close this lead and mark the property as successfully sold to the buyer.
+			</Dialog.Description>
+		</Dialog.Header>
+		<div class="space-y-4 py-4">
+			<div class="rounded-lg bg-green-50 p-4">
+				<p class="text-sm font-medium text-green-800">Property:</p>
+				<p class="text-sm text-green-700">{selectedPropertyName}</p>
+			</div>
+			<div class="rounded-lg bg-blue-50 p-4">
+				<p class="text-sm font-medium text-blue-800">Buyer:</p>
+				<p class="text-sm text-blue-700">{selectedBuyerName}</p>
+			</div>
+			<p class="text-sm text-muted-foreground">
+				Are you sure you want to proceed? This action cannot be undone.
+			</p>
+		</div>
+		<Dialog.Footer class="flex gap-2">
+			<Button variant="outline" onclick={() => (showMarkAsSoldDialog = false)}>Cancel</Button>
+			<form method="POST" action="?/markAsSold" class="flex-1" use:markAsSoldEnhance.enhance>
+				<input type="hidden" name="offerId" value={selectedLeadId} />
+				<Button
+					type="submit"
+					class="w-full bg-green-600 hover:bg-green-700"
+					disabled={markAsSoldEnhance.submitting}
+				>
+					{#if markAsSoldEnhance.submitting}
+						Marking as Sold...
+					{:else}
+						Mark as Sold
+					{/if}
+				</Button>
+			</form>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
+
+<!-- Decline Lead Confirmation Dialog -->
+<Dialog.Root bind:open={showDeclineDialog}>
+	<Dialog.Content class="max-w-md">
+		<Dialog.Header>
+			<Dialog.Title class="flex items-center gap-2 text-red-700">
+				<X class="h-5 w-5" />
+				Decline Lead
+			</Dialog.Title>
+			<Dialog.Description>
+				This action will reject the buyer's offer and close this lead permanently.
+			</Dialog.Description>
+		</Dialog.Header>
+		<div class="space-y-4 py-4">
+			<div class="rounded-lg bg-red-50 p-4">
+				<p class="text-sm font-medium text-red-800">Property:</p>
+				<p class="text-sm text-red-700">{selectedPropertyName}</p>
+			</div>
+			<div class="rounded-lg bg-blue-50 p-4">
+				<p class="text-sm font-medium text-blue-800">Buyer:</p>
+				<p class="text-sm text-blue-700">{selectedBuyerName}</p>
+			</div>
+			<div class="rounded-lg border-2 border-red-200 bg-red-50 p-4">
+				<p class="text-sm font-semibold text-red-800">⚠️ Warning</p>
+				<p class="text-sm text-red-700">This action cannot be undone once confirmed.</p>
+			</div>
+		</div>
+		<Dialog.Footer class="flex gap-2">
+			<Button variant="outline" onclick={() => (showDeclineDialog = false)}>Cancel</Button>
+			<form method="POST" action="?/decline" class="flex-1" use:declineEnhance.enhance>
+				<input type="hidden" name="offerId" value={selectedLeadId} />
+				<Button
+					type="submit"
+					variant="destructive"
+					class="w-full"
+					disabled={declineEnhance.submitting}
+				>
+					{#if declineEnhance.submitting}
+						Declining Lead...
+					{:else}
+						Decline Lead
+					{/if}
+				</Button>
+			</form>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

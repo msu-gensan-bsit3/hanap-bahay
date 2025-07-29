@@ -479,19 +479,19 @@
 									</div>
 								{:else if listing.status === "up"}
 									<div class="mt-5 flex w-full flex-row gap-2 md:flex-col">
-										<!-- <form method="POST" action="?/updateStatus" use:enhanceStatus>
+										<form method="POST" action="?/updateStatus" use:enhanceStatus>
 											<input type="hidden" name="listingId" value={listing.id} />
-											<input type="hidden" name="status" value="sold" />
+											<input type="hidden" name="status" value="under-review" />
 											<Button
-												variant="default"
+												variant="outline"
 												size="sm"
 												type="submit"
-												class="flex-1 bg-blue-600 hover:bg-blue-700 md:w-full md:flex-none"
+												class="flex-1 text-orange-600 hover:bg-orange-50 hover:text-orange-700 md:w-full md:flex-none"
 												disabled={submittingStatus}
 											>
-												Mark as Sold
+												Take Down
 											</Button>
-										</form> -->
+										</form>
 										<Button
 											variant="outline"
 											size="sm"

@@ -3,6 +3,7 @@
 	import CategoryFilter from "$lib/components/listings-page/filter-category.svelte";
 	import LocationFilter from "$lib/components/listings-page/filter-location.svelte";
 	import PriceFilter from "$lib/components/listings-page/filter-price.svelte";
+	import StatusFilter from "$lib/components/listings-page/filter-status.svelte";
 	import TypeFilter from "$lib/components/listings-page/filter-type.svelte";
 
 	import SortBy from "$lib/components/listings-page/sort-by.svelte";
@@ -23,6 +24,7 @@
 	let location = $state(page.url.searchParams.get("location") || "All Locations");
 	let saleType = $state(page.url.searchParams.get("saleType") || "All Types");
 	let category = $state(page.url.searchParams.get("category") || "all");
+	let status = $state(page.url.searchParams.get("status") || "all");
 
 	let minPrice = $state(parseInt(page.url.searchParams.get("minPrice") || "0"));
 	let maxPrice = $state(parseInt(page.url.searchParams.get("maxPrice") || "0"));
@@ -89,6 +91,9 @@
 				// Category filter - only apply if category is not "all"
 				const matchCategory = category === "all" || property.category === category;
 
+				// Status filter - only apply if status is not "all"
+				const matchStatus = status === "all" || listing.status === status;
+
 				// Price filter
 				let matchPrice = true;
 				if (minPrice > 0 || maxPrice > 0) {
@@ -118,6 +123,7 @@
 					matchesLocation &&
 					matchType &&
 					matchCategory &&
+					matchStatus &&
 					matchPrice &&
 					matchBeds &&
 					matchBaths
@@ -149,6 +155,7 @@
 		location = "All Locations";
 		saleType = "All Types";
 		category = "all";
+		status = "all";
 		minPrice = 0;
 		maxPrice = 0;
 		bedrooms = 0;
@@ -168,6 +175,7 @@
 		url.searchParams.delete("location");
 		url.searchParams.delete("saleType");
 		url.searchParams.delete("category");
+		url.searchParams.delete("status");
 		url.searchParams.delete("minPrice");
 		url.searchParams.delete("maxPrice");
 		url.searchParams.delete("bedrooms");
@@ -189,6 +197,9 @@
 		}
 		if (category !== "all") {
 			url.searchParams.set("category", category);
+		}
+		if (status !== "all") {
+			url.searchParams.set("status", status);
 		}
 		if (minPrice > 0) {
 			url.searchParams.set("minPrice", minPrice.toString());
@@ -229,6 +240,7 @@
 			location,
 			saleType,
 			category,
+			status,
 			minPrice,
 			maxPrice,
 			bedrooms,
@@ -264,7 +276,7 @@
 	>
 		<div class="mx-auto max-w-7xl px-4 py-3">
 			<!-- Mobile: Stacked layout -->
-			<div class="flex flex-col gap-3 lg:hidden">
+			<div class="flex flex-col gap-3 min-[1170px]:hidden">
 				<!-- Mobile Filter Toggle Button -->
 				<div class="flex items-center justify-between">
 					<div class="relative flex-1">
@@ -302,6 +314,7 @@
 								<LocationFilter bind:location />
 							</div>
 							<CategoryFilter bind:category />
+							<StatusFilter bind:status />
 							<TypeFilter bind:saleType />
 						</div>
 						<!-- Filter Row 2 -->
@@ -318,7 +331,7 @@
 			</div>
 
 			<!-- Desktop: Single row layout -->
-			<div class="hidden items-center gap-2 lg:flex">
+			<div class="hidden items-center gap-2 min-[1170px]:flex">
 				<!-- Search Bar -->
 				<div class="relative w-[400%] max-w-lg min-w-40 flex-grow">
 					<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -330,6 +343,7 @@
 				</div>
 				<LocationFilter bind:location />
 				<CategoryFilter bind:category />
+				<StatusFilter bind:status />
 				<TypeFilter bind:saleType />
 				<PriceFilter bind:minPrice bind:maxPrice />
 				<RoomsFilter bind:bedrooms bind:exactBeds bind:bathrooms bind:exactBaths />
