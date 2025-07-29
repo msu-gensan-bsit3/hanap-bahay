@@ -5,7 +5,7 @@ import {
 	setSessionTokenCookie,
 } from "$lib/server/services/auth";
 // import { addUser } from "$lib/server/db/queries";
-import { user } from "$lib/server/db/schema";
+import { buyer, seller, user } from "$lib/server/db/schema";
 import { google } from "$lib/server/services/auth/google";
 import { redirect, type RequestEvent } from "@sveltejs/kit";
 import type { OAuth2Tokens } from "arctic";
@@ -80,6 +80,9 @@ export async function GET(event: RequestEvent): Promise<Response> {
 			username: crypto.randomUUID(),
 		})
 		.returning({ id: user.id });
+
+	await db.insert(buyer).values({ id: newUser.id });
+	await db.insert(seller).values({ id: newUser.id });
 
 	const sessionToken = generateSessionToken();
 	const session = await createSession(sessionToken, newUser.id);
