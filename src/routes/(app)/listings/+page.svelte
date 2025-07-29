@@ -6,9 +6,9 @@
 	import StatusFilter from "$lib/components/listings-page/filter-status.svelte";
 	import TypeFilter from "$lib/components/listings-page/filter-type.svelte";
 
-	import SortBy from "$lib/components/listings-page/sort-by.svelte";
-	import ListingMap from "$lib/components/listings-page/listing-map.svelte";
 	import ListingMapSkeleton from "$lib/components/listings-page/listing-map-skeleton.svelte";
+	import ListingMap from "$lib/components/listings-page/listing-map.svelte";
+	import SortBy from "$lib/components/listings-page/sort-by.svelte";
 
 	import CarouselListingCard from "$lib/components/listings-page/carousel-listing-card.svelte";
 	import SkeletonCard from "$lib/components/listings-page/skeleton-listing-card.svelte";
@@ -18,7 +18,7 @@
 
 	import { replaceState } from "$app/navigation";
 	import { page } from "$app/state";
-	import { ChevronDown, ChevronUp, Funnel, RotateCcw, Search, Grid3X3, Map } from "@lucide/svelte";
+	import { ChevronDown, ChevronUp, Funnel, Grid3X3, Map, RotateCcw, Search } from "@lucide/svelte";
 	import { tick, untrack } from "svelte";
 
 	// View toggle state
@@ -407,11 +407,11 @@
 						<div class="flex items-center gap-2">
 							<SortBy bind:sortBy />
 							<!-- View Toggle -->
-							<div class="flex items-center border rounded-md">
+							<div class="flex items-center rounded-md border">
 								<Button
 									variant={viewMode === "grid" ? "default" : "ghost"}
 									size="sm"
-									class="h-8 px-2 rounded-r-none border-0"
+									class="h-8 rounded-r-none border-0 px-2"
 									onclick={() => (viewMode = "grid")}
 								>
 									<Grid3X3 class="h-4 w-4" />
@@ -419,7 +419,7 @@
 								<Button
 									variant={viewMode === "map" ? "default" : "ghost"}
 									size="sm"
-									class="h-8 px-2 rounded-l-none border-0"
+									class="h-8 rounded-l-none border-0 px-2"
 									onclick={() => (viewMode = "map")}
 								>
 									<Map class="h-4 w-4" />
@@ -442,7 +442,7 @@
 						{/each}
 					{:else if paginatedListings.length > 0}
 						{#each paginatedListings as listing (listing.id)}
-							<div class="h-128">
+							<div class="max-h-130">
 								<CarouselListingCard {...listing} />
 							</div>
 						{/each}
@@ -476,7 +476,7 @@
 				</div>
 			{:else}
 				<!-- Map View - Split Layout -->
-				<div class="flex gap-4 h-[calc(100vh-280px)] min-h-[600px]">
+				<div class="flex h-[calc(100vh-280px)] min-h-[600px] gap-4">
 					<!-- Map Section - 50% width -->
 					<div class="w-2/3">
 						{#if loading}
@@ -499,13 +499,13 @@
 						{:else if paginatedListings.length > 0}
 							<div class="grid grid-cols-1 gap-4">
 								{#each paginatedListings as listing (listing.id)}
-									<div class="h-auto">
+									<div class="max-h-130">
 										<CarouselListingCard {...listing} />
 									</div>
 								{/each}
 							</div>
 						{:else}
-							<div class="flex flex-col items-center justify-center py-12 text-center h-full">
+							<div class="flex h-full flex-col items-center justify-center py-12 text-center">
 								<div class="mb-4 text-muted-foreground">
 									<svg
 										class="mx-auto mb-4 h-16 w-16"
