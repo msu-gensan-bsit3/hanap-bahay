@@ -11,13 +11,12 @@ export async function listingHelp(propertyDetails: string, helpType: string) {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				// Authorization: "Bearer " + env.N8N_KEY,
+				Authorization: "Bearer " + env.N8N_KEY,
 			},
 			body: JSON.stringify({
-					propertyDetails: propertyDetails,
-					helpType: helpType
-			}
-			),
+				propertyDetails: propertyDetails,
+				helpType: helpType,
+			}),
 		});
 
 		if (!res.ok) {

@@ -166,7 +166,7 @@
 					<h2 class="text-3xl font-bold tracking-tight">My Properties</h2>
 					<p class="text-muted-foreground">Manage and track your property listings</p>
 				</div>
-				<Button href="/listings/create" class="shadow-sm">
+				<Button href="/create-listing" class="shadow-sm">
 					<Building class="mr-2 h-4 w-4" />
 					Add New Listing
 				</Button>
@@ -183,7 +183,7 @@
 					<p class="mt-2 text-muted-foreground">
 						Start by creating your first property listing to reach potential buyers.
 					</p>
-					<Button href="/listings/create" class="mt-6">Create Your First Listing</Button>
+					<Button href="/create-listing" class="mt-6">Create Your First Listing</Button>
 				</div>
 			{:else}
 				<div class="space-y-6">
@@ -582,9 +582,9 @@
 			</p>
 			<div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
 				<Button href="/listings" class="w-full sm:w-auto">Browse Properties</Button>
-				<Button variant="outline" href="/listings/create" class="w-full sm:w-auto"
-					>List Property</Button
-				>
+				<Button variant="outline" href="/create-listing" class="w-full sm:w-auto">
+					List Property
+				</Button>
 			</div>
 		</div>
 	{/if}

@@ -1,32 +1,38 @@
-import { db } from "$lib/server/db";
 import { listingSchema } from "$lib/schema";
-import { agentQuery, address, property, listing, propertyFeature, propertyTag } from "$lib/server/db/schema";
+import { db } from "$lib/server/db";
+import {
+	address,
+	agentQuery,
+	listing,
+	property,
+	propertyFeature,
+	propertyTag,
+} from "$lib/server/db/schema";
 
 import { listingHelp } from "$lib/server/services/ai-listing-tools";
 
-import { fail, type Actions, redirect } from "@sveltejs/kit";
+import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async () => {
-	const agentsPromise = db.query.agent.findMany({
+	const agents = await db.query.agent.findMany({
 		...agentQuery,
-		limit: 8,
 	});
 
 	return {
-		agents: agentsPromise,
+		agents,
 		form: {},
 	};
 };
 
 export const actions: Actions = {
-	'create-listing': async (event) => {
-		const { request } = event;
+	"create-listing": async (event) => {
+		const { request, locals } = event;
 		const formData = await request.formData();
-		
+
 		// Process form data to match schema expectations
 		const rawData = Object.fromEntries(formData);
-		
+
 		// Convert features and tags from comma-separated strings to arrays
 		const processedData = {
 			...rawData,
@@ -37,9 +43,22 @@ export const actions: Actions = {
 			bedrooms: rawData.bedrooms ? parseInt(rawData.bedrooms.toString()) : undefined,
 			bathrooms: rawData.bathrooms ? parseInt(rawData.bathrooms.toString()) : undefined,
 			carSpace: rawData.carSpace ? parseInt(rawData.carSpace.toString()) : undefined,
+			agentId: parseInt(rawData.agentId?.toString() ?? "0"),
 			// Convert comma-separated strings to arrays
-			features: rawData.features ? rawData.features.toString().split(',').map(f => f.trim()).filter(f => f.length > 0) : undefined,
-			tags: rawData.tags ? rawData.tags.toString().split(',').map(t => t.trim()).filter(t => t.length > 0) : undefined,
+			features: rawData.features
+				? rawData.features
+						.toString()
+						.split(",")
+						.map((f) => f.trim())
+						.filter((f) => f.length > 0)
+				: undefined,
+			tags: rawData.tags
+				? rawData.tags
+						.toString()
+						.split(",")
+						.map((t) => t.trim())
+						.filter((t) => t.length > 0)
+				: undefined,
 			// Keep coordinates as strings for validation
 			latitude: rawData.latitude?.toString() ?? "",
 			longitude: rawData.longitude?.toString() ?? "",
@@ -62,6 +81,7 @@ export const actions: Actions = {
 					bedrooms: parseInt(formData.get("bedrooms")?.toString() ?? "0"),
 					bathrooms: parseInt(formData.get("bathrooms")?.toString() ?? "0"),
 					carSpace: parseInt(formData.get("carSpace")?.toString() ?? "0"),
+					agentId: parseInt(formData.get("agentId")?.toString() ?? "0"),
 					street: formData.get("street")?.toString() ?? "",
 					barangay: formData.get("barangay")?.toString() ?? "",
 					city: formData.get("city")?.toString() ?? "",
@@ -76,47 +96,53 @@ export const actions: Actions = {
 
 		try {
 			// Create address record first
-			const [addressRecord] = await db.insert(address).values({
-				street: result.data.street,
-				barangay: result.data.barangay,
-				city: result.data.city,
-				province: result.data.province,
-			}).returning({ id: address.id });
+			const [addressRecord] = await db
+				.insert(address)
+				.values({
+					street: result.data.street,
+					barangay: result.data.barangay,
+					city: result.data.city,
+					province: result.data.province,
+				})
+				.returning({ id: address.id });
 
 			// Create property record
-			const [propertyRecord] = await db.insert(property).values({
-				name: result.data.name,
-				description: result.data.description,
-				type: result.data.type,
-				category: result.data.category,
-				landArea: result.data.landArea,
-				floorArea: result.data.floorArea,
-				bedrooms: result.data.bedrooms,
-				bathrooms: result.data.bathrooms,
-				carSpace: result.data.carSpace,
-				price: result.data.price,
-				location: {
-					latitude: parseFloat(result.data.latitude),
-					longitude: parseFloat(result.data.longitude)
-				},
-				addressId: addressRecord.id,
-				sellerId: 1, // TODO: Get actual user ID from session
-			}).returning({ id: property.id });
+			const [propertyRecord] = await db
+				.insert(property)
+				.values({
+					name: result.data.name,
+					description: result.data.description,
+					type: result.data.type,
+					category: result.data.category,
+					landArea: result.data.landArea,
+					floorArea: result.data.floorArea,
+					bedrooms: result.data.bedrooms,
+					bathrooms: result.data.bathrooms,
+					carSpace: result.data.carSpace,
+					price: result.data.price,
+					location: {
+						latitude: parseFloat(result.data.latitude),
+						longitude: parseFloat(result.data.longitude),
+					},
+					addressId: addressRecord.id,
+					sellerId: locals.user!.id,
+				})
+				.returning({ id: property.id });
 
 			// Insert features if provided
 			if (result.data.features && result.data.features.length > 0) {
-				const featureValues = result.data.features.map(feature => ({
+				const featureValues = result.data.features.map((feature) => ({
 					propertyId: propertyRecord.id,
-					name: feature
+					name: feature,
 				}));
 				await db.insert(propertyFeature).values(featureValues);
 			}
 
 			// Insert tags if provided
 			if (result.data.tags && result.data.tags.length > 0) {
-				const tagValues = result.data.tags.map(tag => ({
+				const tagValues = result.data.tags.map((tag) => ({
 					propertyId: propertyRecord.id,
-					name: tag
+					name: tag,
 				}));
 				await db.insert(propertyTag).values(tagValues);
 			}
@@ -124,49 +150,48 @@ export const actions: Actions = {
 			// Create listing record
 			await db.insert(listing).values({
 				propertyId: propertyRecord.id,
-				agentId: 1, // Hardcoded since agentId removed from form
+				agentId: result.data.agentId,
 				status: "submitted",
 			});
 
 			// Redirect to success page or listings page
-			throw redirect(303, '/listings');
-
 		} catch (error) {
-			console.error('Database error:', error);
+			console.error("Database error:", error);
 			return fail(500, {
 				type: "create-listing",
 				message: "Failed to create listing. Please try again.",
 			});
 		}
+		return redirect(302, "/dashboard");
 	},
 
-	'generate-ai-description': async ({ request }) => {
+	"generate-ai-description": async ({ request }) => {
 		const formData = await request.formData();
 		const res = JSON.stringify(Object.fromEntries(formData));
 
-		const aiDescription = await listingHelp(res, 'description');
+		const aiDescription = await listingHelp(res, "description");
 		if (aiDescription.err) {
 			return fail(400, { type: "aiDescription", msg: aiDescription.err });
 		}
 
 		return {
 			type: "aiDescription",
-			description: aiDescription.msg
+			description: aiDescription.msg,
 		};
 	},
 
-	'generate-ai-price': async ({ request }) => {
+	"generate-ai-price": async ({ request }) => {
 		const formData = await request.formData();
 		const res = JSON.stringify(Object.fromEntries(formData));
 
-		const aiPrice = await listingHelp(res, 'price');
+		const aiPrice = await listingHelp(res, "price");
 		if (aiPrice.err) {
 			return fail(400, { type: "aiPrice", msg: aiPrice.err });
 		}
 
 		return {
 			type: "aiPrice",
-			price: aiPrice.msg
+			price: aiPrice.msg,
 		};
 	},
 };

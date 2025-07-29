@@ -34,29 +34,31 @@ export const listingSchema = z.object({
 	// Property details
 	name: z.string().min(1, "Property name is required"),
 	description: z.string().optional(),
-	type: z.enum(["rent", "sale", "lease"], {
-		required_error: "Property type is required",
-	}),
-	category: z.enum([
-		"house-and-lot",
-		"apartment",
-		"boarding-house",
-		"townhouse",
-		"condominium",
-		"building",
-		"office",
-		"commercial-lot",
-		"residential-lot",
-		"industrial-lot",
-	], {
-		required_error: "Property category is required",
-	}),
+	type: z.enum(["rent", "sale", "lease"], "Property type is required"),
+	category: z.enum(
+		[
+			"house-and-lot",
+			"apartment",
+			"boarding-house",
+			"townhouse",
+			"condominium",
+			"building",
+			"office",
+			"commercial-lot",
+			"residential-lot",
+			"industrial-lot",
+		],
+		"Property category is required",
+	),
 	price: z.number().min(0, "Price must be a positive number"),
 	landArea: z.number().min(1, "Land area is required"),
 	floorArea: z.number().optional(),
 	bedrooms: z.number().optional(),
 	bathrooms: z.number().optional(),
 	carSpace: z.number().optional(),
+
+	// Agent selection
+	agentId: z.number().min(1, "Please select an agent"),
 
 	// Address details
 	street: z.string().optional(),
