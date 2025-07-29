@@ -456,122 +456,6 @@
 							{/if}
 						</div>
 					</div>
-
-					<!-- Price Section -->
-					<div class="space-y-2">
-						<div class="flex items-center justify-between">
-							<Label for="price">Price *</Label>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								class="text-xs"
-								disabled={analyzePriceForm.submitting}
-								onclick={() => {
-									if (aiAppraisalButton) {
-										aiAppraisalButton.click();
-									}
-								}}
-							>
-								<svg
-									class="mr-1.5 h-3.5 w-3.5"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.849-1.53l-.547-.547z"
-									></path>
-								</svg>
-								AI Price Appraisal
-							</Button>
-						</div>
-						<div class="relative">
-							<span class="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-gray-500">₱</span>
-							<Input
-								id="price"
-								name="price"
-								type="number"
-								step="0.01"
-								min="0"
-								bind:value={formData.price}
-								placeholder="0.00"
-								class="pl-8 {form?.errors?.price ? 'border-red-500' : ''}"
-								required
-							/>
-						</div>
-						{#if form?.errors?.price}
-							<p class="text-sm text-red-600">{form.errors.price[0]}</p>
-						{/if}
-						<p class="text-xs text-gray-500">Enter the property price in Philippine Peso (₱)</p>
-					</div>
-
-					<!-- Description Section -->
-					<div class="space-y-2">
-						<div class="flex items-center justify-between">
-							<Label for="description">Property Description</Label>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								class="text-xs"
-								disabled={createDescForm.submitting}
-								onclick={() => {
-									if (aiDescriptionButton) {
-										aiDescriptionButton.click();
-									}
-								}}
-							>
-								{#if createDescForm.submitting}
-									<svg
-										class="mr-1.5 h-3.5 w-3.5 animate-spin"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-										></path>
-									</svg>
-									Generating...
-								{:else}
-									<svg
-										class="mr-1.5 h-3.5 w-3.5"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M13 10V3L4 14h7v7l9-11h-7z"
-										></path>
-									</svg>
-									Generate with AI
-								{/if}
-							</Button>
-						</div>
-						<textarea
-							id="description"
-							name="description"
-							bind:value={formData.description}
-							placeholder="Describe the property features, amenities, and unique selling points..."
-							class="flex min-h-[120px] w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 {form
-								?.errors?.description
-								? 'border-red-500'
-								: ''}"
-						></textarea>
-						{#if form?.errors?.description}
-							<p class="text-sm text-red-600">{form.errors.description[0]}</p>
-						{/if}
-					</div>
 				</CardContent>
 			</Card>
 
@@ -801,13 +685,15 @@
 								name="features"
 								type="text"
 								bind:value={formData.features}
-								placeholder="e.g., Swimming Pool, Garden, Balcony (comma-separated)"
+								placeholder="Swimming pool, garage, garden (comma-separated)"
 								class={form?.errors?.features ? "border-red-500" : ""}
 							/>
 							{#if form?.errors?.features}
 								<p class="text-sm text-red-600">{form.errors.features[0]}</p>
 							{/if}
-							<p class="text-xs text-gray-500">Separate multiple features with commas</p>
+							<p class="text-xs text-gray-500">
+								Separate multiple features with commas (e.g., "Swimming pool, Garage, Garden")
+							</p>
 						</div>
 
 						<div class="space-y-2">
@@ -817,93 +703,215 @@
 								name="tags"
 								type="text"
 								bind:value={formData.tags}
-								placeholder="e.g., Modern, Luxury, Pet-Friendly (comma-separated)"
+								placeholder="luxury, modern, family-friendly (comma-separated)"
 								class={form?.errors?.tags ? "border-red-500" : ""}
 							/>
 							{#if form?.errors?.tags}
 								<p class="text-sm text-red-600">{form.errors.tags[0]}</p>
 							{/if}
-							<p class="text-xs text-gray-500">Separate multiple tags with commas</p>
+							<p class="text-xs text-gray-500">
+								Separate multiple tags with commas (e.g., "Luxury, Modern, Family-friendly")
+							</p>
 						</div>
 					</div>
 				</CardContent>
 			</Card>
 
-			<!-- Form Actions -->
-			<div class="flex justify-end space-x-4">
-				<Button type="button" variant="outline" onclick={() => history.back()}>Cancel</Button>
-				<Button type="submit" disabled={loading}>
-					{loading ? "Creating..." : "Create Listing"}
+			<!-- Pricing and Description -->
+			<Card>
+				<CardHeader>
+					<CardTitle>Pricing and Description</CardTitle>
+					<CardDescription>Set the price and describe your property using AI assistance</CardDescription>
+				</CardHeader>
+				<CardContent class="space-y-6">
+					<!-- Price Section -->
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<Label for="price">Price *</Label>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								class="text-xs"
+								disabled={analyzePriceForm.submitting}
+								onclick={() => {
+									if (aiAppraisalButton) {
+										aiAppraisalButton.click();
+									}
+								}}
+							>
+								<svg
+									class="mr-1.5 h-3.5 w-3.5"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.849-1.53l-.547-.547z"
+									></path>
+								</svg>
+								AI Price Appraisal
+							</Button>
+						</div>
+						<div class="relative">
+							<span class="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-gray-500">₱</span>
+							<Input
+								id="price"
+								name="price"
+								type="number"
+								step="0.01"
+								min="0"
+								bind:value={formData.price}
+								placeholder="0.00"
+								class="pl-8 {form?.errors?.price ? 'border-red-500' : ''}"
+								required
+							/>
+						</div>
+						{#if form?.errors?.price}
+							<p class="text-sm text-red-600">{form.errors.price[0]}</p>
+						{/if}
+						<p class="text-xs text-gray-500">Enter the property price in Philippine Peso (₱)</p>
+					</div>
+
+					<!-- Description Section -->
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<Label for="description">Property Description</Label>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								class="text-xs"
+								disabled={createDescForm.submitting}
+								onclick={() => {
+									if (aiDescriptionButton) {
+										aiDescriptionButton.click();
+									}
+								}}
+							>
+								{#if createDescForm.submitting}
+									<svg
+										class="mr-1.5 h-3.5 w-3.5 animate-spin"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+										></path>
+									</svg>
+									Generating...
+								{:else}
+									<svg
+										class="mr-1.5 h-3.5 w-3.5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M13 10V3L4 14h7v7l9-11h-7z"
+										></path>
+									</svg>
+									Generate with AI
+								{/if}
+							</Button>
+						</div>
+						<textarea
+							id="description"
+							name="description"
+							bind:value={formData.description}
+							placeholder="Describe the property features, amenities, and unique selling points..."
+							class="flex min-h-[120px] w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 {form
+								?.errors?.description
+								? 'border-red-500'
+								: ''}"
+						></textarea>
+						{#if form?.errors?.description}
+							<p class="text-sm text-red-600">{form.errors.description[0]}</p>
+						{/if}
+					</div>
+				</CardContent>
+			</Card>
+
+			<!-- Submit Button -->
+			<div class="flex justify-center">
+				<Button type="submit" class="w-full max-w-md" disabled={loading}>
+					{#if loading}
+						<svg
+							class="mr-2 h-4 w-4 animate-spin"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+							></path>
+						</svg>
+						Creating Listing...
+					{:else}
+						Create Listing
+					{/if}
 				</Button>
 			</div>
+		</form>
 
-			{#if form?.message}
-				<div class="rounded-md bg-red-50 p-4">
-					<div class="flex">
-						<div class="flex-shrink-0">
-							<svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-								<path
-									fill-rule="evenodd"
-									d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-									clip-rule="evenodd"
-								/>
-							</svg>
-						</div>
-						<div class="ml-3">
-							<h3 class="text-sm font-medium text-red-800">Error</h3>
-							<div class="mt-2 text-sm text-red-700">
-								<p>{form.message}</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			{/if}
+		<!-- Hidden forms for AI functionality -->
+		<form
+			method="POST"
+			action="?/generate-ai-description"
+			class="hidden"
+			use:createDescForm.enhance
+		>
+			<input type="hidden" name="name" value={formData.name} />
+			<input type="hidden" name="type" value={formData.type} />
+			<input type="hidden" name="category" value={formData.category} />
+			<input type="hidden" name="landArea" value={formData.landArea} />
+			<input type="hidden" name="floorArea" value={formData.floorArea} />
+			<input type="hidden" name="bedrooms" value={formData.bedrooms} />
+			<input type="hidden" name="bathrooms" value={formData.bathrooms} />
+			<input type="hidden" name="carSpace" value={formData.carSpace} />
+			<input type="hidden" name="features" value={formData.features} />
+			<input type="hidden" name="tags" value={formData.tags} />
+			<input type="hidden" name="street" value={formData.street} />
+			<input type="hidden" name="barangay" value={formData.barangay} />
+			<input type="hidden" name="city" value={formData.city} />
+			<input type="hidden" name="province" value={formData.province} />
+			<button type="submit" class="hidden" bind:this={aiDescriptionButton}>Generate AI Description</button>
+		</form>
+
+		<form
+			method="POST"
+			action="?/generate-ai-price"
+			class="hidden"
+			use:analyzePriceForm.enhance
+		>
+			<input type="hidden" name="name" value={formData.name} />
+			<input type="hidden" name="type" value={formData.type} />
+			<input type="hidden" name="category" value={formData.category} />
+			<input type="hidden" name="landArea" value={formData.landArea} />
+			<input type="hidden" name="floorArea" value={formData.floorArea} />
+			<input type="hidden" name="bedrooms" value={formData.bedrooms} />
+			<input type="hidden" name="bathrooms" value={formData.bathrooms} />
+			<input type="hidden" name="carSpace" value={formData.carSpace} />
+			<input type="hidden" name="features" value={formData.features} />
+			<input type="hidden" name="tags" value={formData.tags} />
+			<input type="hidden" name="street" value={formData.street} />
+			<input type="hidden" name="barangay" value={formData.barangay} />
+			<input type="hidden" name="city" value={formData.city} />
+			<input type="hidden" name="province" value={formData.province} />
+			<button type="submit" class="hidden" bind:this={aiAppraisalButton}>Generate AI Description</button>
 		</form>
 	</div>
 </div>
-
-<form class="hidden" method="POST" action="?/generate-ai-price" use:analyzePriceForm.enhance>
-	<input type="hidden" name="name" value={formData.name} />
-	<input type="hidden" name="type" value={formData.type} />
-	<input type="hidden" name="category" value={formData.category} />
-	<!-- <input type="hidden" name="agentId" value={formData.agentId} /> -->
-	<input type="hidden" name="price" value={formData.price} />
-	<input type="hidden" name="landArea" value={formData.landArea} />
-	<input type="hidden" name="floorArea" value={formData.floorArea} />
-	<input type="hidden" name="bedrooms" value={formData.bedrooms} />
-	<input type="hidden" name="bathrooms" value={formData.bathrooms} />
-	<input type="hidden" name="carSpace" value={formData.carSpace} />
-	<input type="hidden" name="street" value={formData.street} />
-	<input type="hidden" name="barangay" value={formData.barangay} />
-	<input type="hidden" name="city" value={formData.city} />
-	<input type="hidden" name="province" value={formData.province} />
-	<input type="hidden" name="latitude" value={formData.latitude} />
-	<input type="hidden" name="longitude" value={formData.longitude} />
-	<input type="hidden" name="features" value={formData.features} />
-	<input type="hidden" name="tags" value={formData.tags} />
-	<button type="submit" class="hidden" bind:this={aiAppraisalButton}>Generate AI Description</button
-	>
-</form>
-
-<form class="hidden" method="POST" action="?/generate-ai-description" use:createDescForm.enhance>
-	<input type="hidden" name="name" value={formData.name} />
-	<input type="hidden" name="type" value={formData.type} />
-	<input type="hidden" name="category" value={formData.category} />
-	<!-- <input type="hidden" name="agentId" value={formData.agentId} /> -->
-	<input type="hidden" name="landArea" value={formData.landArea} />
-	<input type="hidden" name="floorArea" value={formData.floorArea} />
-	<input type="hidden" name="bedrooms" value={formData.bedrooms} />
-	<input type="hidden" name="bathrooms" value={formData.bathrooms} />
-	<input type="hidden" name="carSpace" value={formData.carSpace} />
-	<input type="hidden" name="street" value={formData.street} />
-	<input type="hidden" name="barangay" value={formData.barangay} />
-	<input type="hidden" name="city" value={formData.city} />
-	<input type="hidden" name="province" value={formData.province} />
-	<input type="hidden" name="latitude" value={formData.latitude} />
-	<input type="hidden" name="longitude" value={formData.longitude} />
-	<input type="hidden" name="features" value={formData.features} />
-	<input type="hidden" name="tags" value={formData.tags} />
-	<button type="submit" class="hidden" bind:this={aiDescriptionButton}
-		>Generate AI Description</button
-	>
-</form>
