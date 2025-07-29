@@ -7,6 +7,8 @@
 		Bath,
 		Bed,
 		Calendar,
+		Check,
+		DollarSign,
 		Eye,
 		FileText,
 		Home,
@@ -20,11 +22,28 @@
 		properties?: (Property & { listingId: number })[];
 		onQuickResponse: (message: string) => void;
 		role: "user" | "agent";
+		participantRole?: "buyer" | "seller";
 		propertyImages?: Record<number, string[]>;
 		propertyLocations?: Record<number, string>;
+		onApproveListing?: (listingId: number) => void;
+		onMarkSold?: (offerId: number, listingId: number) => void;
+		conversationData?: {
+			listingStatus?: string;
+			offerIds?: number[];
+		};
 	}
 
-	let { onQuickResponse, properties, role, propertyImages, propertyLocations }: props = $props();
+	let {
+		onQuickResponse,
+		properties,
+		role,
+		participantRole = "buyer",
+		propertyImages,
+		propertyLocations,
+		onApproveListing,
+		onMarkSold,
+		conversationData,
+	}: props = $props();
 
 	// Derived values for role-based UI
 	let isAgent = $derived(role === "agent");
@@ -113,7 +132,7 @@
 				<!-- Role indicator -->
 				<div class="absolute top-2 left-2">
 					<Badge variant="secondary" class="bg-white/90 text-xs text-gray-600">
-						{isAgent ? "Agent View" : "Buyer View"}
+						{isAgent ? `Talking to ${participantRole}` : "Buyer View"}
 					</Badge>
 				</div>
 				<!-- Property Type Badge -->
@@ -178,10 +197,40 @@
 								<Eye class="mr-1 h-3 w-3" />
 								View
 							</Button>
-							<Button variant="outline" size="sm" class="h-8 flex-1 text-xs">
-								<Calendar class="mr-1 h-3 w-3" />
-								Schedule
-							</Button>
+							<!-- Conditional button based on participant role and conversation status -->
+							{#if participantRole === "seller" && conversationData?.listingStatus === "submitted" && property && onApproveListing}
+								<!-- Approve Listing Button for Sellers -->
+								<Button
+									variant="outline"
+									size="sm"
+									class="h-8 flex-1 border-emerald-200 text-xs text-emerald-700 hover:bg-emerald-50"
+									onclick={() => onApproveListing?.(property!.listingId)}
+								>
+									<Check class="mr-1 h-3 w-3" />
+									Approve
+								</Button>
+							{:else if participantRole === "buyer" && conversationData?.offerIds?.length && property && onMarkSold && conversationData.listingStatus !== "sold"}
+								<!-- Mark as Sold Button for Buyers -->
+								<Button
+									variant="outline"
+									size="sm"
+									class="h-8 flex-1 border-rose-200 text-xs text-rose-700 hover:bg-rose-50"
+									onclick={() => {
+										if (conversationData?.offerIds?.[0] && property) {
+											onMarkSold?.(conversationData.offerIds[0], property.listingId);
+										}
+									}}
+								>
+									<DollarSign class="mr-1 h-3 w-3" />
+									Mark Sold
+								</Button>
+							{:else}
+								<!-- Default Schedule Button -->
+								<!-- <Button variant="outline" size="sm" class="h-8 flex-1 text-xs">
+									<Calendar class="mr-1 h-3 w-3" />
+									Schedule
+								</Button> -->
+							{/if}
 						{:else}
 							<Button
 								variant="default"
@@ -207,6 +256,38 @@
 							</Button>
 						{/if}
 					</div>
+
+					<!-- Status Information for Agents -->
+					{#if isAgent && conversationData?.listingStatus}
+						<div class="mt-2 text-xs text-gray-600">
+							{#if participantRole === "seller" && conversationData.listingStatus === "submitted"}
+								<div class="flex items-center gap-1 text-amber-600">
+									<div class="h-2 w-2 rounded-full bg-amber-500"></div>
+									Seller's listing awaiting approval • Click "Approve" to make it live
+								</div>
+							{:else if participantRole === "buyer" && conversationData.listingStatus === "up" && conversationData.offerIds?.length}
+								<div class="flex items-center gap-1 text-green-600">
+									<div class="h-2 w-2 rounded-full bg-green-500"></div>
+									Buyer interested in this property • Click "Mark Sold" when sale is complete
+								</div>
+							{:else if conversationData.listingStatus === "up"}
+								<div class="flex items-center gap-1 text-green-600">
+									<div class="h-2 w-2 rounded-full bg-green-500"></div>
+									Property is live and available
+								</div>
+							{:else if conversationData.listingStatus === "sold"}
+								<div class="flex items-center gap-1 text-gray-600">
+									<div class="h-2 w-2 rounded-full bg-gray-500"></div>
+									Property has been sold
+								</div>
+							{:else if conversationData.listingStatus === "under-review"}
+								<div class="flex items-center gap-1 text-blue-600">
+									<div class="h-2 w-2 rounded-full bg-blue-500"></div>
+									Under review by admin
+								</div>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			</CardContent>
 		</Card>
@@ -220,7 +301,7 @@
 						<CardTitle class="text-sm text-gray-900">Quick Responses</CardTitle>
 					</div>
 				</CardHeader>
-				<CardContent class="space-y-2">
+				<CardContent class="space-y-2 pb-3">
 					<!-- Schedule Viewing Response -->
 					<Button
 						variant="ghost"
@@ -300,7 +381,7 @@
 					</Button>
 
 					<!-- Financing Options Response -->
-					<Button
+					<!-- <Button
 						variant="ghost"
 						size="sm"
 						class="h-auto w-full justify-start border border-transparent p-3 text-left transition-all hover:border-purple-200 hover:bg-purple-50"
@@ -323,7 +404,7 @@
 								</div>
 							</div>
 						</div>
-					</Button>
+					</Button> -->
 				</CardContent>
 			</Card>
 		{:else}

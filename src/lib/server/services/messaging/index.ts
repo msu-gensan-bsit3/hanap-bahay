@@ -30,10 +30,10 @@ export class Messaging {
 					columns: {},
 					with: {
 						offer: {
-							columns: {},
+							columns: { id: true },
 							with: {
 								listing: {
-									columns: { id: true, agentId: true },
+									columns: { id: true, agentId: true, status: true },
 									with: {
 										property: true,
 									},

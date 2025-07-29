@@ -136,17 +136,30 @@ export const actions: Actions = {
 		}
 
 		await db.transaction(async (db) => {
+			const oc = await db.query.offerConversation.findFirst({
+				where: eq(offerConversation.conversationId, queryResult.conversation.id),
+				with: {
+					offer: {
+						columns: {},
+						with: { listing: { columns: {}, with: { property: true } } },
+					},
+				},
+			});
+
+			if (locals.user?.id === oc?.offer.listing.property.sellerId) {
+				return;
+			}
+
 			let b = await db.query.buyer.findFirst({ where: eq(buyer.id, locals.user!.id) });
 			if (!b) {
 				const [res] = await db.insert(buyer).values({ id: locals.user!.id }).returning();
 				b = res;
 			}
-
 			let o = await db.query.offer.findFirst({
 				where: and(eq(offer.listingId, listingId), eq(offer.buyerId, b.id)),
 			});
 			if (!o) {
-				const [res] = await db.insert(offer).values({ buyerId: b.id, listingId }).returning();
+				const [res] = await db.insert(offer).values({ buyerId: b!.id, listingId }).returning();
 				o = res;
 			}
 			let res = await db.query.offerConversation.findFirst({

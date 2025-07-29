@@ -23,8 +23,6 @@ export const load: PageServerLoad = async ({ parent }) => {
 		}),
 	);
 
-	listingsWithSellers[0].seller;
-
 	return {
 		listings: listingsWithSellers,
 	};

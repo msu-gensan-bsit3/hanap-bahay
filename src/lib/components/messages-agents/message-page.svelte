@@ -46,7 +46,7 @@
 				listingId: o.offer.listing.id,
 			}));
 
-			const agentId = v.offerConversations.at(0)!.offer.listing.agentId;
+			const agentId = sender!.id;
 
 			return {
 				id,
@@ -210,6 +210,75 @@
 	let updateTimeBtn: HTMLElement | undefined = $state();
 	const updateReadTimeForm = moreEnhance();
 	const { enhance: updateReadTimeEnhance } = $derived(updateReadTimeForm);
+
+	let approveListingBtn: HTMLElement | undefined = $state();
+	const approveListingForm = moreEnhance();
+	const { enhance: approveListingEnhance } = $derived(approveListingForm);
+
+	let markSoldBtn: HTMLElement | undefined = $state();
+	const markSoldForm = moreEnhance();
+	const { enhance: markSoldEnhance } = $derived(markSoldForm);
+
+	let listingIdToApprove = $state<number | undefined>();
+	let offerIdToMarkSold = $state<number | undefined>();
+	let listingIdToMarkSold = $state<number | undefined>();
+
+	function handleApproveListing(listingId: number) {
+		listingIdToApprove = listingId;
+		tick().then(() => {
+			approveListingBtn?.click();
+			// Send a message about the approval
+			handleQuickResponse(
+				"✅ Great news! I've approved your property listing. It's now live and available for buyers to view. You should start receiving inquiries soon!",
+			);
+		});
+	}
+
+	function handleMarkSold(offerId: number, listingId: number) {
+		offerIdToMarkSold = offerId;
+		listingIdToMarkSold = listingId;
+		tick().then(() => {
+			markSoldBtn?.click();
+			// Send a message about the sale completion
+			// handleQuickResponse(
+			// 	"🎉 Congratulations! I've marked this property as sold. The transaction has been completed successfully. Thank you for choosing our services!",
+			// );
+		});
+	}
+
+	// Get conversation data for the selected conversation
+	let conversationData = $derived.by(() => {
+		if (!selectedConversation) return {};
+
+		const conversation = userConversations.find((v) => v.id === selectedConversation?.id);
+		if (!conversation) return {};
+
+		// Get listing status from the first offer conversation
+		const firstOfferConversation = conversation.offerConversations[0];
+		const listingStatus = firstOfferConversation?.offer?.listing?.status;
+
+		// Get all offer IDs for this conversation
+		const offerIds = conversation.offerConversations.map((oc) => oc.offer?.id).filter(Boolean);
+
+		return {
+			listingStatus,
+			offerIds,
+		};
+	});
+
+	// Determine if the conversation participant is a buyer or seller
+	let participantRole: "buyer" | "seller" = $derived.by(() => {
+		if (!selectedConversation) return "buyer";
+
+		// Check if any property in this conversation has sellerId matching the receiver
+		// If sellerId matches the receiver, then it's a seller conversation (agent talking to property owner)
+		// Otherwise, it's a buyer conversation (agent talking to someone interested in buying)
+		const isSeller = selectedConversation.properties.some(
+			(property) => property.sellerId === selectedConversation!.receiverId,
+		);
+
+		return isSeller ? "seller" : "buyer";
+	});
 </script>
 
 <div class="w-full flex-1 @4xl:hidden">
@@ -264,8 +333,12 @@
 		properties={selectedConversation?.properties}
 		onQuickResponse={handleQuickResponse}
 		{role}
+		{participantRole}
 		{propertyImages}
 		{propertyLocations}
+		onApproveListing={handleApproveListing}
+		onMarkSold={handleMarkSold}
+		{conversationData}
 	/>
 </div>
 
@@ -278,4 +351,15 @@
 <form action="?/updateReadTime" method="post" class="hidden" use:updateReadTimeEnhance>
 	<input type="hidden" name="convId" value={convId} required />
 	<button bind:this={updateTimeBtn} aria-label="submit"></button>
+</form>
+
+<form action="?/approveListing" method="post" class="hidden" use:approveListingEnhance>
+	<input type="hidden" name="listingId" value={listingIdToApprove} required />
+	<button bind:this={approveListingBtn} aria-label="approve listing"></button>
+</form>
+
+<form action="?/markOfferSold" method="post" class="hidden" use:markSoldEnhance>
+	<input type="hidden" name="offerId" value={offerIdToMarkSold} required />
+	<input type="hidden" name="listingId" value={listingIdToMarkSold} required />
+	<button bind:this={markSoldBtn} aria-label="mark as sold"></button>
 </form>

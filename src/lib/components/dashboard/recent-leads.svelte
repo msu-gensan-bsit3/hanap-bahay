@@ -71,7 +71,7 @@
 				<div class="h-[2px] w-full bg-black/10"></div>
 				<button
 					class="flex h-23 w-full cursor-pointer items-center space-x-4 p-4 text-start transition-colors hover:bg-black/5"
-					onclick={() => goto(`/agent/offers/${lead.id}`)}
+					onclick={() => goto(`/agent/messages`)}
 				>
 					<img src="/no-profile.jpg" alt={lead.name} class="h-10 w-10 rounded-full" />
 					<div class="flex flex-1 flex-col gap-1 lg:gap-[3px]">

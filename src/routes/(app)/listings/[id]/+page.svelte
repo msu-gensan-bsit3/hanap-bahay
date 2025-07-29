@@ -26,8 +26,6 @@
 			.filter(Boolean)
 			.join(", "),
 	);
-
-	console.log(data.role);
 </script>
 
 <div class="container mx-auto max-w-5xl px-3 py-8" class:opacity-75={listing.status === "sold"}>

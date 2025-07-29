@@ -44,7 +44,9 @@
 							{agent.user.firstName}
 							{agent.user.lastName}
 						</p>
-						<p class="hidden text-xs text-gray-600 md:block">Interested in this property?</p>
+						<p class="hidden text-xs text-gray-600 md:block">
+							{role === "buyer" ? "Interested in this property?" : "Check the status?"}
+						</p>
 					</div>
 				</div>
 
@@ -63,7 +65,7 @@
 								Sending...
 							{:else}
 								<MessageCircle class="mr-2 size-4" />
-								Express Interest
+								{role === "buyer" ? "Express Interest" : "Contact Agent"}
 							{/if}
 						</Button>
 					</form>

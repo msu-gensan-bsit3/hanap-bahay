@@ -98,7 +98,7 @@
 	<title>My Dashboard - JuanHomes</title>
 </svelte:head>
 
-<div class="mx-auto max-w-4xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
+<div class="mx-auto w-full max-w-4xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
 	<!-- User Welcome Section -->
 	{#if data.user}
 		<div
@@ -276,7 +276,7 @@
 											<Button
 												variant="outline"
 												size="sm"
-												href="/listings/{property.id}/edit"
+												type="submit"
 												class="flex w-full justify-start"
 												disabled={submitting}
 											>
@@ -377,9 +377,9 @@
 
 	<!-- Buyer View - Offers Made -->
 	{#if (activeTab === "buyer" && data.userType?.isBuyer) || (!data.userType?.isSeller && data.userType?.isBuyer)}
-		<div class="space-y-6">
-			<div class="ga-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-				<div>
+		<div class="w-full space-y-6">
+			<div class="ga-4 flex w-full flex-col sm:flex-row sm:items-center sm:justify-between">
+				<div class="w-full">
 					<h2 class="text-3xl font-bold tracking-tight">My Offers</h2>
 					<p class="text-muted-foreground">Track your property offers and negotiations</p>
 				</div>

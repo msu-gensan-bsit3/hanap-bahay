@@ -67,7 +67,7 @@
 			<div class="divide-y {!isMobile ? 'border-b' : ''}">
 				{#each filteredConversations as conversation (conversation.id)}
 					<button
-						class="w-full p-4 text-left transition-colors hover:bg-gray-50 {selectedConversation?.id ===
+						class="w-full cursor-pointer p-4 text-left transition-colors hover:bg-gray-50 {selectedConversation?.id ===
 							conversation.id && !isMobile
 							? 'border-r-2 border-blue-500 bg-blue-50'
 							: ''} active:bg-gray-100"
