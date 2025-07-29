@@ -118,7 +118,10 @@
 								</a>
 							</DropdownMenu.Item>
 							<DropdownMenu.Item class="w-full p-0">
-								<a href="/profile" class="flex w-full cursor-pointer items-center gap-2 p-2">
+								<a
+									href="{curAgent ? '/agent' : ''}/profile"
+									class="flex w-full cursor-pointer items-center gap-2 p-2"
+								>
 									<User class="h-4 w-4" />
 									Profile
 								</a>
@@ -168,7 +171,10 @@
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content align="end" class="w-56">
 						<DropdownMenu.Item class="w-full p-0">
-							<a href="/profile" class="flex w-full cursor-pointer items-center gap-2 p-2">
+							<a
+								href="{curAgent ? '/agent' : ''}/profile"
+								class="flex w-full cursor-pointer items-center gap-2 p-2"
+							>
 								<User class="h-4 w-4" />
 								Profile
 							</a>
@@ -197,11 +203,12 @@
 					<span class="sr-only">Toggle menu</span>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end" class="w-56">
-					{#if curAgent}
-						<DropdownMenu.Item onSelect={handleItemSelect("/agent/dashboard")}>
+					<DropdownMenu.Item>
+						<a href="{curAgent ? '/agent' : ''}/dashboard" class="flex w-full items-center gap-2">
+							<LayoutDashboard />
 							Dashboard
-						</DropdownMenu.Item>
-					{/if}
+						</a>
+					</DropdownMenu.Item>
 					<DropdownMenu.Item>
 						<a href="/messages" class="flex w-full items-center gap-2">
 							<MessageCircleMore />

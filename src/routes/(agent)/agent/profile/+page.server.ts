@@ -1,5 +1,5 @@
 import { db } from "$lib/server/db";
-import { user, userQuery } from "$lib/server/db/schema";
+import { agent, agentQuery } from "$lib/server/db/schema";
 import { error, redirect } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
@@ -9,17 +9,17 @@ export const load: PageServerLoad = async ({ locals }) => {
 		throw redirect(302, "/login");
 	}
 
-	// Get the complete user data with address
-	const userData = await db.query.user.findFirst({
-		...userQuery,
-		where: eq(user.id, locals.user.id),
+	// Get the complete agent data with user information
+	const agentData = await db.query.agent.findFirst({
+		...agentQuery,
+		where: eq(agent.id, locals.user.id),
 	});
 
-	if (!userData) {
-		throw error(404, "User not found");
+	if (!agentData) {
+		throw error(404, "Agent not found");
 	}
 
 	return {
-		user: userData,
+		agent: agentData,
 	};
 };
