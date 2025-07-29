@@ -418,6 +418,76 @@
 			.map((url: string) => url.trim())
 			.filter((url: string) => url.length > 0);
 	});
+
+	// Todo list-style states for features, tags, and photos
+	let newFeature = $state("");
+	let newTag = $state("");
+	let newPhotoUrl = $state("");
+
+	// Parse comma-separated strings into arrays for todo list display
+	const featuresList = $derived(() => {
+		if (!formData.features.trim()) return [];
+		return formData.features
+			.split(",")
+			.map((f: string) => f.trim())
+			.filter((f: string) => f.length > 0);
+	});
+
+	const tagsList = $derived(() => {
+		if (!formData.tags.trim()) return [];
+		return formData.tags
+			.split(",")
+			.map((t: string) => t.trim())
+			.filter((t: string) => t.length > 0);
+	});
+
+	// Functions to manage features
+	function addFeature() {
+		if (newFeature.trim()) {
+			const currentFeatures = featuresList();
+			currentFeatures.push(newFeature.trim());
+			formData.features = currentFeatures.join(", ");
+			newFeature = "";
+		}
+	}
+
+	function removeFeature(index: number) {
+		const currentFeatures = featuresList();
+		currentFeatures.splice(index, 1);
+		formData.features = currentFeatures.join(", ");
+	}
+
+	// Functions to manage tags
+	function addTag() {
+		if (newTag.trim()) {
+			const currentTags = tagsList();
+			currentTags.push(newTag.trim());
+			formData.tags = currentTags.join(", ");
+			newTag = "";
+		}
+	}
+
+	function removeTag(index: number) {
+		const currentTags = tagsList();
+		currentTags.splice(index, 1);
+		formData.tags = currentTags.join(", ");
+	}
+
+	// Functions to manage photos
+	function addPhotoUrl() {
+		if (newPhotoUrl.trim()) {
+			const currentUrls = photoUrls();
+			const newUrlList = [...currentUrls, newPhotoUrl.trim()];
+			formData.photosUrls = newUrlList.join(", ");
+			newPhotoUrl = "";
+		}
+	}
+
+	function removePhotoUrl(index: number) {
+		const currentUrls = photoUrls();
+		currentUrls.splice(index, 1);
+		formData.photosUrls = currentUrls.join(", ");
+	}
 </script>
 
 <svelte:head>
@@ -1034,36 +1104,144 @@
 				</CardHeader>
 				<CardContent class="space-y-6">
 					<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-						<div class="space-y-2">
-							<Label for="features">Features</Label>
-							<Input
-								id="features"
-								name="features"
-								type="text"
-								bind:value={formData.features}
-								placeholder="e.g., Swimming Pool, Garden, Balcony (comma-separated)"
-								class={form?.errors?.features ? "border-red-500" : ""}
-							/>
+						<!-- Features Section -->
+						<div class="space-y-4">
+							<Label>Property Features</Label>
+
+							<!-- Add New Feature -->
+							<div class="flex gap-2">
+								<Input
+									bind:value={newFeature}
+									placeholder="e.g., Swimming Pool, Garden, Balcony"
+									class="flex-1"
+									onkeydown={(e) => {
+										if (e.key === "Enter") {
+											e.preventDefault();
+											addFeature();
+										}
+									}}
+								/>
+								<Button type="button" size="sm" onclick={addFeature} disabled={!newFeature.trim()}>
+									Add
+								</Button>
+							</div>
+
+							<!-- Features List -->
+							{#if featuresList().length > 0}
+								<div class="space-y-2">
+									<div class="max-h-40 space-y-2 overflow-y-auto">
+										{#each featuresList() as feature, index}
+											<div
+												class="flex items-center justify-between rounded-md border bg-gray-50 px-3 py-2"
+											>
+												<span class="text-sm">{feature}</span>
+												<Button
+													type="button"
+													variant="ghost"
+													size="sm"
+													class="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+													onclick={() => removeFeature(index)}
+												>
+													<svg
+														class="h-4 w-4"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M6 18L18 6M6 6l12 12"
+														></path>
+													</svg>
+												</Button>
+											</div>
+										{/each}
+									</div>
+									<p class="text-xs text-gray-500">{featuresList().length} feature(s) added</p>
+								</div>
+							{:else}
+								<div class="py-4 text-center text-sm text-gray-500">
+									No features added yet. Start by typing a feature above.
+								</div>
+							{/if}
+
+							<!-- Hidden input for form submission -->
+							<input type="hidden" name="features" bind:value={formData.features} />
 							{#if form?.errors?.features}
 								<p class="text-sm text-red-600">{form.errors.features[0]}</p>
 							{/if}
-							<p class="text-xs text-gray-500">Separate multiple features with commas</p>
 						</div>
 
-						<div class="space-y-2">
-							<Label for="tags">Tags</Label>
-							<Input
-								id="tags"
-								name="tags"
-								type="text"
-								bind:value={formData.tags}
-								placeholder="e.g., Modern, Luxury, Pet-Friendly (comma-separated)"
-								class={form?.errors?.tags ? "border-red-500" : ""}
-							/>
+						<!-- Tags Section -->
+						<div class="space-y-4">
+							<Label>Marketing Tags</Label>
+
+							<!-- Add New Tag -->
+							<div class="flex gap-2">
+								<Input
+									bind:value={newTag}
+									placeholder="e.g., Modern, Luxury, Pet-Friendly"
+									class="flex-1"
+									onkeydown={(e) => {
+										if (e.key === "Enter") {
+											e.preventDefault();
+											addTag();
+										}
+									}}
+								/>
+								<Button type="button" size="sm" onclick={addTag} disabled={!newTag.trim()}>
+									Add
+								</Button>
+							</div>
+
+							<!-- Tags List -->
+							{#if tagsList().length > 0}
+								<div class="space-y-2">
+									<div class="max-h-40 space-y-2 overflow-y-auto">
+										{#each tagsList() as tag, index}
+											<div
+												class="flex items-center justify-between rounded-md border bg-blue-50 px-3 py-2"
+											>
+												<span class="text-sm text-blue-700">{tag}</span>
+												<Button
+													type="button"
+													variant="ghost"
+													size="sm"
+													class="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+													onclick={() => removeTag(index)}
+												>
+													<svg
+														class="h-4 w-4"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M6 18L18 6M6 6l12 12"
+														></path>
+													</svg>
+												</Button>
+											</div>
+										{/each}
+									</div>
+									<p class="text-xs text-gray-500">{tagsList().length} tag(s) added</p>
+								</div>
+							{:else}
+								<div class="py-4 text-center text-sm text-gray-500">
+									No tags added yet. Start by typing a tag above.
+								</div>
+							{/if}
+
+							<!-- Hidden input for form submission -->
+							<input type="hidden" name="tags" bind:value={formData.tags} />
 							{#if form?.errors?.tags}
 								<p class="text-sm text-red-600">{form.errors.tags[0]}</p>
 							{/if}
-							<p class="text-xs text-gray-500">Separate multiple tags with commas</p>
 						</div>
 					</div>
 				</CardContent>
@@ -1076,57 +1254,174 @@
 					<CardDescription>Add photo URLs to showcase your property</CardDescription>
 				</CardHeader>
 				<CardContent class="space-y-4">
+					<!-- Add New Photo URL -->
 					<div class="space-y-2">
-						<Label for="photosUrls">Photo URLs</Label>
-						<textarea
-							id="photosUrls"
-							name="photosUrls"
-							bind:value={formData.photosUrls}
-							placeholder="Enter image URLs, one per line or separated by commas&#10;Example:&#10;https://example.com/image1.jpg&#10;https://example.com/image2.jpg&#10;https://drive.google.com/uc?id=your-file-id"
-							class="flex min-h-[120px] w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 {form
-								?.errors?.photosUrls
-								? 'border-red-500'
-								: ''}"
-						></textarea>
-						{#if form?.errors?.photosUrls}
-							<p class="text-sm text-red-600">{form.errors.photosUrls[0]}</p>
-						{/if}
+						<Label>Add Photo URL</Label>
+						<div class="flex gap-2">
+							<Input
+								bind:value={newPhotoUrl}
+								placeholder="https://example.com/image.jpg"
+								class="flex-1"
+								onkeydown={(e) => {
+									if (e.key === "Enter") {
+										e.preventDefault();
+										addPhotoUrl();
+									}
+								}}
+							/>
+							<Button type="button" size="sm" onclick={addPhotoUrl} disabled={!newPhotoUrl.trim()}>
+								Add Photo
+							</Button>
+						</div>
 						<div class="space-y-1">
 							<p class="text-xs text-gray-500">
-								Enter valid image URLs (JPG, PNG, WEBP). You can add multiple URLs separated by
-								commas or one per line.
+								Enter valid image URLs (JPG, PNG, WEBP). Use image hosting services like Google
+								Drive, Imgur, or Cloudinary.
 							</p>
 							<p class="text-xs text-gray-500">
-								💡 <strong>Tips:</strong> Use image hosting services like Google Drive, Imgur, or Cloudinary
-								for reliable image hosting.
-							</p>
-							<p class="text-xs text-gray-500">
-								📷 <strong>Recommended:</strong> Add 3-10 high-quality photos showing different angles,
-								rooms, and features.
+								💡 <strong>Tip:</strong> Add 3-10 high-quality photos showing different angles, rooms,
+								and features.
 							</p>
 						</div>
 					</div>
 
-					<!-- Photo Preview -->
+					<!-- Photos List -->
 					{#if photoUrls().length > 0}
-						<div class="space-y-2">
-							<Label
-								>Photo Preview ({photoUrls().length}
-								{photoUrls().length === 1 ? "photo" : "photos"})</Label
-							>
-							<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-								{#each photoUrls() as url, index (url)}
-									<div class="relative aspect-square overflow-hidden rounded-lg border bg-gray-50">
-										<img
-											src={url}
-											alt="Property photo {index + 1}"
-											class="h-full w-full object-cover transition-transform hover:scale-105"
-											loading="lazy"
-										/>
+						<div class="space-y-4">
+							<div class="flex items-center justify-between">
+								<Label>Added Photos ({photoUrls().length})</Label>
+								<span class="text-xs text-gray-500">{photoUrls().length} photo(s) added</span>
+							</div>
+
+							<!-- Photo List with Preview -->
+							<div class="max-h-96 space-y-3 overflow-y-auto">
+								{#each photoUrls() as url, index}
+									<div class="flex items-center gap-3 rounded-lg border bg-gray-50 p-3">
+										<!-- Photo Preview -->
+										<div class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border bg-white">
+											<img
+												src={url}
+												alt="Property photo {index + 1}"
+												class="h-full w-full object-cover"
+												loading="lazy"
+												onerror={(e) => {
+													if (e.target) {
+														const target = e.target as HTMLImageElement;
+														target.style.display = "none";
+														if (target.nextElementSibling) {
+															const nextTarget = target.nextElementSibling as HTMLElement;
+															nextTarget.style.display = "flex";
+														}
+													}
+												}}
+											/>
+											<div
+												class="hidden h-full w-full items-center justify-center bg-gray-100 text-gray-400"
+											>
+												<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+													></path>
+												</svg>
+											</div>
+										</div>
+
+										<!-- URL Display -->
+										<div class="min-w-0 flex-1">
+											<p class="truncate text-sm font-medium">Photo {index + 1}</p>
+											<p class="truncate text-xs text-gray-500" title={url}>{url}</p>
+										</div>
+
+										<!-- Remove Button -->
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											class="h-8 w-8 flex-shrink-0 p-0 text-red-500 hover:text-red-700"
+											onclick={() => removePhotoUrl(index)}
+										>
+											<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M6 18L18 6M6 6l12 12"
+												></path>
+											</svg>
+										</Button>
 									</div>
 								{/each}
 							</div>
+
+							<!-- Photo Grid Preview -->
+							<div class="space-y-2">
+								<Label>Photo Gallery Preview</Label>
+								<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+									{#each photoUrls() as url, index}
+										<div
+											class="relative aspect-square overflow-hidden rounded-lg border bg-gray-50"
+										>
+											<img
+												src={url}
+												alt="Property photo {index + 1}"
+												class="h-full w-full object-cover transition-transform hover:scale-105"
+												loading="lazy"
+											/>
+											<div class="absolute top-1 right-1">
+												<Button
+													type="button"
+													variant="ghost"
+													size="sm"
+													class="h-6 w-6 bg-black/50 p-0 text-white hover:bg-black/70"
+													onclick={() => removePhotoUrl(index)}
+												>
+													<svg
+														class="h-3 w-3"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M6 18L18 6M6 6l12 12"
+														></path>
+													</svg>
+												</Button>
+											</div>
+										</div>
+									{/each}
+								</div>
+							</div>
 						</div>
+					{:else}
+						<div class="py-8 text-center text-gray-500">
+							<svg
+								class="mx-auto mb-4 h-12 w-12"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="1"
+									d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+								></path>
+							</svg>
+							<h3 class="mb-2 text-lg font-medium">No photos added yet</h3>
+							<p class="text-sm">Start by adding your first photo URL above</p>
+						</div>
+					{/if}
+
+					<!-- Hidden input for form submission -->
+					<input type="hidden" name="photosUrls" bind:value={formData.photosUrls} />
+					{#if form?.errors?.photosUrls}
+						<p class="text-sm text-red-600">{form.errors.photosUrls[0]}</p>
 					{/if}
 				</CardContent>
 			</Card>
