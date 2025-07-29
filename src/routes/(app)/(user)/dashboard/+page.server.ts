@@ -8,7 +8,10 @@ import {
 	listing,
 	offer,
 	offerConversation,
+	photosUrl,
 	property,
+	propertyFeature,
+	propertyTag,
 	seller,
 } from "$lib/server/db/schema";
 import { error, fail, redirect, type Actions } from "@sveltejs/kit";
@@ -196,5 +199,71 @@ export const actions: Actions = {
 		});
 
 		return redirect(302, "/messages?convId=" + queryResult.conversation.id);
+	},
+
+	deleteListing: async ({ request, locals }) => {
+		if (!locals.user) {
+			return redirect(302, "/login");
+		}
+
+		const formData = await request.formData();
+		const propertyId = Number(formData.get("propertyId"));
+
+		if (!propertyId || isNaN(propertyId)) {
+			return fail(400, { error: "Invalid property ID" });
+		}
+
+		try {
+			// First, verify that the property belongs to the current user (seller)
+			const propertyData = await db.query.property.findFirst({
+				where: eq(property.id, propertyId),
+				with: {
+					listing: true,
+				},
+			});
+
+			if (!propertyData) {
+				return fail(404, { error: "Property not found" });
+			}
+
+			if (propertyData.sellerId !== locals.user.id) {
+				return fail(403, { error: "You can only delete your own properties" });
+			}
+
+			// Delete in transaction to ensure data consistency
+			await db.transaction(async (tx) => {
+				// If listing exists, delete related offers and conversations first
+				if (propertyData.listing) {
+					// Find all offers for this listing
+					const listingOffers = await tx.query.offer.findMany({
+						where: eq(offer.listingId, propertyData.listing.id),
+					});
+
+					// Delete offer conversations for each offer
+					for (const offerItem of listingOffers) {
+						await tx.delete(offerConversation).where(eq(offerConversation.offerId, offerItem.id));
+					}
+
+					// Delete all offers for this listing
+					await tx.delete(offer).where(eq(offer.listingId, propertyData.listing.id));
+
+					// Delete the listing
+					await tx.delete(listing).where(eq(listing.propertyId, propertyId));
+				}
+
+				// Delete related property data
+				await tx.delete(propertyFeature).where(eq(propertyFeature.propertyId, propertyId));
+				await tx.delete(propertyTag).where(eq(propertyTag.propertyId, propertyId));
+				await tx.delete(photosUrl).where(eq(photosUrl.propertyId, propertyId));
+
+				// Finally delete the property
+				await tx.delete(property).where(eq(property.id, propertyId));
+			});
+
+			return { success: true, message: "Property deleted successfully" };
+		} catch (error) {
+			console.error("Error deleting property:", error);
+			return fail(500, { error: "Failed to delete property" });
+		}
 	},
 };
