@@ -831,8 +831,10 @@
 											class="h-full w-full object-cover"
 											loading="lazy"
 											onerror={(e) => {
-												e.currentTarget.src = "/no-image.jpg";
-												e.currentTarget.alt = "Failed to load image";
+												if (e.currentTarget) {
+													e.currentTarget.setAttribute("src", "/no-image.jpg");
+													e.currentTarget.setAttribute("alt", "Failed to load image");
+												}
 											}}
 										/>
 										{#if index === 0}

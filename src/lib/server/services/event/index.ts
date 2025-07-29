@@ -18,7 +18,7 @@ class EventSubscribe {
 	}
 
 	emitEvent(groupId: string) {
-		this.subscription[groupId].emitEvent();
+		this.subscription[groupId]?.emitEvent();
 	}
 }
 
