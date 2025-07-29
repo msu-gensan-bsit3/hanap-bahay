@@ -8,6 +8,7 @@
 		LogOut,
 		Menu,
 		MessageSquare,
+		Plus,
 		Users,
 		type IconProps,
 	} from "@lucide/svelte";
@@ -93,6 +94,11 @@
 			label: "Dashboard",
 			href: "/agent/dashboard",
 			icon: LayoutDashboard,
+		},
+		{
+			label: "Create Listing",
+			href: "/agent/listings/create",
+			icon: Plus,
 		},
 		{
 			label: "Listings",
