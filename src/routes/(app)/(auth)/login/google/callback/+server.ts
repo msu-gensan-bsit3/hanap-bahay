@@ -7,10 +7,10 @@ import {
 // import { addUser } from "$lib/server/db/queries";
 import { user } from "$lib/server/db/schema";
 import { google } from "$lib/server/services/auth/google";
-import { error, redirect, type RequestEvent } from "@sveltejs/kit";
+import { redirect, type RequestEvent } from "@sveltejs/kit";
 import type { OAuth2Tokens } from "arctic";
 import { decodeIdToken } from "arctic";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export async function GET(event: RequestEvent): Promise<Response> {
 	const code = event.url.searchParams.get("code");
@@ -64,22 +64,29 @@ export async function GET(event: RequestEvent): Promise<Response> {
 		return redirect(302, "/");
 	}
 
-	return error(400, "cant signup with google");
+	// return error(400, "cant signup with google");
 
-	// const [newUser] = await db.insert(user).values({
-	// 	email: claims.email,
-	// 	firstName: claims.given_name,
-	// 	lastName: claims.family_name,
-	// 	profilePicture: claims.picture,
-	// 	addressId: 1,
-	// }).returning({ id: user.id });
+	const [newUser] = await db
+		.insert(user)
+		.values({
+			email: claims.email,
+			firstName: claims.given_name,
+			lastName: claims.family_name ?? "",
+			profilePicture: claims.picture,
+			addressId: 1,
+			birthDate: sql`now()`,
+			mobileNumber: "+639123456789",
+			passwordHash: "random",
+			username: crypto.randomUUID(),
+		})
+		.returning({ id: user.id });
 
-	// const sessionToken = generateSessionToken();
-	// const session = await createSession(sessionToken, newUser.id);
-	// setSessionTokenCookie(event, sessionToken, session.expiresAt);
+	const sessionToken = generateSessionToken();
+	const session = await createSession(sessionToken, newUser.id);
+	setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-	// event.cookies.delete("google_code_verifier", { path: "/" });
-	// event.cookies.delete("google_oauth_state", { path: "/" });
+	event.cookies.delete("google_code_verifier", { path: "/" });
+	event.cookies.delete("google_oauth_state", { path: "/" });
 
-	// return redirect(302, "/");
+	return redirect(302, "/");
 }
