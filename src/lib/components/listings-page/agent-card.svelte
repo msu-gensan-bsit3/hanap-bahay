@@ -84,6 +84,7 @@
 							alt="{agent.user.firstName} {agent.user.lastName}"
 							class="h-full w-full object-cover"
 							onload={() => (profileImageLoaded = true)}
+							referrerpolicy="no-referrer"
 						/>
 					{:else}
 						<div

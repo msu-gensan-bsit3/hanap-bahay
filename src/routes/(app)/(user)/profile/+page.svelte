@@ -136,7 +136,7 @@
 							class="h-24 w-24 border-4 border-background shadow-lg transition-transform duration-300 group-hover:scale-105"
 						>
 							{#if user.profilePicture}
-								<img src={user.profilePicture} alt="Profile" class="h-full w-full object-cover" />
+								<img src={user.profilePicture} alt="Profile" class="h-full w-full object-cover" referrerpolicy="no-referrer" />
 							{:else}
 								<div
 									class="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-primary/80 text-xl font-bold text-primary-foreground"
