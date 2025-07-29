@@ -16,6 +16,7 @@
 	import { Input } from "$lib/components/ui/input";
 	import { Label } from "$lib/components/ui/label";
 	import { Select, SelectContent, SelectItem, SelectTrigger } from "$lib/components/ui/select";
+	import AgentSelectionGrid from "$lib/components/listings-page/agent-selection-grid.svelte";
 
 	let { data, form } = $props();
 
@@ -284,7 +285,7 @@
 			}
 		},
 	});
-
+  
 	const agents = $derived(
 		data.agents.sort((a) => {
 			if (a.user.address.city.toLowerCase().includes(formData.city.toLowerCase())) {
@@ -358,7 +359,7 @@
 							<Select type="single" name="type" bind:value={formData.type}>
 								<SelectTrigger class={form?.errors?.type ? "border-red-500" : ""}>
 									{propertyTypes.find((pt) => pt.value === formData.type)?.label ||
-										"Select property type"}
+									"Select property type"}
 								</SelectTrigger>
 								<SelectContent>
 									{#each propertyTypes as propertyType (propertyType)}
@@ -376,7 +377,7 @@
 							<Select type="single" name="category" bind:value={formData.category}>
 								<SelectTrigger class={form?.errors?.category ? "border-red-500" : ""}>
 									{propertyCategories.find((pc) => pc.value === formData.category)?.label ||
-										"Select property category"}
+									"Select property category"}
 								</SelectTrigger>
 								<SelectContent>
 									{#each propertyCategories as propertyCategory (propertyCategory)}
@@ -654,7 +655,7 @@
 							<Select type="single" name="province" bind:value={formData.province}>
 								<SelectTrigger class={form?.errors?.province ? "border-red-500" : ""}>
 									{philippineProvinces.find((p) => p.value === formData.province)?.label ||
-										"Select province"}
+									"Select province"}
 								</SelectTrigger>
 								<SelectContent>
 									{#each philippineProvinces as province (province.value)}
@@ -677,55 +678,20 @@
 					<CardDescription>Select an agent to handle this property listing</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<div class="space-y-2">
-						<Label for="agentId">Select Agent *</Label>
-						<Select type="single" name="agentId" bind:value={formData.agentId}>
-							<SelectTrigger class={form?.errors?.agentId ? "border-red-500" : ""}>
-								{#if formData.agentId}
-									{data.agents.find((agent) => agent.user.id.toString() === formData.agentId)?.user
-										.firstName}
-									{data.agents.find((agent) => agent.user.id.toString() === formData.agentId)?.user
-										.lastName}
-								{:else}
-									Select an agent
-								{/if}
-							</SelectTrigger>
-							<SelectContent>
-								{#if data.agents && data.agents.length > 0}
-									{#each agents as agent (agent.user.id)}
-										<SelectItem value={agent.user.id.toString()} class="cursor-pointer">
-											<div class="flex flex-col">
-												<span class="font-medium">
-													{agent.user.firstName}
-													{agent.user.lastName}
-												</span>
-												{#if agent.prcLicenceNumber}
-													<span class="text-xs text-gray-500"
-														>PRC License: {agent.prcLicenceNumber}</span
-													>
-												{/if}
-												{#if agent.user.address}
-													<span class="text-xs text-gray-400"
-														>{Object.values(agent.user.address)
-															.slice(1)
-															.filter(Boolean)
-															.join(", ")}</span
-													>
-												{/if}
-											</div>
-										</SelectItem>
-									{/each}
-								{:else}
-									<SelectItem value="" disabled>No agents available</SelectItem>
-								{/if}
-							</SelectContent>
-						</Select>
+					<div class="space-y-4">
+						<!-- Agent Grid -->
+						<AgentSelectionGrid
+							agents={data.agents}
+							bind:selectedAgentId={formData.agentId}
+							propertyCity={formData.city}
+						/>
+
+						<!-- Hidden input for form submission -->
+						<input type="hidden" name="agentId" value={formData.agentId} />
+
 						{#if form?.errors?.agentId}
 							<p class="text-sm text-red-600">{form.errors.agentId[0]}</p>
 						{/if}
-						<p class="text-xs text-gray-500">
-							Choose an agent to handle this listing based on the property location
-						</p>
 					</div>
 				</CardContent>
 			</Card>
@@ -735,7 +701,7 @@
 				<CardHeader>
 					<CardTitle>Property Location</CardTitle>
 					<CardDescription
-						>Search for the property location or click on the map to set the exact coordinates</CardDescription
+					>Search for the property location or click on the map to set the exact coordinates</CardDescription
 					>
 				</CardHeader>
 				<CardContent>
@@ -784,7 +750,8 @@
 												stroke-linejoin="round"
 												stroke-width="2"
 												d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-											></path>
+											>
+											</path>
 										</svg>
 									{/if}
 									Search
@@ -1021,6 +988,6 @@
 	<input type="hidden" name="tags" value={formData.tags} />
 	<input type="hidden" name="photosUrls" value={formData.photosUrls} />
 	<button type="submit" class="hidden" bind:this={aiDescriptionButton}
-		>Generate AI Description</button
+	>Generate AI Description</button
 	>
 </form>
