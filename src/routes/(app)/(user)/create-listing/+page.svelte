@@ -16,6 +16,7 @@
 	import { Input } from "$lib/components/ui/input";
 	import { Label } from "$lib/components/ui/label";
 	import { Select, SelectContent, SelectItem, SelectTrigger } from "$lib/components/ui/select";
+	import AgentSelectionGrid from "$lib/components/listings-page/agent-selection-grid.svelte";
 
 	let { data, form } = $props();
 
@@ -282,15 +283,6 @@
 			}
 		},
 	});
-
-	const agents = $derived(
-		data.agents.sort((a) => {
-			if (a.user.address.city.toLowerCase().includes(formData.city.toLowerCase())) {
-				return -1;
-			}
-			return 0;
-		}),
-	);
 </script>
 
 <svelte:head>
@@ -666,55 +658,20 @@
 					<CardDescription>Select an agent to handle this property listing</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<div class="space-y-2">
-						<Label for="agentId">Select Agent *</Label>
-						<Select type="single" name="agentId" bind:value={formData.agentId}>
-							<SelectTrigger class={form?.errors?.agentId ? "border-red-500" : ""}>
-								{#if formData.agentId}
-									{data.agents.find((agent) => agent.user.id.toString() === formData.agentId)?.user
-										.firstName}
-									{data.agents.find((agent) => agent.user.id.toString() === formData.agentId)?.user
-										.lastName}
-								{:else}
-									Select an agent
-								{/if}
-							</SelectTrigger>
-							<SelectContent>
-								{#if data.agents && data.agents.length > 0}
-									{#each agents as agent (agent.user.id)}
-										<SelectItem value={agent.user.id.toString()} class="cursor-pointer">
-											<div class="flex flex-col">
-												<span class="font-medium">
-													{agent.user.firstName}
-													{agent.user.lastName}
-												</span>
-												{#if agent.prcLicenceNumber}
-													<span class="text-xs text-gray-500"
-														>PRC License: {agent.prcLicenceNumber}</span
-													>
-												{/if}
-												{#if agent.user.address}
-													<span class="text-xs text-gray-400"
-														>{Object.values(agent.user.address)
-															.slice(1)
-															.filter(Boolean)
-															.join(", ")}</span
-													>
-												{/if}
-											</div>
-										</SelectItem>
-									{/each}
-								{:else}
-									<SelectItem value="" disabled>No agents available</SelectItem>
-								{/if}
-							</SelectContent>
-						</Select>
+					<div class="space-y-4">
+						<!-- Agent Grid -->
+						<AgentSelectionGrid
+							agents={data.agents}
+							bind:selectedAgentId={formData.agentId}
+							propertyCity={formData.city}
+						/>
+
+						<!-- Hidden input for form submission -->
+						<input type="hidden" name="agentId" value={formData.agentId} />
+
 						{#if form?.errors?.agentId}
 							<p class="text-sm text-red-600">{form.errors.agentId[0]}</p>
 						{/if}
-						<p class="text-xs text-gray-500">
-							Choose an agent to handle this listing based on the property location
-						</p>
 					</div>
 				</CardContent>
 			</Card>
@@ -773,7 +730,8 @@
 												stroke-linejoin="round"
 												stroke-width="2"
 												d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-											></path>
+											>
+											</path>
 										</svg>
 									{/if}
 									Search
